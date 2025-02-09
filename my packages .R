@@ -646,18 +646,212 @@ plot(Data$August, Data$November,
      ylab="November")
 abline(0,1, col="blue", lwd=2)
 
+#-------------------------  Correlation and Linear Regression  --------------------------#
+Correlation
+Correlation can be performed with the cor.test function in the native stats package.  
+It can perform Pearson, Kendall, and Spearman correlation procedures.  
+Methods for multiple correlation of several variables simultaneously are discussed in the Multiple regression chapter.
+ 
+Pearson correlation
+Pearson correlation is the most common form of correlation. 
+It is a parametric test, and assumes that the data are linearly related and that the residuals are normally distributed.
+
+cor.test( ~ Species + Latitude,
+         data=Data,
+         method = "pearson",
+         conf.level = 0.95)
+
+Kendall correlation
+Kendall rank correlation is a non-parametric test that does not assume a distribution of the data 
+or that the data are linearly related.  It ranks the data to determine the degree of correlation.
+
+cor.test( ~ Species + Latitude,
+         data=Data,
+         method = "kendall",
+         continuity = FALSE,
+         conf.level = 0.95)
+
+Spearman correlation
+Spearman rank correlation is a non-parametric test that does not assume a distribution of the data or 
+that the data are linearly related.  
+It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
+
+cor.test( ~ Species + Latitude,
+         data=Data,
+         method = "spearman",
+         continuity = FALSE,
+         conf.level = 0.95)
+
+Linear regression
+Linear regression can be performed with the lm function in the native stats package.
+A robust regression can be performed with the lmrob function in the robustbase package.
+
+model = lm(Species ~ Latitude,
+           data = Data)
+
+summary(model)                    # shows parameter estimates,
+                                  # p-value for model, r-square
+
+library(car)
+Anova(model, type="II")              # shows p-value for effects in model
 
 
+Plot linear regression
+int =  model$coefficient["(Intercept)"]
+slope =model$coefficient["Latitude"]
+plot(Species ~ Latitude,
+     data = Data,
+     pch=16,
+     xlab = "Latitude",
+     ylab = "Species")
+abline(int, slope,
+       lty=1, lwd=2, col="blue")     #  style and color of line 
+--------------
+#Checking assumptions of the model
+
+hist(residuals(model),
+     col="darkgray")
+plot(fitted(model),
+     residuals(model))
+----------
+A plot of residuals vs. predicted values.
+The residuals should be unbiased and homoscedastic.
+For an illustration of these properties, see this diagram by Steve Jost at DePaul University:
+condor.depaul.edu/sjost/it223/documents/resid-plots.gif.
+
+### additional model checking plots with: plot(model)
+### alternative: library(FSA); residPlot(model)
+
+#----------Power analysis
+Power analysis for correlation
+pwr.r.test(n = NULL,
+           r = 0.500,
+           sig.level = 0.05,
+           power = 0.80,
+           alternative = "two.sided")
+
+#-------------------- Curvilinear Regression -----------------------
+How to do the test
+This chapter will fit models to curvilinear data using three methods: 
+1) Polynomial regression;  2) B-spline regression with polynomial splines;  and 
+3) Nonlinear regression with the nls function.  
+In this example, each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
+
+Polynomial regression
+Polynomial regression is really just a special case of multiple regression, which is covered in the Multiple regression chapter.  
+In this example we will fit a few models, as the Handbook does, and then compare the models with the extra sum of squares test, 
+the Akaike information criterion (AIC), and the adjusted R-squared as model fit criteria. 
+
+For a linear model (lm), the adjusted R-squared is included with the output of the summary(model) statement.  
+The AIC is produced with its own function call, AIC(model).  
+The extra sum of squares test is conducted with the anova function applied to two models. 
+
+For AIC, smaller is better.  For adjusted R-squared, larger is better. 
+A non-significant p-value for the extra sum of squares test comparing model a to model b indicates that 
+the model with the extra terms does not significantly reduce the error sum of squares over the reduced model.  
+Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
+Simple plot of model
+ 
+----------------------
+plot(Clutch ~ Length,
+     data = Data,
+     pch=16,
+     xlab = "Carapace length",
+     ylab = "Clutch") 
+i = seq(min(Data$Length), max(Data$Length), len=100)       #  x-values for line
+predy = predict(model, data.frame(Length=i))               #  fitted values
+lines(i, predy,                                            #  spline curve
+      lty=1, lwd=2, col="blue")                            #  style and color
 
 
+#---------------------Multiple Regression---------------------------- 
+library(psych)
+corr.test(Data.num,
+          use = "pairwise",
+          method="pearson",
+          adjust="none",     # Can adjust p-values; see ?p.adjust for options
+          alpha=.05)
+
+ pairs(data=Data,
+      ~ Longnose + Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp)
 
 
+library(PerformanceAnalytics)
+chart.Correlation(Data.num,
+                   method="pearson",
+                   histogram=TRUE,
+                   pch=16)
+-------------
+Multiple regression
+ 
 
+Model selection using the step function
+The step function has options to add terms to a model (direction="forward"), remove terms from a model (direction="backward"), or to use a process that both adds and removes terms (direction="both").  It uses AIC (Akaike information criterion) as a selection criterion.  You can use the option k = log(n) to use BIC instead. 
 
+ 
 
+You can add the test="F" option to see the p-value for adding or removing terms, but the test will still follow the AIC statistic.  If you use this, however, note that a significant p-value essentially argues for the term being included in the model, whether it’s its addition or its removal that’s being considered.
 
+ 
 
+A full model and a null are defined, and then the function will follow a procedure to find the model with the lowest AIC.
+The final model is shown at the end of the output, with the Call: indication, and lists the coefficients for that model.
 
+#Stepwise procedure
+ 
+model.null = lm(Longnose ~ 1,
+                data=Data)
+model.full = lm(Longnose ~ Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp,
+                data=Data)
+    
+step(model.null,
+     scope = list(upper=model.full),
+             direction="both",
+             data=Data)
+---------------
+
+#Define final model
+ 
+model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
+                 data=Data)
+summary(model.final)      # Show coefficients, R-squared, and overall p-value
+
+#Simple plot of predicted values with 1-to-1 line
+ 
+Data$predy = predict(model.final)
+plot(predy ~ Longnose,
+     data=Data,
+     pch = 16,
+     xlab="Actual response value",
+     ylab="Predicted response value")
+abline(0,1, col="blue", lwd=2)
+
+#-----------------------------------Simple Logistic Regression----------------------
+if(!require(car)){install.packages("car")}
+if(!require(lmtest){install.packages("lmtest")}
+if(!require(tidyr)){install.packages("tidyr")}
+if(!require(rcompanion)){install.packages("rcompanion")}
+if(!require(FSA){install.packages("FSA")}
+if(!require(popbio)){install.packages("popbio")}
+
+   
+plot(Factor.num  ~ Continuous,
+     data = Data,
+     xlab="Continuous",
+     ylab="Factor",
+     pch=19)             
+curve(predict(model,data.frame(Continuous=x),type="response"),
+      lty=1, lwd=2, col="blue",                           
+      add=TRUE)   
+
+   ------------  
+library(popbio)
+logi.hist.plot(Data$Continuous,
+               Data$Factor.log,
+               boxp=FALSE,
+               type="hist",
+               col="gray",
+               xlabel="Height")
 
 
 #-----------------TEST OF NOMINAL VARIABLE------------------------------#
@@ -763,7 +957,8 @@ p-value = 0.1893      # Equal to the "small p values" method in the Handbook
 Post-hoc test
 
 Post-hoc example with manual pairwise tests
-A multinomial test can be conducted with the xmulti function in the package XNomial.  This can be followed with the individual binomial tests for each proportion, as post-hoc tests.
+A multinomial test can be conducted with the xmulti function in the package XNomial. 
+This can be followed with the individual binomial tests for each proportion, as post-hoc tests.
 
  
 
@@ -1090,8 +1285,6 @@ total = sum(observed)
 observed.prop = observed / total
 
 observed.prop 
-
-[1] 0.44871795 0.50641026 0.01923077 0.02564103
 
 ### Re-enter data as a matrix
 Input =("
