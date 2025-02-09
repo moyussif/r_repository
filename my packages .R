@@ -61,7 +61,7 @@ all_data2 <- read_csv(file = 'children_data.csv')
 all_data3 <- read_delim(file = 'children_data.txt', delim = "\t")
 # or use
 all_data4 <- read_tsv(file = 'children_data.txt' )
-#--------------------------------------------------
+#---------------------------------------------------#
 # import .csv file
 child_data1 <- read.csv(file = 'children_data.csv') 
 # import .csv file with dec = "," and sep = ";"
