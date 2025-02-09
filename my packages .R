@@ -71,7 +71,211 @@ child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")
 # import tab delim file with sep = "\t"
 child_data3 <- read.delim(file = 'children_data.txt')
 #---------------------------------------------------------------------- #
-#---------------------R Companion---------------------------------------TEST OF NOMINAL VARIABLE------------------------------------#
+#=======================R Companion ====================================#
+
+#--------------------DECSRIPTIVES STATISTICS----------------------------#
+if(!require(psych)){install.packages("psych")}
+if(!require(DescTools)){install.packages("DescTools")}
+
+Arithmetic mean 
+mean(Data$ Fish, na.rm=TRUE)
+
+Geometric mean
+library(psych)
+geometric.mean(Data$ Fish)
+
+library(DescTools)
+Gmean(Data$ Fish) 
+
+Harmonic mean
+library(psych)
+harmonic.mean(Data$ Fish)
+
+library(DescTools)
+Hmean(Data$ Fish)
+
+Median
+median(Data$ Fish, na.rm=TRUE)
+
+Mode
+library(DescTools)
+Mode(Data$ Fish)
+
+
+summary(Data$ Fish)          # Also works on whole data frames
+                             # Will also report count of NA’
+
+library(psych)
+describe(Data$ Fish,          # Also works on whole data frames
+               type=2)        # Type of skew and kurtosis
+
+range(Data$ Fish, na.rm=TRUE)
+max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE)
+var(Data$ Fish, na.rm=TRUE)    #Sample variance
+sd(Data$ Fish, na.rm=TRUE)     #Standard deviation
+
+ sd(Data$ Fish, na.rm=TRUE)/
+   mean(Data$ Fish, na.rm=TRUE)*100       #Coefficient of variation, as percent
+===============
+Custom function of desired measures of central tendency and dispersion
+### Note NA’s removed in the following function
+
+summary.list = function(x)list(
+ N.with.NA.removed= length(x[!is.na(x)]),
+ Count.of.NA= length(x[is.na(x)]),
+ Mean=mean(x, na.rm=TRUE),
+ Median=median(x, na.rm=TRUE),
+ Max.Min=range(x, na.rm=TRUE),
+ Range=max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE),
+ Variance=var(x, na.rm=TRUE),
+ Std.Dev=sd(x, na.rm=TRUE),
+ Coeff.Variation.Prcnt=sd(x, na.rm=TRUE)/mean(x, na.rm=TRUE)*100,
+ Std.Error=sd(x, na.rm=TRUE)/sqrt(length(x[!is.na(x)])),
+ Quantile=quantile(x, na.rm=TRUE)
+)
+summary.list(Data$ Fish)
+-----
+sd(Data$ Fish, na.rm=TRUE) /  
+   sqrt(length(Data$Fish[!is.na(Data$ Fish)]))      # Standard error
+------
+t.test(Data$ Fish,
+       conf.level=0.95)         # Confidence interval of the mean
+------
+library(Rmisc)
+
+summarySE(data=D2,               # Will produce confidence intervals
+          measurevar="Count",    #  for groups defined by a variable
+          groupvars="Animal",    
+          conf.interval = 0.95)
+----
+Confidence interval for proportions
+The confidence interval for a proportion can be determined with the binom.test function, 
+and more options are available in the BinomCI function and MultinomCI function in the
+DescTools package.  More advanced techniques for confidence intervals on proportions
+and differences in proportions can be found in the PropCIs package.
+
+      binom.test(2, 20, 0.5,
+           alternative="two.sided",
+           conf.level=0.95)
+--------------
+Confidence interval for single proportion
+### --------------------------------------------------------------
+library(DescTools)
+BinomCI(2, 20,
+        conf.level = 0.95,
+        method = "modified wilson")
+---------
+Confidence interval for multinomial proportion
+### --------------------------------------------------------------
+observed = c(35,74,22,69)
+library(DescTools)
+MultinomCI(observed, conf.level=0.95, method="goodman")
+
+#     #     # 
+=======
+Histogram
+hist(Data$ Fish,   
+    col="gray", 
+    main="Maryland Biological Stream Survey",
+    xlab="Fish count")    
+#     #     #
+#----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------#
+
+#--------One sample t-test with observations as vector-------------------------------
+observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
+theoretical = 0
+t.test(observed,
+       mu = theoretical,
+       conf.int = 0.95)
+#-------------------One sample t-test with observations in data frame
+observed    = Data$ Angle
+theoretical = 50
+t.test(observed,
+       mu = theoretical,
+       conf.int=0.95)
+
+-------Histogram
+ hist(Data$ Angle,   
+    col="gray", 
+    main="Histogram of values",
+    xlab="Angle")
+
+#-------Power analysis
+Power analysis for one-sample t-test
+M1  = 70                        # Theoretical mean
+M2  = 71                        # Mean to detect
+S1  =  2.4                      # Standard deviation
+S2  =  2.4                      # Standard deviation
+
+Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+                                        
+library(pwr)                                  
+pwr.t.test(
+       n = NULL,                  # Observations
+       d = Cohen.d,           
+       sig.level = 0.05,          # Type I probability
+       power = 0.90,              # 1 minus Type II probability
+       type = "one.sample",       # Change for one- or two-sample
+       alternative = "two.sided")
+
+#---------------Student’s t–test for Two Samples-----------------------#
+Two-sample t-test, independent (unpaired) observations
+bartlett.test(Value ~ Group, data=Data)
+### If p-value >= 0.05, use var.equal=TRUE below
+
+t.test(Value ~ Group, data=Data,
+       var.equal=TRUE,
+       conf.level=0.95)
+---------------------
+t.test(Value ~ Group, data=Data,
+       var.equal=FALSE,
+       conf.level=0.95)
+----------------------
+Plot of histograms
+library(lattice)
+histogram(~ Value | Group,
+          data=Data,
+          layout=c(1,2)      #  columns and rows of individual plots
+          )
+---------------------
+boxplot(Value ~ Group,
+        data = Data,
+        names=c("2 pm","5 pm"),
+        ylab="Value")
+---------------------
+##Similar tests......................................................
+Welch’s t-test is discussed below.  
+The paired t-test and signed-rank test are discussed in this book in their own chapters. 
+Analysis of variance (anova) is discussed in several subsequent chapters.
+
+As non-parametric alternatives, 
+the Mann–Whitney U-test and the permutation test for two independent samples are discussed
+in the chapter Mann–Whitney and Two-sample Permutation Test.
+
+Welch’s t-test
+Welch’s t-test is shown above in the “Example” section (“Two sample unpaired t-test”). 
+It is invoked with the var.equal=FALSE option in the t.test function.
+#........................................................................
+#--------Power analysis
+Power analysis for t-tes---------------------------
+
+M1  = 100.6                      # Mean for sample 1
+M2  = 103.6                      # Mean for sample 2
+S1  =  5.26                      # Std dev for sample 1
+S2  =  5.26                      # Std dev for sample 2
+
+Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+                                        
+library(pwr)                                  
+pwr.t.test(
+       n = NULL,                   # Observations in _each_ group
+       d = Cohen.d,           
+       sig.level = 0.05,           # Type I probability
+       power = 0.90,               # 1 minus Type II probability
+       type = "two.sample",        # Change for one- or two-sample
+       alternative = "two.sided")
+
+#-----------------TEST OF NOMINAL VARIABLE------------------------------#
 #--------------Exact Test of Goodness-of-Fit----------------------------#
 
 #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
