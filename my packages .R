@@ -2612,3 +2612,5 @@ ftable(Data.xtabs)                      # Display a flattened table
 Cochran–Mantel–Haenszel test
 
 mantelhaen.test(Data.xtabs)
+
+#that is fine for now
