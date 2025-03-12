@@ -179,20 +179,22 @@ hist(Data$ Fish,
     main="Maryland Biological Stream Survey",
     xlab="Fish count")    
 #     #     #
-#----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------#
 
-#--------One sample t-test with observations as vector-------------------------------
+#----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------------#
+
+#-------------------------One sample t-test with observations as vector
 observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
 t.test(observed,
        mu = theoretical,
        conf.int = 0.95)
-#-------------------One sample t-test with observations in data frame
+#------------------------One sample t-test with observations in data frame
 observed    = Data$ Angle
 theoretical = 50
 t.test(observed,
        mu = theoretical,
        conf.int=0.95)
+
 
 -------Histogram
  hist(Data$ Angle,   
@@ -200,8 +202,9 @@ t.test(observed,
     main="Histogram of values",
     xlab="Angle")
 
-#-------Power analysis
-Power analysis for one-sample t-test
+ 
+#----Power analysis
+-------------------Power analysis for one-sample t-test-------------------------
 M1  = 70                        # Theoretical mean
 M2  = 71                        # Mean to detect
 S1  =  2.4                      # Standard deviation
@@ -218,20 +221,22 @@ pwr.t.test(
        type = "one.sample",       # Change for one- or two-sample
        alternative = "two.sided")
 
-#---------------Student’s t–test for Two Samples-----------------------#
+#-------------------Student’s t–test for Two Samples-------------------------#
 Two-sample t-test, independent (unpaired) observations
 bartlett.test(Value ~ Group, data=Data)
-### If p-value >= 0.05, use var.equal=TRUE below
+### If p-value >= 0.05, use var.equal=TRUE below.
 
-t.test(Value ~ Group, data=Data,
+----------------------------------------------------
+t.test(Value ~ Group, data=Data,  #for paired group
        var.equal=TRUE,
        conf.level=0.95)
----------------------
-t.test(Value ~ Group, data=Data,
+----------------------------------------------------
+t.test(Value ~ Group, data=Data, #for unpaired group
        var.equal=FALSE,
        conf.level=0.95)
-----------------------
-Plot of histograms
+----------------------------------------------------
+
+  Plot of histograms
 library(lattice)
 histogram(~ Value | Group,
           data=Data,
@@ -243,21 +248,9 @@ boxplot(Value ~ Group,
         names=c("2 pm","5 pm"),
         ylab="Value")
 ---------------------
-##Similar tests......................................................
-Welch’s t-test is discussed below.  
-The paired t-test and signed-rank test are discussed in this book in their own chapters. 
-Analysis of variance (anova) is discussed in several subsequent chapters.
 
-As non-parametric alternatives, 
-the Mann–Whitney U-test and the permutation test for two independent samples are discussed
-in the chapter Mann–Whitney and Two-sample Permutation Test.
-
-Welch’s t-test
-Welch’s t-test is shown above in the “Example” section (“Two sample unpaired t-test”). 
-It is invoked with the var.equal=FALSE option in the t.test function.
-#........................................................................
 #--------Power analysis
-Power analysis for t-tes---------------------------
+-------------------------Power analysis for t-tes-------------------------------
 
 M1  = 100.6                      # Mean for sample 1
 M2  = 103.6                      # Mean for sample 2
@@ -275,15 +268,18 @@ pwr.t.test(
        type = "two.sample",        # Change for one- or two-sample
        alternative = "two.sided")
 
-#-----------Mann–Whitney and Two-sample Permutation Test---------------
+#-----------------Mann–Whitney and Two-sample Permutation Test------------------
 Box plots
  boxplot(Value ~ Group,
         data = Data,
         names=c("2 pm","5 pm"),
         ylab="Value")
----------
+
+ -------------------------------------
 wilcox.test(Value ~ Group, data=Data)
-#-------------------- One-way Anova ----------------------------------
+
+ 
+#------------------------------ One-way Anova ----------------------------------
 The following commands will install these packages if they are not already installed:
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(FSA)){install.packages("FSA")}
@@ -296,20 +292,21 @@ if(!require(multcompView)){install.packages("multcompView")}
 if(!require(Rmisc)){install.packages("Rmisc")}
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(pwr)){install.packages("pwr")}
-----------
+--------------------------------------------------
 #Specify the order of factor levels for plots and Dunnett comparison
 library(dplyr)
 Data =
 mutate(Data,
        Location = factor(Location, levels=unique(Location)))
 
------------ 
+--------------------------- 
 #Produce summary statistics
 library(FSA)  
 Summarize(Aam ~ Location,
            data=Data,
            digits=3)
----------
+
+--------------------------
 
 #Fit the linear model and conduct ANOVA 
 model = lm(Aam ~ Location,
@@ -323,12 +320,14 @@ Anova(model, type="II")                    # Can use type="III"
 
 anova(model)                               # Produces type I sum of squares
 summary(model)     # Produces r-square, overall p-value, parameter estimates
-----------
+--------------
+  
 #Checking assumptions of the model
 
 hist(residuals(model),
      col="darkgray")
--------
+
+---------------------
 plot(fitted(model),
      residuals(model))
 
@@ -339,27 +338,28 @@ condor.depaul.edu/sjost/it223/documents/resid-plots.gif.
 ### additional model checking plots with: plot(model)
 ### alternative: library(FSA); residPlot(model)
 
-Tukey and Least Significant Difference mean separation tests (pairwise comparisons)
-Tukey and other multiple comparison tests can be performed with a handful of functions. 
-The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for cases where 
-there are unbalanced data or unequal variances among levels of the factor, 
+Tukey and LSD mean separation tests (pairwise comparisons)
+The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for 
+cases where there are unbalanced data or unequal variances among levels of the factor, 
 though TukeyHSD does make an adjustment for mildly unbalanced data.  
-It is my understanding that the multcomp and lsmeans packages are more appropriate for unbalanced data.
-Another alternative is the DTK package that performs mean separation tests on data with unequal sample sizes and 
-no assumption of equal variances.
+It is my understanding that the multcomp and lsmeans packages are more appropriate
+for unbalanced data.
+Another alternative is the DTK package that performs mean separation tests on data 
+with unequal sample sizes and no assumption of equal variances.
 
-------------
+-------------------------------------
 Tukey comparisons in agricolae package
 library(agricolae)
-(HSD.test(model, "Location"))          # outer parentheses print resul
+(HSD.test(model, "Location"))          # outer parentheses print result
 
------------
+------------------------------------
 LSD comparisons in agricolae package
 library(agricolae)
 (LSD.test(model, "Location",   # outer parentheses print result
            alpha = 0.05,      
            p.adj="none"))      # see ?p.adjust for options
-------------
+
+------------------------------------
 Multiple comparisons in multcomp package
 Note that “Tukey” here does not mean Tukey-adjusted comparisons. 
 It just sets up a matrix to compare each mean to each other mean.
@@ -416,23 +416,24 @@ cld(leastsquare,
 Welch’s anova
 Bartlett’s test and Levene’s test can be used to check the homoscedasticity of groups from a one-way anova.
 A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic.
-One approach with heteroscedastic data in a one way anova is to use the Welch correction with the oneway.test function in the native stats package. 
+One approach with heteroscedastic data in a one way anova is to use the Welch correction 
+with the oneway.test function in the native stats package. 
 A more versatile approach is to use the white.adjust=TRUE option in the Anova function from the car package.
 
 ### Bartlett test for homogeneity of variance
 bartlett.test(Aam ~ Location,
        data = Data)
---------------
+-------------------------------------------
 ### Levene test for homogeneity of variance
 library(car)
 leveneTest(Aam ~ Location,
            data = Data)
---------------
+------------------------------------------
 ### Welch’s anova for unequal variances
 oneway.test(Aam ~ Location,
             data=Data,
             var.equal=FALSE)
---------------
+------------------------------------------
 ### White-adjusted anova for heteroscedasticity
 model = lm(Aam ~ Location,
            data=Data)
@@ -440,9 +441,7 @@ library(car)
 Anova(model, Type="II",
       white.adjust=TRUE)
 
------------
-#Power analysis
-Power analysis for one-way anova
+---------------------Power analysis for one-way anova---------------------------
 
 library(pwr) 
 groups = 5
@@ -457,42 +456,35 @@ pwr.anova.test(k = groups,
                sig.level = 0.05,
                power = 0.80)
 
-#----------------Kruskal–Wallis Test-------------------------------------------------#
+#----------------Kruskal–Wallis Test-------------------------------------------#
 if(!require(FSA)){install.packages("FSA")}
 if(!require(DescTools)){install.packages("DescTools")}
 if(!require(rcompanion)){install.packages("rcompanion")}
 if(!require(multcompView)){install.packages("multcompView")}
 if(!require(PMCMRplus)){install.packages("PMCMRplus ")}
---------------------
-#Kruskal–Wallis test
-In this case, there is a significant difference in the distributions of values among groups, 
-as is evident both from the histograms and from the significant Kruskal–Wallis test.  
-Only in cases where the distributions in each group are similar in shape and 
-spread can a significant Kruskal–Wallis test be interpreted as a difference in medians.
 
+---------------------------------------------------------
+#Kruskal–Wallis test
 kruskal.test(Value ~ Group,
              data = Data)
 
-#Medians and descriptive statistics
+#1- Medians and descriptive statistics
 library(FSA)
 Summarize(Efficiency ~ Health,
           data = Data)
 
-------------
-#Kruskal–Wallis test
+#2- Kruskal–Wallis test
 kruskal.test(Efficiency ~ Health,
              data = Data)
 
+#3- Dunn test for multiple comparisons
+If the Kruskal–Wallis test is significant, a post-hoc analysis can be performed 
+to determine which levels of the independent variable differ from each other level.
 
-#Dunn test for multiple comparisons
-If the Kruskal–Wallis test is significant, 
-a post-hoc analysis can be performed to determine which levels of the independent variable differ from each other level. 
-Probably the most popular test for this is the Dunn test, which is performed with the dunnTest function in the FSA package.  
-  Adjustments to the p-values could be made using the method option to control the familywise error rate or to control the false discovery rate.  
-See ?p.adjust for details. Zar (2010) states that the Dunn test is appropriate for groups with unequal numbers of observations.
+The most popular test for this is the Dunn test, which is performed with the dunnTest function in the FSA package.  
+Adjustments to the p-values could be made using the method option to control the familywise error rate or 
+to control the false discovery rate.  
 
-If there are several values to compare, it can be beneficial to have R convert this table to a compact letter display for you. 
-The cldList function in the rcompanion package can do this.
 
 ### Order groups by median
 Data$Health = factor(Data$Health,
@@ -519,7 +511,7 @@ library(FSA)
 Summarize(Rank ~ Sex,
           data = Data)
 
-#------------------------ Two-way Anova -------------------------
+#---------------------------- Two-way Anova ------------------------------------
 if(!require(FSA)){install.packages("FSA")}
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(car)){install.packages("car")}
@@ -530,7 +522,7 @@ if(!require(nlme)){install.packages("nlme")}
 if(!require(lme4)){install.packages("lme4")}
 if(!require(lmerTest)){install.packages("lmerTest")} if(!require(rcompanion)){install.packages("rcompanion")}
 
-----------------------
+--------------------------------------
 #Means and summary statistics by group
  
 library(Rmisc)
@@ -539,8 +531,7 @@ sum = summarySE(Data,
                 groupvars=c("Sex","Genotype"))
 sum
 
----------------
-Interaction plot using summary statistics
+--------------Interaction plot using summary statistics------------------------
  
 library(ggplot2)
 pd = position_dodge(.2)
@@ -558,8 +549,7 @@ ggplot(sum, aes(x=Genotype,
           axis.title = element_text(face = "bold")) +
     scale_color_manual(values = c("black", "blue"))
 
------------
-#Simple box plot of main effect and interaction
+#-------------------Simple box plot of main effect and interaction--------------
 
 boxplot(Activity ~ Genotype,
         data = Data,
@@ -572,10 +562,11 @@ Fit the linear model and conduct ANOVA
  model = lm(Activity ~ Sex + Genotype + Sex:Genotype,
            data=Data)
 library(car)
-Anova(model, type="II")                    # Can use type="III"
+Anova(model, type="II")                    
 
 ### If you use type="III", you need the following line before the analysis
 ### options(contrasts = c("contr.sum", "contr.poly"))
+
 anova(model)                               # Produces type I sum of squares
 summary(model)     # Produces r-square, overall p-value, parameter estimates
 ------------------
@@ -596,7 +587,8 @@ Anova(model, type="II")                    # Can use type="III"
 anova(model)                               # Produces type I sum of squares
 summary(model)     # Produces r-square, overall p-value, parameter estimates
 
----------
+
+-----------------------
 Checking assumptions of the model
  
 hist(residuals(model),
@@ -605,7 +597,7 @@ hist(residuals(model),
 plot(fitted(model),
      residuals(model))
 
-#----------------------Paired t–test----------------------------
+#---------------------------- Paired t–test -----------------------------
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(coin)){install.packages("coin")}
 if(!require(pwr)){install.packages("pwr")}
@@ -634,7 +626,7 @@ plot(Data$Typical, Data$Odd,
 abline(0,1, col="blue", lwd=2)
 -----------
 
-#-----------------------------Wilcoxon Signed-rank Test---------------
+#-----------------------------Wilcoxon Signed-rank Test-------------------------
 wilcox.test(Data$August,
             Data$November,
             paired=TRUE)
@@ -646,24 +638,23 @@ plot(Data$August, Data$November,
      ylab="November")
 abline(0,1, col="blue", lwd=2)
 
-#-------------------------  Correlation and Linear Regression  --------------------------#
+#-------------------------Correlation and Linear Regression---------------------
 Correlation
 Correlation can be performed with the cor.test function in the native stats package.  
 It can perform Pearson, Kendall, and Spearman correlation procedures.  
-Methods for multiple correlation of several variables simultaneously are discussed in the Multiple regression chapter.
  
-Pearson correlation
-Pearson correlation is the most common form of correlation. 
-It is a parametric test, and assumes that the data are linearly related and that the residuals are normally distributed.
+#Pearson correlation (Parametric)
+Pearson correlation is a parametric test, and assumes that the data are linearly related 
+and that the residuals are normally distributed.
 
 cor.test( ~ Species + Latitude,
          data=Data,
          method = "pearson",
          conf.level = 0.95)
 
-Kendall correlation
-Kendall rank correlation is a non-parametric test that does not assume a distribution of the data 
-or that the data are linearly related.  It ranks the data to determine the degree of correlation.
+#Kendall correlation (Non-parametric)
+Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
+It ranks the data to determine the degree of correlation.
 
 cor.test( ~ Species + Latitude,
          data=Data,
@@ -671,9 +662,8 @@ cor.test( ~ Species + Latitude,
          continuity = FALSE,
          conf.level = 0.95)
 
-Spearman correlation
-Spearman rank correlation is a non-parametric test that does not assume a distribution of the data or 
-that the data are linearly related.  
+#Spearman correlation (Non-parametric / ordinals)
+Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
 It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
 
 cor.test( ~ Species + Latitude,
@@ -681,8 +671,8 @@ cor.test( ~ Species + Latitude,
          method = "spearman",
          continuity = FALSE,
          conf.level = 0.95)
-
-Linear regression
+--------------------------------------------------------------------------------
+#Linear regression
 Linear regression can be performed with the lm function in the native stats package.
 A robust regression can be performed with the lmrob function in the robustbase package.
 
@@ -706,8 +696,8 @@ plot(Species ~ Latitude,
      ylab = "Species")
 abline(int, slope,
        lty=1, lwd=2, col="blue")     #  style and color of line 
---------------
-#Checking assumptions of the model
+
+#---------------------Checking assumptions of the model------------------------
 
 hist(residuals(model),
      col="darkgray")
@@ -716,30 +706,32 @@ plot(fitted(model),
 ----------
 A plot of residuals vs. predicted values.
 The residuals should be unbiased and homoscedastic.
-For an illustration of these properties, see this diagram by Steve Jost at DePaul University:
-condor.depaul.edu/sjost/it223/documents/resid-plots.gif.
 
 ### additional model checking plots with: plot(model)
 ### alternative: library(FSA); residPlot(model)
 
 #----------Power analysis
-Power analysis for correlation
+---------------------------Power analysis for correlation-----------------------
 pwr.r.test(n = NULL,
            r = 0.500,
            sig.level = 0.05,
            power = 0.80,
            alternative = "two.sided")
 
-#-------------------- Curvilinear Regression -----------------------
+#------------------------ Curvilinear Regression -------------------------------
 How to do the test
 This chapter will fit models to curvilinear data using three methods: 
-1) Polynomial regression;  2) B-spline regression with polynomial splines;  and 
+1) Polynomial regression;  
+2) B-spline regression with polynomial splines;  
 3) Nonlinear regression with the nls function.  
-In this example, each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
 
-Polynomial regression
-Polynomial regression is really just a special case of multiple regression, which is covered in the Multiple regression chapter.  
-In this example we will fit a few models, as the Handbook does, and then compare the models with the extra sum of squares test, 
+Each of these three will find essentially the same best-fit curve with very similar 
+p-values and R-squared values. 
+
+#Polynomial regression
+Polynomial regression is really just a special case of multiple regression, 
+which is covered in the Multiple regression chapter.  
+In this example we will fit a few models and then compare the models with the extra sum of squares test, 
 the Akaike information criterion (AIC), and the adjusted R-squared as model fit criteria. 
 
 For a linear model (lm), the adjusted R-squared is included with the output of the summary(model) statement.  
@@ -747,12 +739,13 @@ The AIC is produced with its own function call, AIC(model).
 The extra sum of squares test is conducted with the anova function applied to two models. 
 
 For AIC, smaller is better.  For adjusted R-squared, larger is better. 
-A non-significant p-value for the extra sum of squares test comparing model a to model b indicates that 
+A non-significant p-value for the extra sum of squares test comparing model a to model b indicates that
 the model with the extra terms does not significantly reduce the error sum of squares over the reduced model.  
+
 Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
 Simple plot of model
  
-----------------------
+--------------------------------------------------------------------------------
 plot(Clutch ~ Length,
      data = Data,
      pch=16,
@@ -764,7 +757,8 @@ lines(i, predy,                                            #  spline curve
       lty=1, lwd=2, col="blue")                            #  style and color
 
 
-#---------------------Multiple Regression---------------------------- 
+
+#-----------------------------Multiple Regression------------------------------ 
 library(psych)
 corr.test(Data.num,
           use = "pairwise",
@@ -781,23 +775,28 @@ chart.Correlation(Data.num,
                    method="pearson",
                    histogram=TRUE,
                    pch=16)
--------------
+-------------------------------------------------------------------------------
 Multiple regression
  
 
 Model selection using the step function
-The step function has options to add terms to a model (direction="forward"), remove terms from a model (direction="backward"), or to use a process that both adds and removes terms (direction="both").  It uses AIC (Akaike information criterion) as a selection criterion.  You can use the option k = log(n) to use BIC instead. 
+The step function has options to add terms to a model (direction="forward"), 
+remove terms from a model (direction="backward"), or 
+to use a process that both adds and removes terms (direction="both").  
+It uses AIC (Akaike information criterion) as a selection criterion.  
+You can use the option k = log(n) to use BIC instead. 
+
+
+You can add the test="F" option to see the p-value for adding or removing terms,
+but the test will still follow the AIC statistic.  
+If,however, note that a significant p-value essentially argues for the term being included in the model,
+whether it’s its addition or its removal that’s being considered.
 
  
-
-You can add the test="F" option to see the p-value for adding or removing terms, but the test will still follow the AIC statistic.  If you use this, however, note that a significant p-value essentially argues for the term being included in the model, whether it’s its addition or its removal that’s being considered.
-
- 
-
 A full model and a null are defined, and then the function will follow a procedure to find the model with the lowest AIC.
 The final model is shown at the end of the output, with the Call: indication, and lists the coefficients for that model.
 
-#Stepwise procedure
+#-------------------------------Stepwise procedure------------------------------
  
 model.null = lm(Longnose ~ 1,
                 data=Data)
@@ -808,8 +807,8 @@ step(model.null,
      scope = list(upper=model.full),
              direction="both",
              data=Data)
----------------
 
+---------------------------------------------------
 #Define final model
  
 model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
@@ -826,7 +825,7 @@ plot(predy ~ Longnose,
      ylab="Predicted response value")
 abline(0,1, col="blue", lwd=2)
 
-#-----------------------------------Simple Logistic Regression----------------------
+#-----------------------------Simple Logistic Regression ----------------------
 if(!require(car)){install.packages("car")}
 if(!require(lmtest){install.packages("lmtest")}
 if(!require(tidyr)){install.packages("tidyr")}
@@ -844,7 +843,7 @@ curve(predict(model,data.frame(Continuous=x),type="response"),
       lty=1, lwd=2, col="blue",                           
       add=TRUE)   
 
-   ------------  
+----------------------------------------------------------  
 library(popbio)
 logi.hist.plot(Data$Continuous,
                Data$Factor.log,
@@ -858,7 +857,8 @@ logi.hist.plot(Data$Continuous,
 #--------------Exact Test of Goodness-of-Fit----------------------------#
 
 #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
-The arguments passed to the function are: the number of successes, the number of trials, and the hypothesized probability of success.#
+The arguments passed to the function are: the number of successes, 
+the number of trials, and the hypothesized probability of success.#
 The probability can be entered as a decimal or a fraction.  
 #Other options include the confidence level for the confidence interval about the proportion,
 # and whether the function performs a one-sided or two-sided (two-tailed) test.  
@@ -1204,13 +1204,7 @@ expected = c(0.75, 0.25)      # expected proportions
 
 chisq.test(x = observed,
            p = expected)
-
-X-squared = 2.1333, df = 1, p-value = 0.1441
 #     #     #
-
-Post-hoc test
-Assumptions
-See the Handbook for information on these topics.
 
  
 Examples: extrinsic hypothesis
@@ -1223,9 +1217,6 @@ expected = c(0.5, 0.5)      # expected proportions
 
 chisq.test(x = observed,
            p = expected)
-
-
-X-squared = 5.6071, df = 1, p-value = 0.01789
 #     #     #
 
  
@@ -1237,8 +1228,6 @@ expected = c(0.25, 0.50, 0.25)
 
 chisq.test(x = observed,
            p = expected)
-
-X-squared = 4.1199, df = 2, p-value = 0.1275
 #     #     #
 
 ### --------------------------------------------------------------
@@ -1249,8 +1238,6 @@ expected = c(0.54, 0.40, 0.05, 0.01)
 
 chisq.test(x = observed,
            p = expected)
-
-X-squared = 13.5934, df = 3, p-value = 0.0035
 #     #     #
 
  Example: intrinsic hypothesis  
@@ -1262,54 +1249,8 @@ expected.prop  = c(0.211, 0.497, 0.293)
 expected.count = sum(observed)*expected.prop
 chi2 = sum((observed- expected.count)^2/ expected.count)
 chi2
-
-
-[1] 1.082646
-
-pchisq(chi2,
-       df=1,
-       lower.tail=FALSE)    
-
-[1] 0.2981064
 #     #     #
 
-Simple bar plot with barplot
- ### --------------------------------------------------------------
-### Simple bar plot of proportions, p. 49
-###      Uses data in a matrix format
-### --------------------------------------------------------------
-observed = c(70, 79, 3, 4)
-expected = c(0.54, 0.40, 0.05, 0.01)
-
-total = sum(observed)
-observed.prop = observed / total
-
-observed.prop 
-
-### Re-enter data as a matrix
-Input =("
-Value     Douglas.fir  Ponderosa.pine  Grand.fir   Western.larch
-Observed  0.4487179    0.5064103       0.01923077  0.02564103
-Expected  0.5400000    0.4000000       0.05000000  0.01000000  
-")
-
-Matriz = as.matrix(read.table(textConnection(Input),
-                   header=TRUE,
-                   row.names=1))
-Matriz 
-
-         Douglas fir Ponderosa pine  Grand fir Western larch
-
-Observed   0.4487179      0.5064103 0.01923077    0.02564103
-Expected   0.5400000      0.4000000 0.05000000    0.01000000
-
-barplot(Matriz,
-        beside=TRUE,
-        legend=TRUE,
-        ylim=c(0, 0.6),
-        xlab="Tree species",
-        ylab="Foraging proportion")
-#     #     #
 
 Simple bar plot with barplot
 ### --------------------------------------------------------------
@@ -1323,46 +1264,11 @@ total = sum(observed)
 observed.prop = observed / total
 observed.prop
 
-[1] 0.44871795 0.50641026 0.01923077 0.02564103
 
- 
+#------------------------ Power Analysis
 
- 
-
-### Re-enter data as a matrix
-
-Input =("
-Value     Douglas.fir  Ponderosa.pine  Grand.fir   Western.larch
-Observed  0.4487179    0.5064103       0.01923077  0.02564103
-Expected  0.5400000    0.4000000       0.05000000  0.01000000  
-")
-
-Matriz = as.matrix(read.table(textConnection(Input),
-                   header=TRUE,
-                   row.names=1))
-
-Matriz 
-
-         Douglas fir Ponderosa pine  Grand fir Western larch
-
-Observed   0.4487179      0.5064103 0.01923077    0.02564103
-Expected   0.5400000      0.4000000 0.05000000    0.01000000
-
- barplot(Matriz,
-        beside=TRUE,
-        legend=TRUE,
-        ylim=c(0, 0.6),
-        xlab="Tree species",
-        ylab="Foraging proportion")
-#     #     #
-
-
-#------------------------Power Analysis-------------------------#
-if(!require(pwr)){install.packages("pwr")}
-Power analysis for binomial test
-##--------------------------------------------------------------#
-## Power analysis, binomial test, pea color, p. 43
-##--------------------------------------------------------------#
+----------------------Power analysis for binomial test-------------------------
+  if(!require(pwr)){install.packages("pwr")}
 P0 = 0.75
 P1 = 0.78
 H  = ES.h(P0,P1)               # This calculates effect size
@@ -1375,16 +1281,11 @@ pwr.p.test(
        sig.level=0.05,          #     calculate this
        power=0.90,              # 1 minus Type II probability
        alternative="two.sided")
-
-
-n = 2096.953   # Somewhat different than in Handbook
 #     #     #
 
-#--------------Power analysis for unpaired t-test---------------#
-
-##--------------------------------------------------------------#
-### Power analysis, t-test, student height, pp. 43–44
-### ------------------------------------------------------------#
+---------------------Power analysis for unpaired t-test ----------------------
+#--------------------Power analysis, t-test, student height, pp. 43–44--------
+#-----------------------------------------------------------------------------
 M1  = 66.6                      # Mean for sample 1
 M2  = 64.6                      # Mean for sample 2
 S1  =  4.8                      # Std dev for sample 1
@@ -1402,21 +1303,13 @@ pwr.t.test(
        alternative = "two.sided"
        )
 
- 
+
 Two-sample t test power calculation
 n = 71.61288
 NOTE: n is number in *each* group 71.61288
 #     #     #
-
-
-#Similar tests   - Chi-square vs. G–test
-
-See the Handbook for information on these topics.  
-The exact test of goodness-of-fit, the G-test of goodness-of-fit, 
-and the exact test of goodness-of-fit tests are described elsewhere in this book.
-
  
-#How to do the test-----------------------------------------------
+#How to do the test-----------------------------------------------------------
 Chi-square goodness-of-fit example
 
 ### --------------------------------------------------------------
@@ -1427,13 +1320,11 @@ expected = c(0.75, 0.25)
  
 chisq.test(x = observed,
            p = expected)
-
-X-squared = 0.3453, df = 1, p-value = 0.5568
 #     #     #
 
-Power analysis
-Power analysis for chi-square goodness-of-fit
-### --------------------------------------------------------------
+
+#Power analysis
+-----------------Power analysis for chi-square goodness-of-fit----------------
 ### Power analysis, Chi-square goodness-of-fit, snapdragons, p. 51
 ### --------------------------------------------------------------
 library(pwr)
@@ -1586,10 +1477,12 @@ pchisq(G,
 #     #     #
 
 #-------------------------Chi-square Test of Independence-----------------------
-he Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
+The Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
 For this test, the function requires the contingency table to be in the form of matrix.
-Depending on the form of the data to begin with, this can require an extra step, either combing vectors into a matrix,
-or cross-tabulating the counts among factors in a data frame.  None of this is too difficult, 
+Depending on the form of the data to begin with, 
+this can require an extra step, either combing vectors into a matrix,
+or cross-tabulating the counts among factors in a data frame.  
+None of this is too difficult, 
 but it requires following the correct example depending on the initial form of the data. 
  
 When using read.table and as.matrix to read a table directly as a matrix, 
@@ -1654,9 +1547,9 @@ chisq.test(Matriz,
                                #      table
 =====================================================================
 Post-hoc tests
-For the following example of post-hoc pairwise testing, 
-we’ll use the pairwiseNominalIndependence function from the package rcompanion to make the task easier.
-Then we’ll use pairwise.table in the native stats package as an alternative.
+For the following example of post-hoc pairwise testing, we’ll use the pairwiseNominalIndependence
+function from the package rcompanion to make the task easier.Then we’ll use pairwise.table 
+in the native stats package as an alternative.
 
 Post-hoc pairwise chi-square tests with rcompanion
 ### --------------------------------------------------------------
@@ -2005,7 +1898,9 @@ G.test(Matriz)
 #     #     #
 
 Post-hoc tests
-For the following example of post-hoc pairwise testing, we’ll use the pairwise.G.test function from the package RVAideMemoire to make the task easier.  Then we’ll use pairwise.table in the native stats package as an alternative.
+For the following example of post-hoc pairwise testing, 
+we’ll use the pairwise.G.test function from the package RVAideMemoire to make the task easier.  
+Then we’ll use pairwise.table in the native stats package as an alternative.
 
  
 
@@ -2276,7 +2171,11 @@ Graphing is discussed above in the “Chi-square Test of Independence” section
  
 
 Similar tests – McNemar’s test
-Care is needed in setting up the data for McNemar’s test.  For a before-and-after test, the contingency table is set-up as before and after as row and column headings, or vice-versa.  Note that the total observations in the contingency table is equal to the number of experimental units.  That is, in the following example there are 62 men, and the sum of the counts in the contingency table is 62.  If you set up the table incorrectly, you might end with double this number, and this will not yield the correct results.
+Care is needed in setting up the data for McNemar’s test.  
+For a before-and-after test, the contingency table is set-up as before and after as row and column headings, 
+or vice-versa.  Note that the total observations in the contingency table is equal to the number of experimental units.  
+That is, in the following example there are 62 men, and the sum of the counts in the contingency table is 62.  
+If you set up the table incorrectly, you might end with double this number, and this will not yield the correct results.
 
  
 
@@ -2489,7 +2388,8 @@ pchisq(Total.G,
        lower.tail=FALSE)
 #     #     #  
 
-#=========== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence ===========
+#===== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence =========
+
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(DescTools)){install.packages("DescTools")}
 if(!require(ggplot2)){install.packages("ggplot2")}
