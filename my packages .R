@@ -51,32 +51,15 @@ library(testthat)
 library(scales)
 library(mvtnorm)
 library(deSolve)
-#--------------------Importing data -------------------
-library(readr)
-# import white space delimited files
-all_data1 <- read_table(file = 'children_data.txt', col_names = TRUE)
-# import comma delimited files
-all_data2 <- read_csv(file = 'children_data.csv')
-# import tab delimited files
-all_data3 <- read_delim(file = 'children_data.txt', delim = "\t")
-# or use
-all_data4 <- read_tsv(file = 'children_data.txt' )
-#---------------------------------------------------#
-# import .csv file
-child_data1 <- read.csv(file = 'children_data.csv') 
-# import .csv file with dec = "," and sep = ";"
-child_data2 <- read.csv2(file = 'children_data.csv')
-#correct by introducing sep = ","
-child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")
-# import tab delim file with sep = "\t"
-child_data3 <- read.delim(file = 'children_data.txt')
-#---------------------------------------------------------------------- #
+
 #=======================R Companion ====================================#
 
 #--------------------DECSRIPTIVES STATISTICS----------------------------#
 if(!require(psych)){install.packages("psych")}
 if(!require(DescTools)){install.packages("DescTools")}
-
+install.packages("psych")
+install.packages('psych')
+install.packages("DescTools")
 Arithmetic mean 
 mean(Data$ Fish, na.rm=TRUE)
 
@@ -104,7 +87,6 @@ Mode(Data$ Fish)
 
 summary(Data$ Fish)          # Also works on whole data frames
                              # Will also report count of NA’
-
 library(psych)
 describe(Data$ Fish,          # Also works on whole data frames
                type=2)        # Type of skew and kurtosis

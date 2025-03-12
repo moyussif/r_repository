@@ -1,0 +1,3618 @@
+rm(list=ls())
+gc(reset = TRUE)
+#--------------------------- All required packages _____________________________
+library(readxl)
+library(readr)
+library(rio)
+library(lubridate)
+library(janitor)
+library(here)
+library(tidyverse)
+library(dplyr)
+library(dbplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(RColorBrewer)
+library(ggsci)
+library(ggpubr)
+library(ggthemes)
+library(ggrepel)
+library(gganimate)
+library(skimr)
+library(rstatix)
+library(lessR)
+library(car)
+library(effsize)
+library(pwr)
+library(caret)
+library(olsrr)
+library(Hmisc)
+library(plotrix)
+library(survival)
+library(epitools)
+library(epiDisplay)
+library(devtools)
+library(rvest)
+library(dslabs)
+library(weights)
+library(zoo)
+library(gtools)
+library(VennDiagram)
+library(rafalib)
+library(MASS)
+library(broom)
+library(matrixStats)
+library(gridExtra)
+library(randomForest)
+library(tree)
+library(splitstackshape)
+library(egg)
+library(rpart)
+library(rpart.plot)
+library(testthat)
+library(scales)
+library(mvtnorm)
+library(deSolve)
+library(pdftools)
+library(htmlwidgets)
+library(psych)
+library(DescTools)
+#------
+getwd()
+#------------------------ Import functions -------------------------------------
+child_data1 <- read.csv(file = 'children_data.csv')                   # import .csv file
+child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")      #introducing sep = ","
+child_data3 <- read.delim(file = 'children_data.txt')                 # delim file with sep = "\t"
+child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE) #for categorical
+library(readr)
+all_data2 <- read_csv(file = 'children_data.csv')                     #comma delimited files
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
+library(rio)
+import("C:/Users/User/Desktop/repos/NNJ.csv")
+#------------------------- Explore data ----------------------------------------
+View(imdata)
+View(HTdata)
+library(skimr)
+skim_without_charts(imdata) 
+
+#:::::::::::::::::::::::::::: Data manipulations:::::::::::::::::::::::::::::::#
+library(tidyverse)
+library(dplyr)
+data2 <- imdata %>%
+  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi ) %>% 
+  filter(hb > 10)        
+print(data2)
+# Finding rows with NA value
+with_na <- data2 %>% filter(is.na(hb)) 
+print(with_na)
+# Finding rows with no NA value
+without_na <- data2 %>% filter(!is.na(hb)) 
+print(without_na)
+# arrange data by age 
+data_frm <- data2 %>% filter(!is.na(hb)) %>% 
+  arrange(desc(age)) 
+print(data_frm)           
+# Calculating a variable- / create New variables
+mutate(data_frm, RBC = hb/3)
+mutate(data_frm, HCT = hb*3)
+# print-(only new column)
+transmute(data_frm,hb,HCT = hb*3, RBC = hb/3) 
+##rename 
+rename(data_frm,Delivr_age = delivage, Bmi = bmi)
+#summaries
+summarise(data_frm,mean_hb = mean(hb))  
+summarise(data_frm,median_hb = median(hb))
+
+#:::::::::::::::::::::::::::: reshape with tidyr :::::::::::::::::::::::::::::#
+library(tidyr) 
+HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
+print(HTdata)
+
+# use gather()function to make data longer
+long <- HTdata %>%  
+  gather(fullName, Frequency, 
+         first_trimester, second_trimester, third_trimester)
+print(long)
+
+# use separate()function 
+separate_data <- long %>%  
+  separate(fullName, c("firstName","secondName"))
+separate_data
+
+# use unite() function 
+unite_data <- separate_data %>%  
+  unite(fullName, firstName, secondName, sep = " ") 
+unite_data
+# use pivot()function------------------------------------------
+ldata <- pivot_longer(
+  data = HTdata,
+  cols = c(first_trimester, second_trimester, third_trimester),
+  names_to = "trimester1",
+  values_to = "value"
+)
+View(ldata)
+#----------------------
+wdata <- pivot_wider(
+  data = ldata,
+  names_from = "trimester1",
+  values_from = "value",
+)
+View(wdata)
+
+#:::::::::::::::::::::: Visualization with ggplot2 ::::::::::::::::::::::::::#
+library(ggplot2)
+library(RColorBrewer)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+View(imdata)
+#plotting points 
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
+  geom_point()+theme_classic()
+immu
+#creating density plot 
+immu1 <- ggplot(data = imdata,
+                mapping = aes(x = diastol1, colour = CaseControl))+
+  geom_density()
+immu1
+#point and smoothing
+immu2 <- ggplot(data = imdata,
+                mapping = aes(x = bmi, y = plt, colour = nicu))+
+  geom_smooth()+
+  geom_point()
+immu2
+
+#plot jitter
+immu3 <- ggplot(data = imdata,
+                mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
+  geom_jitter()
+immu3
+
+#::::::::::::::::::::::::::::::: Barchart :::::::::::::::::::::::::::::::::::#
+ht <-ggplot(data = imdata,
+            mapping = aes(x = expose))+
+  geom_bar()
+ht
+#column Barchrt
+ht1 <-ggplot(data = imdata,
+             mapping = aes(x = expose, colour = expose, fill = expose))+
+  geom_bar()
+ht1
+#stacked Barchart
+ht2 <-ggplot(data = imdata,
+             mapping = aes(x = CaseControl, fill = expose))+
+  geom_bar()
+ht2
+
+#::::::::::::::::::::::::::::::: Histogram ::::::::::::::::::::::::::::::::::#
+ht3 <-ggplot(data = imdata,
+             mapping = aes(x = systol1))+
+  geom_histogram()
+ht3
+
+#Histogram with fill
+ht4 <-ggplot(data = imdata,
+             mapping = aes(x = systol1, fill = expose))+
+  geom_histogram()
+ht4
+
+#Histogram with stacked
+ht <-ggplot(data = imdata,
+            mapping = aes(x = systol1, fill = expose))+
+  geom_histogram(bins = 10, position = "stack")
+ht
+
+#Histogram with dodge
+ht <-ggplot(data = imdata,
+            mapping = aes(x = systol1, fill = expose))+
+  geom_histogram(bins = 10, position = "dodge")
+ht
+#-----------------Viridis------------------------------
+hh <-ggplot(data = imdata,
+            mapping = aes(x = systol1, fill = expose))+
+  geom_histogram(bins = 10, position = "dodge")
+hh + scale_fill_viridis_d()
+hh + scale_fill_viridis_d(direction = -1)
+hh
+#::::::::::::::::::::::::::::::: Boxplot:::::::::::::::::::::::::::::::::::::#
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1))+
+  geom_boxplot()
+immu
+# Boxplot by category ##
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  geom_boxplot()
+immu
+
+#Boxplot with coord_flip
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  geom_boxplot()+ coord_flip()
+immu
+
+#plotting by factor
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1))+
+  geom_boxplot(aes(fill = factor(nicu)))
+immu
+
+# Violin chart 
+immu <- ggplot(data = imdata,
+               mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  geom_violin()
+immu 
+dd <- immu +scale_x_log10()+
+  dd
+
+# Facet wrap 
+immwrp <- ggplot(data = imdata,
+                 mapping = aes(x = systol1, y = diastol1, colour = grvdty))+
+  geom_violin()+
+  facet_wrap(~expose)
+immwrp
+
+# Facet grid
+immgrd <- ggplot(data = imdata,
+                 mapping = aes(x = systol1, y = diastol1, colour = grvdty))+
+  geom_violin()+
+  facet_grid(CaseControl~expose)
+immgrd
+
+#:::::::::::::::::::::::::::::: Label & Annotation :::::::::::::::::::::::::#
+immuLAB <- ggplot(data = imdata)+
+  geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)
+immuLAB
+#  Alternative
+immuLAB <- ggplot(data = imdata)+
+  geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)+
+  theme_classic()
+immuLAB
+#------------------------Viridis---------------------
+immuLAB <- ggplot(data = imdata)+
+  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)+
+  theme_classic()+scale_colour_viridis_d()
+immuLAB
+#--------------viridis(City\nCenter)----------------
+immuLAB <- ggplot(data = imdata)+
+  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)+
+  theme_classic()+scale_colour_viridis_d(option = "City\nCenter")
+immuLAB
+# Save plot 
+ggsave("immuLAB.png")
+
+
+#::::::::::::::::::::: Pie-charts & Bar-chart :::::::::::::::::::::::::::#
+library(lessR)
+imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+
+# Piechart
+PieChart(expose, data = imm2,
+         hole = 0,
+         main = NULL)
+# Donut chart
+imm3 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+PieChart(expose, data = imm3,
+         fill = "viridis",
+         main = NULL,
+         color = "black",
+         lwd = 1.5,
+         values_color = c(rep("white", 4), 1),
+         values_size = 0.85)
+# Donut chart
+data1 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+PieChart(expose, data = data1,
+         fill = "blues",
+         hole_fill = "#B7E3E0",
+         main = NULL)
+
+# Barchart
+imm4 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+BarChart(expose, data = imm4,
+         fill = "blues",
+         hole_fill = "#B7E3E0",
+         main = NULL)
+
+data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+BarChart(expose, data = data,
+         fill = "reds",
+         hole_fill = "#B7E3E0",
+         main = NULL)
+
+data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+BarChart(expose, data = data,
+         fill = "viridis",
+         main = NULL,
+         color = "black",
+         lwd = 1.5,
+         values_color = c(rep("white", 4), 1),
+         values_size = 0.85)
+
+# slant x labels (45 angle)
+BarChart(expose, data = data,
+         fill = "viridis",
+         main = NULL,
+         color = "black",
+         lwd = 1.5,
+         rotate_x=45,
+         values_color = c(rep("white", 4), 1),
+         values_size = 0.85)
+
+#::::::::::: sample size ::
+library(pwr)
+sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
+sample1
+
+#::::::::::: categorical descriptive :::::::::::::# 
+#aggregate data
+library(janitor)
+library(readxl)
+imdata3 <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata3)
+imdata3 %>%
+  tabyl(hb, sex) %>%
+  adorn_totals(where = "row") %>%
+  adorn_percentages(denominator = "col") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns(position = "front") %>%
+  adorn_title(
+    row_name = "Hgb",
+    col_name = "Gender",
+    placement = "combined") %>% 
+  flextable::flextable() %>% 
+  flextable::autofit()
+
+
+
+#:::::::::::::::::::::::::::::: Statistics ::::::::::::::::::::::::::#
+library(rstatix)
+
+library(car)
+#:::correlation matrix::::
+library(Hmisc)
+library(plotrix)
+
+#:::::::::::::::::::: regress and model building::::::::::::::::::::#
+library(car)
+summary(microbes)
+model <- lm(Occupation ~ No.of.births, data = microbes)
+summary(model)
+plot(microbes$No.of.births, microbes$Onset.of.labour)
+abline(model)
+# Plot residuals against the fitted values
+residualPlots(model)
+# Perform anova on the model
+anova(model)
+
+library(olsrr)
+
+
+#--------------------- Time Series Analysis ----------------------------------#
+
+#Typical Questions__when is consumption highest / lowest
+#__variation with season
+#__trends
+#__change overtime.
+library(readxl)
+TTdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+View(TTdata)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+
+# arrange data by age
+######################### Mapping with r ######################################
+
+install.packages("sf")
+library(tidyverse)
+library(mapview)
+library(sf)
+  
+#---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------------------------------------------------------------------------
+#============================R Companion ====================================#
+
+
+summary(Data$ Fish)          # Also works on whole data frames
+# Will also report count of NA’
+library(psych)
+describe(Data$ Fish,          # Also works on whole data frames
+         type=2)        # Type of skew and kurtosis
+
+range(Data$ Fish, na.rm=TRUE)
+max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE)
+var(Data$ Fish, na.rm=TRUE)    #Sample variance
+sd(Data$ Fish, na.rm=TRUE)     #Standard deviation
+
+sd(Data$ Fish, na.rm=TRUE)/
+  mean(Data$ Fish, na.rm=TRUE)*100       #Coefficient of variation, as percent
+===============
+  Custom function of desired measures of central tendency and dispersion
+### Note NA’s removed in the following function
+
+summary.list = function(x)list(
+  N.with.NA.removed= length(x[!is.na(x)]),
+  Count.of.NA= length(x[is.na(x)]),
+  Mean=mean(x, na.rm=TRUE),
+  Median=median(x, na.rm=TRUE),
+  Max.Min=range(x, na.rm=TRUE),
+  Range=max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE),
+  Variance=var(x, na.rm=TRUE),
+  Std.Dev=sd(x, na.rm=TRUE),
+  Coeff.Variation.Prcnt=sd(x, na.rm=TRUE)/mean(x, na.rm=TRUE)*100,
+  Std.Error=sd(x, na.rm=TRUE)/sqrt(length(x[!is.na(x)])),
+  Quantile=quantile(x, na.rm=TRUE)
+)
+summary.list(Data$ Fish)
+-----
+  sd(Data$ Fish, na.rm=TRUE) /  
+  sqrt(length(Data$Fish[!is.na(Data$ Fish)]))      # Standard error
+------
+  t.test(Data$ Fish,
+         conf.level=0.95)         # Confidence interval of the mean
+------
+  library(Rmisc)
+
+summarySE(data=D2,               # Will produce confidence intervals
+          measurevar="Count",    #  for groups defined by a variable
+          groupvars="Animal",    
+          conf.interval = 0.95)
+----
+  Confidence interval for proportions
+The confidence interval for a proportion can be determined with the binom.test function, 
+and more options are available in the BinomCI function and MultinomCI function in the
+DescTools package.  More advanced techniques for confidence intervals on proportions
+and differences in proportions can be found in the PropCIs package.
+
+binom.test(2, 20, 0.5,
+           alternative="two.sided",
+           conf.level=0.95)
+--------------
+  Confidence interval for single proportion
+### --------------------------------------------------------------
+library(DescTools)
+BinomCI(2, 20,
+        conf.level = 0.95,
+        method = "modified wilson")
+---------
+  Confidence interval for multinomial proportion
+### --------------------------------------------------------------
+observed = c(35,74,22,69)
+library(DescTools)
+MultinomCI(observed, conf.level=0.95, method="goodman")
+
+#     #     # 
+=======
+  Histogram
+hist(Data$ Fish,   
+     col="gray", 
+     main="Maryland Biological Stream Survey",
+     xlab="Fish count")    
+#     #     #
+
+#----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------------#
+
+#-------------------------One sample t-test with observations as vector
+observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
+theoretical = 0
+t.test(observed,
+       mu = theoretical,
+       conf.int = 0.95)
+#------------------------One sample t-test with observations in data frame
+observed    = Data$ Angle
+theoretical = 50
+t.test(observed,
+       mu = theoretical,
+       conf.int=0.95)
+
+
+-------Histogram
+hist(Data$ Angle,   
+     col="gray", 
+     main="Histogram of values",
+     xlab="Angle")
+
+
+#----Power analysis
+-------------------Power analysis for one-sample t-test-------------------------
+  M1  = 70                        # Theoretical mean
+M2  = 71                        # Mean to detect
+S1  =  2.4                      # Standard deviation
+S2  =  2.4                      # Standard deviation
+
+Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+
+library(pwr)                                  
+pwr.t.test(
+  n = NULL,                  # Observations
+  d = Cohen.d,           
+  sig.level = 0.05,          # Type I probability
+  power = 0.90,              # 1 minus Type II probability
+  type = "one.sample",       # Change for one- or two-sample
+  alternative = "two.sided")
+
+#-------------------Student’s t–test for Two Samples-------------------------#
+Two-sample t-test, independent (unpaired) observations
+bartlett.test(Value ~ Group, data=Data)
+### If p-value >= 0.05, use var.equal=TRUE below.
+
+----------------------------------------------------
+  t.test(Value ~ Group, data=Data,  #for paired group
+         var.equal=TRUE,
+         conf.level=0.95)
+----------------------------------------------------
+  t.test(Value ~ Group, data=Data, #for unpaired group
+         var.equal=FALSE,
+         conf.level=0.95)
+----------------------------------------------------
+  
+  Plot of histograms
+library(lattice)
+histogram(~ Value | Group,
+          data=Data,
+          layout=c(1,2)      #  columns and rows of individual plots
+)
+---------------------
+  boxplot(Value ~ Group,
+          data = Data,
+          names=c("2 pm","5 pm"),
+          ylab="Value")
+---------------------
+  
+  #--------Power analysis
+  -------------------------Power analysis for t-tes-------------------------------
+  
+  M1  = 100.6                      # Mean for sample 1
+M2  = 103.6                      # Mean for sample 2
+S1  =  5.26                      # Std dev for sample 1
+S2  =  5.26                      # Std dev for sample 2
+
+Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+
+library(pwr)                                  
+pwr.t.test(
+  n = NULL,                   # Observations in _each_ group
+  d = Cohen.d,           
+  sig.level = 0.05,           # Type I probability
+  power = 0.90,               # 1 minus Type II probability
+  type = "two.sample",        # Change for one- or two-sample
+  alternative = "two.sided")
+
+#-----------------Mann–Whitney and Two-sample Permutation Test------------------
+Box plots
+boxplot(Value ~ Group,
+        data = Data,
+        names=c("2 pm","5 pm"),
+        ylab="Value")
+
+-------------------------------------
+  wilcox.test(Value ~ Group, data=Data)
+
+
+#------------------------------ One-way Anova ----------------------------------
+The following commands will install these packages if they are not already installed:
+  if(!require(dplyr)){install.packages("dplyr")}
+if(!require(FSA)){install.packages("FSA")}
+if(!require(car)){install.packages("car")}
+if(!require(agricolae)){install.packages("agricolae")}
+if(!require(multcomp)){install.packages("multcomp")}
+if(!require(DescTools)){install.packages("DescTools")}
+if(!require(lsmeans)){install.packages("lsmeans")}
+if(!require(multcompView)){install.packages("multcompView")}
+if(!require(Rmisc)){install.packages("Rmisc")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(pwr)){install.packages("pwr")}
+--------------------------------------------------
+  #Specify the order of factor levels for plots and Dunnett comparison
+  library(dplyr)
+Data =
+  mutate(Data,
+         Location = factor(Location, levels=unique(Location)))
+
+--------------------------- 
+  #Produce summary statistics
+  library(FSA)  
+Summarize(Aam ~ Location,
+          data=Data,
+          digits=3)
+
+--------------------------
+  
+  #Fit the linear model and conduct ANOVA 
+  model = lm(Aam ~ Location,
+             data=Data)
+
+library(car)
+Anova(model, type="II")                    # Can use type="III"
+
+### If you use type="III", you need the following line before the analysis
+### options(contrasts = c("contr.sum", "contr.poly"))
+
+anova(model)                               # Produces type I sum of squares
+summary(model)     # Produces r-square, overall p-value, parameter estimates
+--------------
+  
+  #Checking assumptions of the model
+  
+  hist(residuals(model),
+       col="darkgray")
+
+---------------------
+  plot(fitted(model),
+       residuals(model))
+
+A plot of residuals vs. predicted values.The residuals should be unbiased and homoscedastic.  
+For an illustration of these properties,see this diagram by Steve Jost at DePaul University: 
+  condor.depaul.edu/sjost/it223/documents/resid-plots.gif.
+
+### additional model checking plots with: plot(model)
+### alternative: library(FSA); residPlot(model)
+
+Tukey and LSD mean separation tests (pairwise comparisons)
+The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for 
+cases where there are unbalanced data or unequal variances among levels of the factor, 
+though TukeyHSD does make an adjustment for mildly unbalanced data.  
+It is my understanding that the multcomp and lsmeans packages are more appropriate
+for unbalanced data.
+Another alternative is the DTK package that performs mean separation tests on data 
+with unequal sample sizes and no assumption of equal variances.
+
+-------------------------------------
+  Tukey comparisons in agricolae package
+library(agricolae)
+(HSD.test(model, "Location"))          # outer parentheses print result
+
+------------------------------------
+  LSD comparisons in agricolae package
+library(agricolae)
+(LSD.test(model, "Location",   # outer parentheses print result
+          alpha = 0.05,      
+          p.adj="none"))      # see ?p.adjust for options
+
+------------------------------------
+  Multiple comparisons in multcomp package
+Note that “Tukey” here does not mean Tukey-adjusted comparisons. 
+It just sets up a matrix to compare each mean to each other mean.
+
+library(multcomp)
+mc = glht(model,
+          mcp(Location = "Tukey"))
+mcs = summary(mc, test=adjusted("single-step"))
+mcs
+### Adjustment options: "none", "single-step", "Shaffer",
+###                     "Westfall", "free", "holm", "hochberg",
+###                     "hommel", "bonferroni", "BH", "BY", "fdr"
+
+cld(mcs,
+    level=0.05,
+    decreasing=TRUE)
+---------------
+  Multiple comparisons to a control in multcomp package
+### Control is the first level of the factor
+library(multcomp)
+mc = glht(model,
+          mcp(Location = "Dunnett"))
+summary(mc, test=adjusted("single-step"))
+
+### Adjustment options: "none", "single-step", "Shaffer",
+###                     "Westfall", "free", "holm", "hochberg",
+###                     "hommel", "bonferroni", "BH", "BY", "fdr"
+------------------
+  Multiple comparisons to a control with Dunnett Test
+### The control group can be specified with the control option,
+###   or will be the first level of the factor
+
+library(DescTools)
+DunnettTest(Aam ~ Location,
+            data = Data)
+----------------
+  Multiple comparisons with least square means
+Least square means can be calculated for each group.  
+Here a Tukey adjustment is applied for multiple comparisons among group least square means.
+The multiple comparisons can be displayed as a compact letter display.
+
+library(lsmeans)
+library(multcompView)
+leastsquare = lsmeans(model,
+                      pairwise ~ Location,
+                      adjust = "tukey")
+
+cld(leastsquare,
+    alpha   = 0.05,
+    Letters = letters,
+    adjust="tukey")
+-------------------
+  
+  Welch’s anova
+Bartlett’s test and Levene’s test can be used to check the homoscedasticity of groups from a one-way anova.
+A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic.
+One approach with heteroscedastic data in a one way anova is to use the Welch correction 
+with the oneway.test function in the native stats package. 
+A more versatile approach is to use the white.adjust=TRUE option in the Anova function from the car package.
+
+### Bartlett test for homogeneity of variance
+bartlett.test(Aam ~ Location,
+              data = Data)
+-------------------------------------------
+  ### Levene test for homogeneity of variance
+  library(car)
+leveneTest(Aam ~ Location,
+           data = Data)
+------------------------------------------
+  ### Welch’s anova for unequal variances
+  oneway.test(Aam ~ Location,
+              data=Data,
+              var.equal=FALSE)
+------------------------------------------
+  ### White-adjusted anova for heteroscedasticity
+  model = lm(Aam ~ Location,
+             data=Data)
+library(car)
+Anova(model, Type="II",
+      white.adjust=TRUE)
+
+---------------------Power analysis for one-way anova---------------------------
+  
+  library(pwr) 
+groups = 5
+means = c(10, 10, 15, 15, 15)
+sd = 12
+grand.mean  = mean(means)
+Cohen.f = sqrt( sum( (1/groups) * (means-grand.mean)^2) ) /sd
+
+pwr.anova.test(k = groups,
+               n = NULL,
+               f = Cohen.f,
+               sig.level = 0.05,
+               power = 0.80)
+
+#----------------Kruskal–Wallis Test-------------------------------------------#
+if(!require(FSA)){install.packages("FSA")}
+if(!require(DescTools)){install.packages("DescTools")}
+if(!require(rcompanion)){install.packages("rcompanion")}
+if(!require(multcompView)){install.packages("multcompView")}
+if(!require(PMCMRplus)){install.packages("PMCMRplus ")}
+
+---------------------------------------------------------
+  #Kruskal–Wallis test
+  kruskal.test(Value ~ Group,
+               data = Data)
+
+#1- Medians and descriptive statistics
+library(FSA)
+Summarize(Efficiency ~ Health,
+          data = Data)
+
+#2- Kruskal–Wallis test
+kruskal.test(Efficiency ~ Health,
+             data = Data)
+
+#3- Dunn test for multiple comparisons
+If the Kruskal–Wallis test is significant, a post-hoc analysis can be performed 
+to determine which levels of the independent variable differ from each other level.
+
+The most popular test for this is the Dunn test, which is performed with the dunnTest function in the FSA package.  
+Adjustments to the p-values could be made using the method option to control the familywise error rate or 
+to control the false discovery rate.  
+
+
+### Order groups by median
+Data$Health = factor(Data$Health,
+                     levels=c("OAD", "Normal", "Asbestosis"))
+
+### Dunn test
+library(FSA)
+
+PT = dunnTest(Efficiency ~ Health,
+              data=Data,
+              method="bh")    # Can adjust p-values;
+# See ?p.adjust for options
+
+PT
+-------------
+  ### Specify the order of factor levels
+  ##   otherwise R will alphabetize them
+  Data$Sex = factor(Data$Sex, levels=unique(Data$Sex))
+
+### Examine data frame
+str(Data)
+### Summarize data
+library(FSA)
+Summarize(Rank ~ Sex,
+          data = Data)
+
+#---------------------------- Two-way Anova ------------------------------------
+if(!require(FSA)){install.packages("FSA")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(car)){install.packages("car")}
+if(!require(multcompView)){install.packages("multcompView")}
+if(!require(lsmeans)){install.packages("lsmeans")}
+if(!require(grid)){install.packages("grid")}
+if(!require(nlme)){install.packages("nlme")}
+if(!require(lme4)){install.packages("lme4")}
+if(!require(lmerTest)){install.packages("lmerTest")} if(!require(rcompanion)){install.packages("rcompanion")}
+
+--------------------------------------
+  #Means and summary statistics by group
+  
+  library(Rmisc)
+sum = summarySE(Data,
+                measurevar="Activity",
+                groupvars=c("Sex","Genotype"))
+sum
+
+--------------Interaction plot using summary statistics------------------------
+  
+  library(ggplot2)
+pd = position_dodge(.2)
+ggplot(sum, aes(x=Genotype,
+                y=Activity,
+                color=Sex)) +
+  geom_errorbar(aes(ymin=Activity-se,
+                    ymax=Activity+se),
+                width=.2, linewidth=0.7, position=pd) +
+  geom_point(shape=15, size=4, position=pd) +
+  theme_bw() +
+  theme(
+    axis.title.y = element_text(vjust= 1.8),
+    axis.title.x = element_text(vjust= -0.5),
+    axis.title = element_text(face = "bold")) +
+  scale_color_manual(values = c("black", "blue"))
+
+#-------------------Simple box plot of main effect and interaction--------------
+
+boxplot(Activity ~ Genotype,
+        data = Data,
+        xlab = "Genotype",
+        ylab = "MPI Activity",
+        col  = "white")
+
+---------------
+  Fit the linear model and conduct ANOVA
+model = lm(Activity ~ Sex + Genotype + Sex:Genotype,
+           data=Data)
+library(car)
+Anova(model, type="II")                    
+
+### If you use type="III", you need the following line before the analysis
+### options(contrasts = c("contr.sum", "contr.poly"))
+
+anova(model)                               # Produces type I sum of squares
+summary(model)     # Produces r-square, overall p-value, parameter estimates
+------------------
+  #Checking assumptions of the model
+  
+  hist(residuals(model),
+       col="darkgray")
+
+plot(fitted(model),
+     residuals(model))
+
+-----------------------
+  Fit the linear model and conduct ANOVA
+model = lm(Openings ~ Day + Snake,
+           data=Data)
+library(car)
+Anova(model, type="II")                    # Can use type="III"
+anova(model)                               # Produces type I sum of squares
+summary(model)     # Produces r-square, overall p-value, parameter estimates
+
+
+-----------------------
+  Checking assumptions of the model
+
+hist(residuals(model),
+     col="darkgray")
+
+plot(fitted(model),
+     residuals(model))
+
+#---------------------------- Paired t–test -----------------------------
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(coin)){install.packages("coin")}
+if(!require(pwr)){install.packages("pwr")}
+
+#Paired t-test
+
+
+t.test(Data$Typical,
+       Data$Odd,
+       paired=TRUE,
+       conf.level=0.95)
+
+#Simple plot of differences
+Difference = Data$Odd - Data$Typical
+plot(Difference,
+     pch = 16,
+     ylab="Difference (Odd – Typical)")
+abline(0,0, col="blue", lwd=2)
+
+--------------
+  #Simple 1-to-1 plot of values
+  plot(Data$Typical, Data$Odd,
+       pch = 16,
+       xlab="Typical feathers",
+       ylab="Odd feathers")
+abline(0,1, col="blue", lwd=2)
+-----------
+  
+  #-----------------------------Wilcoxon Signed-rank Test-------------------------
+wilcox.test(Data$August,
+            Data$November,
+            paired=TRUE)
+
+#Simple 1-to-1 plot of values
+plot(Data$August, Data$November,
+     pch = 16,
+     xlab="August",
+     ylab="November")
+abline(0,1, col="blue", lwd=2)
+
+#-------------------------Correlation and Linear Regression---------------------
+Correlation
+Correlation can be performed with the cor.test function in the native stats package.  
+It can perform Pearson, Kendall, and Spearman correlation procedures.  
+
+#Pearson correlation (Parametric)
+Pearson correlation is a parametric test, and assumes that the data are linearly related 
+and that the residuals are normally distributed.
+
+cor.test( ~ Species + Latitude,
+          data=Data,
+          method = "pearson",
+          conf.level = 0.95)
+
+#Kendall correlation (Non-parametric)
+Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
+It ranks the data to determine the degree of correlation.
+
+cor.test( ~ Species + Latitude,
+          data=Data,
+          method = "kendall",
+          continuity = FALSE,
+          conf.level = 0.95)
+
+#Spearman correlation (Non-parametric / ordinals)
+Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
+It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
+
+cor.test( ~ Species + Latitude,
+          data=Data,
+          method = "spearman",
+          continuity = FALSE,
+          conf.level = 0.95)
+--------------------------------------------------------------------------------
+  #Linear regression
+  Linear regression can be performed with the lm function in the native stats package.
+A robust regression can be performed with the lmrob function in the robustbase package.
+
+model = lm(Species ~ Latitude,
+           data = Data)
+
+summary(model)                    # shows parameter estimates,
+# p-value for model, r-square
+
+library(car)
+Anova(model, type="II")              # shows p-value for effects in model
+
+
+Plot linear regression
+int =  model$coefficient["(Intercept)"]
+slope =model$coefficient["Latitude"]
+plot(Species ~ Latitude,
+     data = Data,
+     pch=16,
+     xlab = "Latitude",
+     ylab = "Species")
+abline(int, slope,
+       lty=1, lwd=2, col="blue")     #  style and color of line 
+
+#---------------------Checking assumptions of the model------------------------
+
+hist(residuals(model),
+     col="darkgray")
+plot(fitted(model),
+     residuals(model))
+----------
+  A plot of residuals vs. predicted values.
+The residuals should be unbiased and homoscedastic.
+
+### additional model checking plots with: plot(model)
+### alternative: library(FSA); residPlot(model)
+
+#----------Power analysis
+---------------------------Power analysis for correlation-----------------------
+  pwr.r.test(n = NULL,
+             r = 0.500,
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "two.sided")
+
+#------------------------ Curvilinear Regression -------------------------------
+How to do the test
+This chapter will fit models to curvilinear data using three methods: 
+  1) Polynomial regression;  
+2) B-spline regression with polynomial splines;  
+3) Nonlinear regression with the nls function.  
+
+Each of these three will find essentially the same best-fit curve with very similar 
+p-values and R-squared values. 
+
+#Polynomial regression
+Polynomial regression is really just a special case of multiple regression, 
+which is covered in the Multiple regression chapter.  
+In this example we will fit a few models and then compare the models with the extra sum of squares test, 
+the Akaike information criterion (AIC), and the adjusted R-squared as model fit criteria. 
+
+For a linear model (lm), the adjusted R-squared is included with the output of the summary(model) statement.  
+The AIC is produced with its own function call, AIC(model).  
+The extra sum of squares test is conducted with the anova function applied to two models. 
+
+For AIC, smaller is better.  For adjusted R-squared, larger is better. 
+A non-significant p-value for the extra sum of squares test comparing model a to model b indicates that
+the model with the extra terms does not significantly reduce the error sum of squares over the reduced model.  
+
+Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
+Simple plot of model
+
+--------------------------------------------------------------------------------
+  plot(Clutch ~ Length,
+       data = Data,
+       pch=16,
+       xlab = "Carapace length",
+       ylab = "Clutch") 
+i = seq(min(Data$Length), max(Data$Length), len=100)       #  x-values for line
+predy = predict(model, data.frame(Length=i))               #  fitted values
+lines(i, predy,                                            #  spline curve
+      lty=1, lwd=2, col="blue")                            #  style and color
+
+
+
+#-----------------------------Multiple Regression------------------------------ 
+library(psych)
+corr.test(Data.num,
+          use = "pairwise",
+          method="pearson",
+          adjust="none",     # Can adjust p-values; see ?p.adjust for options
+          alpha=.05)
+
+pairs(data=Data,
+      ~ Longnose + Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp)
+
+
+library(PerformanceAnalytics)
+chart.Correlation(Data.num,
+                  method="pearson",
+                  histogram=TRUE,
+                  pch=16)
+-------------------------------------------------------------------------------
+  Multiple regression
+
+
+Model selection using the step function
+The step function has options to add terms to a model (direction="forward"), 
+remove terms from a model (direction="backward"), or 
+to use a process that both adds and removes terms (direction="both").  
+It uses AIC (Akaike information criterion) as a selection criterion.  
+You can use the option k = log(n) to use BIC instead. 
+
+
+You can add the test="F" option to see the p-value for adding or removing terms,
+but the test will still follow the AIC statistic.  
+If,however, note that a significant p-value essentially argues for the term being included in the model,
+whether it’s its addition or its removal that’s being considered.
+
+
+A full model and a null are defined, and then the function will follow a procedure to find the model with the lowest AIC.
+The final model is shown at the end of the output, with the Call: indication, and lists the coefficients for that model.
+
+#-------------------------------Stepwise procedure------------------------------
+
+model.null = lm(Longnose ~ 1,
+                data=Data)
+model.full = lm(Longnose ~ Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp,
+                data=Data)
+
+step(model.null,
+     scope = list(upper=model.full),
+     direction="both",
+     data=Data)
+
+---------------------------------------------------
+  #Define final model
+  
+  model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
+                   data=Data)
+summary(model.final)      # Show coefficients, R-squared, and overall p-value
+
+#Simple plot of predicted values with 1-to-1 line
+
+Data$predy = predict(model.final)
+plot(predy ~ Longnose,
+     data=Data,
+     pch = 16,
+     xlab="Actual response value",
+     ylab="Predicted response value")
+abline(0,1, col="blue", lwd=2)
+
+#-----------------------------Simple Logistic Regression ----------------------
+if(!require(car)){install.packages("car")}
+if(!require(lmtest){install.packages("lmtest")}
+   if(!require(tidyr)){install.packages("tidyr")}
+   if(!require(rcompanion)){install.packages("rcompanion")}
+   if(!require(FSA){install.packages("FSA")}
+      if(!require(popbio)){install.packages("popbio")}
+      
+      
+      plot(Factor.num  ~ Continuous,
+           data = Data,
+           xlab="Continuous",
+           ylab="Factor",
+           pch=19)             
+      curve(predict(model,data.frame(Continuous=x),type="response"),
+            lty=1, lwd=2, col="blue",                           
+            add=TRUE)   
+      
+      ----------------------------------------------------------  
+        library(popbio)
+      logi.hist.plot(Data$Continuous,
+                     Data$Factor.log,
+                     boxp=FALSE,
+                     type="hist",
+                     col="gray",
+                     xlabel="Height")
+      
+      
+      #-----------------TEST OF NOMINAL VARIABLE------------------------------#
+      #--------------Exact Test of Goodness-of-Fit----------------------------#
+      
+      #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
+      The arguments passed to the function are: the number of successes, 
+      the number of trials, and the hypothesized probability of success.#
+      The probability can be entered as a decimal or a fraction.  
+      #Other options include the confidence level for the confidence interval about the proportion,
+      # and whether the function performs a one-sided or two-sided (two-tailed) test.  
+      #In most circumstances, the two-sided test is used.
+      
+      #Packages used in this chapter
+      The following commands will install these packages if they are not already installed:
+        
+        if(!require(XNomial)){install.packages("XNomial")}
+      if(!require(pwr)){install.packages("pwr")}
+      if(!require(BSDA)){install.packages("BSDA")}
+      
+      #How the test works
+      #Binomial test examples
+      
+      ### --------------------------------------------------------------
+      ### Cat paw example, exact binomial test, pp. 30–31
+      ### --------------------------------------------------------------
+      ### In this example:
+      ###   2 is the number of successes
+      ###   10 is the number of trials
+      ###   0.5 is the hypothesized probability of success
+      
+      dbinom(2, 10, 0.5)            # Probability of single event only!
+      #   Not binomial test!
+      
+      [1] 0.04394531  
+      
+      
+      binom.test(2, 10, 0.5,
+                 alternative="less",       # One-sided test
+                 conf.level=0.95) 
+      
+      p-value = 0.05469
+      
+      binom.test(2, 10, 0.5,
+                 alternative="two.sided",  # Two-sided test
+                 conf.level=0.95)
+      
+      
+      p-value = 0.1094
+      
+      # #     
+      #Probability density plot
+      
+      ### --------------------------------------------------------------
+      ### Probability density plot, binomial distribution, p. 31
+      ### --------------------------------------------------------------
+      # In this example:
+      #   You can change the values for trials and prob
+      #   You can change the values for xlab and ylab
+      
+      trials = 10
+      prob = 0.5
+      
+      x = seq(0, trials)                   # x is a sequence, 1 to trials
+      y = dbinom(x, size=trials, p=prob)   # y is the vector of heights
+      
+      barplot (height=y,
+               names.arg=x,
+               xlab="Number of uses of right paw",
+               ylab="Probability under null hypothesis")
+      
+      
+      #Comparing doubling a one-sided test and using a two-sided test
+      
+      ### --------------------------------------------------------------
+      ### Cat hair example, exact binomial test, p. 31–32
+      ###  Compares performing a one-sided test and doubling the
+      ###    probability, and performing a two-sided test
+      ### --------------------------------------------------------------
+      
+      binom.test(7, 12, 3/4,
+                 alternative="less",
+                 conf.level=0.95) 
+      
+      p-value = 0.1576
+      
+      Test = binom.test(7, 12, 3/4,             # Create an object called
+                        alternative="less",     #  Test with the test
+                        conf.level=0.95)        #  results.
+      
+      2 * Test$ p.value               # This extracts the p-value from the
+      #   test result, we called Test
+      #   and multiplies it by 2
+      
+      [1] 0.3152874
+      
+      
+      binom.test(7, 12, 3/4, alternative="two.sided", conf.level=0.95)
+      
+      p-value = 0.1893      # Equal to the "small p values" method in the Handbook
+      #     #     #
+      
+      
+      Post-hoc test
+      
+      Post-hoc example with manual pairwise tests
+      A multinomial test can be conducted with the xmulti function in the package XNomial. 
+      This can be followed with the individual binomial tests for each proportion, as post-hoc tests.
+      
+      
+      
+      ### --------------------------------------------------------------
+      ### Post-hoc example, multinomial and binomial test, p. 33
+      ### --------------------------------------------------------------
+      
+      observed = c(72, 38, 20, 18)
+      expected = c(9, 3, 3, 1)
+      
+      library(XNomial)
+      xmulti(observed,
+             expected,
+             detail = 2)         # 2: Reports three types of p-value
+      
+      
+      P value  (LLR)  =  0.003404  # log-likelihood ratio
+      
+      P value (Prob)  =  0.002255  # exact probability
+      
+      P value (Chisq) =  0.001608  # Chi-square probability
+      
+      
+      
+      ### Note last p-value below agrees with Handbook
+      
+      successes   = 72
+      total       = 148
+      numerator   = 9
+      denominator = 16
+      
+      binom.test(successes, total, numerator/denominator,
+                 alternative="two.sided", conf.level=0.95) 
+      
+      p-value = 0.06822 
+      
+      successes   = 38
+      total       = 148
+      numerator   = 3
+      denominator = 16
+      
+      binom.test(successes, total, numerator/denominator,
+                 alternative="two.sided", conf.level=0.95) 
+      
+      p-value = 0.03504
+      
+      
+      successes   = 20
+      total       = 148
+      numerator   = 3
+      denominator = 16
+      
+      binom.test(successes, total, numerator/denominator,
+                 alternative="two.sided", conf.level=0.95) 
+      
+      p-value = 0.1139
+      
+      successes   = 18
+      total       = 148
+      numerator   = 1
+      denominator = 16
+      
+      binom.test(successes, total, numerator/denominator,
+                 alternative="two.sided", conf.level=0.95) 
+      
+      p-value = 0.006057
+      #     #     #
+      
+      Post-hoc test alternate method with custom function
+      When you need to do multiple similar tests, however, 
+      #it is often possible to use the programming capabilities in R to do the tests more efficiently.
+      #The following example may be somewhat difficult to follow for a beginner.  
+      #It creates a data frame and then adds a column called p.Value that contains the p-value 
+      from the binom.test performed on each row of the data frame.
+      
+      ### --------------------------------------------------------------
+      ### Post-hoc example, multinomial and binomial test, p. 33
+      ###    Alternate method for multiple tests
+      ### --------------------------------------------------------------
+      
+      Input =("
+Successes Total Numerator Denominator
+ 72        148   9         16
+ 38        148   3         16
+ 20        148   3         16
+ 18        148   1         16
+")
+      
+      D1 = read.table(textConnection(Input),header=TRUE)
+      
+      Fun = function (x){
+        binom.test(x["Successes"],x["Total"],
+                   x["Numerator"]/x["Denominator"])$ p.value
+      }
+      
+      D1$ p.Value = apply(D1, 1, Fun)
+      D1 
+      
+      
+      #Binomial test examples
+      ### --------------------------------------------------------------
+      ### Parasitoid examples, exact binomial test, p. 34
+      ### --------------------------------------------------------------
+      binom.test(10, (17+10), 0.5,
+                 alternative="two.sided",
+                 conf.level=0.95)
+      p-value = 0.2478
+      binom.test(36, (7+36), 0.5,
+                 alternative="two.sided",
+                 conf.level=0.95)
+      
+      p-value = 8.963e-06
+      #     #     #
+      
+      ### --------------------------------------------------------------
+      ###  Drosophila example, exact binomial test, p. 34
+      ### --------------------------------------------------------------
+      
+      binom.test(140, (106+140), 0.5,
+                 alternative="two.sided",
+                 conf.level=0.95)
+      p-value = 0.03516
+      #     #     #
+      
+      #Sign test example
+      The following is an example of the two-sample dependent-samples sign test.
+      The data are arranged as a data frame in which each row contains the values 
+      for both measurements being compared for each experimental unit.
+      This is sometimes called “wide format” data.  
+      The SIGN.test function in the BSDA package is used.  
+      The option md=0 indicates that the expected difference in the medians is 0 (null hypothesis).
+      #This function can also perform a one-sample sign test.
+      
+      ### --------------------------------------------------------------
+      ###  Tree beetle example, two-sample sign test, p. 34–35
+      ### --------------------------------------------------------------
+      
+      Input =("
+Row  Angiosperm.feeding  A.count  Gymonsperm.feeding   G.count
+1    Corthylina           458     Pityophthorus           200
+2    Scolytinae          5200     Hylastini_Tomacini      180
+3    Acanthotomicus_P     123     Orhotomicus              11
+4    Xyleborini_D        1500     Ipini                   195
+5    Apion               1500     Antliarhininae           12
+6    Belinae              150     Allocoryninae_Oxycorinae 30
+7    H_Curculionidae    44002     Nemonychidae             85
+8    H_Cerambycidae     25000     Aseminae_Spondylinae     78
+9    Megalopodinae        400     Palophaginae              3
+10   H_Chrysomelidae    33400     Aulocoscelinae_Orsod     26
+")
+      
+      Data = read.table(textConnection(Input),header=TRUE)
+      
+      library(BSDA)
+      
+      SIGN.test(x = Data$ A.count,
+                y = Data$ B.count,
+                md = 0,                 
+                alternative = "two.sided",
+                conf.level = 0.95)
+      
+      Binomial test examples
+      ### --------------------------------------------------------------
+      ###  First Mendel example, exact binomial test, p. 35
+      ### --------------------------------------------------------------
+      
+      binom.test(428, (428+152), 0.75, alternative="two.sided",
+                 conf.level=0.95)
+      
+      
+      
+      p-value = 0.5022          # Value is different than in the Handbook
+      
+      #     See next example
+      #     #     #
+      
+      
+      
+      
+      
+      ### --------------------------------------------------------------
+      ###  First Mendel example, exact binomial test, p. 35
+      ###     Alternate method with XNomial package
+      ### --------------------------------------------------------------
+      
+      observed = c(428, 152)
+      expected = c(3, 1)
+      
+      library(XNomial)
+      
+      xmulti(observed,
+             expected,
+             detail = 2)             # 2: reports three types of p-value
+      
+      
+      P value  (LLR)  =  0.5331   # log-likelihood ratio
+      
+      P value (Prob)  =  0.5022   # exact probability
+      
+      P value (Chisq) =  0.5331   # Chi-square probability
+      
+      ### Note last p-value below agrees with Handbook
+      #     #     #
+      
+      
+      
+      Multinomial test example
+      ### --------------------------------------------------------------
+      ###  Second Mendel example, multinomial exact test, p. 35–36
+      ### --------------------------------------------------------------
+      observed = c(315, 108, 101, 32)
+      expected = c(9, 3, 3, 1)
+      library(XNomial)
+      
+      xmulti(observed,
+             expected,
+             detail = 2)              # reports three types of p-value
+      
+      P value  (LLR)  =  0.9261    # log-likelihood ratio
+      P value (Prob)  =  0.9382    # exact probability
+      P value (Chisq) =  0.9272    # Chi-square probability
+      
+      ### Note last p-value below agrees with Handbook,
+      ###   and agrees with SAS Exact Pr>=ChiSq
+      #     #     # 
+      
+      
+      #---------------Chi-square Test of Goodness-of-Fit--------------#
+      The following commands will install these packages if they are not already installed:
+        
+        if(!require(dplyr)){install.packages("dplyr")}
+      if(!require(ggplot2)){install.packages("ggplot2")}
+      if(!require(grid)){install.packages("grid")}
+      if(!require(pwr)){install.packages("pwr")}
+      
+      Chi-square goodness-of-fit example
+      ### --------------------------------------------------------------
+      ### Drosophila example, Chi-square goodness-of-fit, p. 46
+      ### --------------------------------------------------------------
+      
+      observed = c(770, 230)        # observed frequencies
+      expected = c(0.75, 0.25)      # expected proportions
+      
+      chisq.test(x = observed,
+                 p = expected)
+      #     #     #
+      
+      
+      Examples: extrinsic hypothesis
+      ### --------------------------------------------------------------
+      ### Crossbill example, Chi-square goodness-of-fit, p. 47
+      ### --------------------------------------------------------------
+      
+      observed = c(1752, 1895)    # observed frequencies
+      expected = c(0.5, 0.5)      # expected proportions
+      
+      chisq.test(x = observed,
+                 p = expected)
+      #     #     #
+      
+      
+      ### --------------------------------------------------------------
+      ### Rice example, Chi-square goodness-of-fit, p. 47
+      ### --------------------------------------------------------------
+      observed = c(772, 1611, 737)
+      expected = c(0.25, 0.50, 0.25)
+      
+      chisq.test(x = observed,
+                 p = expected)
+      #     #     #
+      
+      ### --------------------------------------------------------------
+      ### Bird foraging example, Chi-square goodness-of-fit, pp. 47–48
+      ### --------------------------------------------------------------
+      observed = c(70, 79, 3, 4)
+      expected = c(0.54, 0.40, 0.05, 0.01)
+      
+      chisq.test(x = observed,
+                 p = expected)
+      #     #     #
+      
+      Example: intrinsic hypothesis  
+      ### --------------------------------------------------------------
+      ### Intrinsic example, Chi-square goodness-of-fit, p. 48
+      ### --------------------------------------------------------------
+      observed       = c(1203,  2919,  1678)
+      expected.prop  = c(0.211, 0.497, 0.293)
+      expected.count = sum(observed)*expected.prop
+      chi2 = sum((observed- expected.count)^2/ expected.count)
+      chi2
+      #     #     #
+      
+      
+      Simple bar plot with barplot
+      ### --------------------------------------------------------------
+      ### Simple bar plot of proportions, p. 49
+      ###      Uses data in a matrix format
+      ### --------------------------------------------------------------
+      observed = c(70, 79, 3, 4)
+      expected = c(0.54, 0.40, 0.05, 0.01)
+      
+      total = sum(observed)
+      observed.prop = observed / total
+      observed.prop
+      
+      
+      #------------------------ Power Analysis
+      
+      ----------------------Power analysis for binomial test-------------------------
+        if(!require(pwr)){install.packages("pwr")}
+      P0 = 0.75
+      P1 = 0.78
+      H  = ES.h(P0,P1)               # This calculates effect size
+      
+      library(pwr)
+      
+      pwr.p.test(
+        h=H,
+        n=NULL,                  # NULL tells the function to
+        sig.level=0.05,          #     calculate this
+        power=0.90,              # 1 minus Type II probability
+        alternative="two.sided")
+      #     #     #
+      
+      ---------------------Power analysis for unpaired t-test ----------------------
+        #--------------------Power analysis, t-test, student height, pp. 43–44--------
+      #-----------------------------------------------------------------------------
+      M1  = 66.6                      # Mean for sample 1
+      M2  = 64.6                      # Mean for sample 2
+      S1  =  4.8                      # Std dev for sample 1
+      S2  =  3.6                      # Std dev for sample 2
+      
+      Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+      
+      library(pwr)                                  
+      pwr.t.test(
+        n = NULL,                  # Observations in _each_ group
+        d = Cohen.d,           
+        sig.level = 0.05,          # Type I probability
+        power = 0.80,              # 1 minus Type II probability
+        type = "two.sample",       # Change for one- or two-sample
+        alternative = "two.sided"
+      )
+      
+      
+      Two-sample t test power calculation
+      n = 71.61288
+      NOTE: n is number in *each* group 71.61288
+      #     #     #
+      
+      #How to do the test-----------------------------------------------------------
+      Chi-square goodness-of-fit example
+      
+      ### --------------------------------------------------------------
+      ### Pea color example, Chi-square goodness-of-fit, pp. 50–51
+      ### --------------------------------------------------------------
+      observed = c(423, 133)  
+      expected = c(0.75, 0.25)
+      
+      chisq.test(x = observed,
+                 p = expected)
+      #     #     #
+      
+      
+      #Power analysis
+      -----------------Power analysis for chi-square goodness-of-fit----------------
+        ### Power analysis, Chi-square goodness-of-fit, snapdragons, p. 51
+        ### --------------------------------------------------------------
+      library(pwr)
+      
+      P0      = c(0.25,  0.50, 0.25)
+      P1      = c(0.225, 0.55, 0.225)
+      
+      effect.size = ES.w1(P0, P1) 
+      degrees = length(P0) - 1
+      
+      pwr.chisq.test(
+        w=effect.size,
+        N=NULL,            # Total number of observations
+        df=degrees,
+        power=0.80,        # 1 minus Type II probability
+        sig.level=0.05)    # Type I probability
+      
+      
+      N = 963.4689
+      #     #     #
+      
+      
+      #---------------G–test of Goodness-of-Fit-------------------------------
+      The following commands will install these packages if they are not already installed:
+        
+        if(!require(DescTools)){install.packages("DescTools")}
+      if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
+      
+      Examples: extrinsic hypothesis
+      G-test goodness-of-fit test with DescTools and RVAideMemoire
+      
+      ### --------------------------------------------------------------
+      ### Crossbill example, G-test goodness-of-fit, p. 55
+      ### --------------------------------------------------------------
+      observed = c(1752, 1895)    # observed frequencies
+      expected = c(0.5, 0.5)      # expected proportions
+      
+      library(DescTools)
+      GTest(x=observed,
+            p=expected,
+            correct="none")       # "none" "williams" "yates"
+      
+      library(RVAideMemoire)
+      
+      G.test(x=observed,
+             p=expected)
+      #  #  #
+      
+      G-test goodness-of-fit test by manual calculation
+      ### --------------------------------------------------------------
+      ### Crossbill example, G-test goodness-of-fit, p. 55
+      ###   Manual calculation
+      ### --------------------------------------------------------------
+      observed      = c(1752, 1895)     # observed frequencies
+      expected.prop = c(0.5, 0.5)       # expected proportions
+      
+      degrees = 1                       # degrees of freedom
+      expected.count = sum(observed)*expected.prop
+      
+      G = 2 * sum(observed * log(observed / expected.count))
+      G                          
+      
+      [1] 5.608512
+      
+      pchisq(G,
+             df=degrees,
+             lower.tail=FALSE) 
+      
+      [1] 0.01787343
+      #     #     #
+      
+      
+      Examples of G-test goodness-of-fit test with DescTools and RVAideMemoire
+      ### --------------------------------------------------------------
+      ### Rice example, G-test goodness-of-fit, p. 55
+      ### --------------------------------------------------------------
+      observed = c(772, 1611, 737)
+      expected = c(0.25, 0.50, 0.25)
+      
+      library(DescTools)
+      
+      GTest(x=observed,
+            p=expected,
+            correct="none")            # "none" "williams" "yates"
+      
+      
+      
+      Log likelihood ratio (G-test) goodness of fit test
+      G = 4.1471, X-squared df = 2, p-value = 0.1257
+      
+      
+      library(RVAideMemoire)
+      G.test(x=observed,
+             p=expected)
+      
+      G-test for given probabilities
+      G = 4.1471, df = 2, p-value = 0.1257
+      
+      #     #     #
+      
+      ### --------------------------------------------------------------
+      ### Foraging example, G-test goodness-of-fit, pp. 55–56
+      ### --------------------------------------------------------------
+      
+      observed = c(70, 79, 3, 4)
+      expected = c(0.54, 0.40, 0.05, 0.01)
+      
+      library(DescTools)   
+      
+      GTest(x=observed,
+            p=expected,
+            correct="none")            # "none" "williams" "yates"
+      
+      
+      Log likelihood ratio (G-test) goodness of fit test
+      G = 13.145, X-squared df = 3, p-value = 0.004334
+      
+      library(RVAideMemoire)
+      G.test(x=observed,
+             p=expected)
+      
+      G-test for given probabilities
+      G = 13.1448, df = 3, p-value = 0.004334
+      #     #     #
+      
+      
+      Example: intrinsic hypothesis
+      ### --------------------------------------------------------------
+      ### Intrinsic example, G-test goodness-of-fit, amphipod, p. 56
+      ### --------------------------------------------------------------
+      observed       = c(1203,  2919,  1678)
+      expected.prop  = c(.21073, 0.49665, 0.29262)
+      
+      ### Note: These are recalculated for more precision
+      ###       In this case, low precision probabilities
+      ###         change the results
+      expected.count = sum(observed)*expected.prop
+      
+      G = 2 * sum(observed * log(observed / expected.count))
+      G                         
+      
+      [1] 1.032653
+      
+      pchisq(G,
+             df=1,
+             lower.tail=FALSE)  
+      
+      
+      [1] 0.3095363
+      #     #     #
+      
+      #-------------------------Chi-square Test of Independence-----------------------
+      The Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
+      For this test, the function requires the contingency table to be in the form of matrix.
+      Depending on the form of the data to begin with, 
+      this can require an extra step, either combing vectors into a matrix,
+      or cross-tabulating the counts among factors in a data frame.  
+      None of this is too difficult, 
+      but it requires following the correct example depending on the initial form of the data. 
+      
+      When using read.table and as.matrix to read a table directly as a matrix, 
+      be careful of extra spaces at the end of lines or extraneous characters in the table, as these can cause errors.
+      
+      Packages used in this chapter
+      The following commands will install these packages if they are not already installed:
+        
+        if(!require(rcompanion)){install.packages("rcompanion")}
+      if(!require(dplyr)){install.packages("dplyr")}
+      if(!require(ggplot2)){install.packages("ggplot2")}
+      if(!require(grid)){install.packages("grid")}
+      if(!require(pwr)){install.packages("pwr")}
+      
+      When to use it
+      
+      Example of chi-square test with matrix created with read.table
+      ### --------------------------------------------------------------
+      ### Vaccination example, Chi-square independence, pp. 59–60
+      ###      Example directly reading a table as a matrix
+      ### --------------------------------------------------------------
+      Input =("
+Injection.area  No.severe  Severe
+Thigh           4788       30
+Arm             8916       76
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz  
+      
+      chisq.test(Matriz,
+                 correct=TRUE)      # Continuity correction for 2 x 2
+      #      table
+      chisq.test(Matriz,
+                 correct=FALSE)      # No continuity correction for 2 x 2
+      #      table
+      
+      
+      #--Example of chi-square test with matrix created by combining vectors
+      ### --------------------------------------------------------------
+      ### Vaccination example, Chi-square independence, pp. 59–60
+      ###  Example creating a matrix from vectors
+      ### --------------------------------------------------------------
+      R1 = c(4788, 30)
+      R2 = c(8916, 76)
+      rows   = 2
+      Matriz = matrix(c(R1, R2),
+                      nrow=rows,
+                      byrow=TRUE)
+      
+      rownames(Matriz) = c("Thigh", "Arm")          # Naming the rows and
+      colnames(Matriz) = c("No.severe", "Severe")   #  columns is optional.
+      Matriz
+      
+      chisq.test(Matriz,
+                 correct=TRUE)      # Continuity correction for 2 x 2
+      #      table
+      chisq.test(Matriz,
+                 correct=FALSE)      # No continuity correction for 2 x 2
+      #      table
+      =====================================================================
+        Post-hoc tests
+      For the following example of post-hoc pairwise testing, we’ll use the pairwiseNominalIndependence
+      function from the package rcompanion to make the task easier.Then we’ll use pairwise.table 
+      in the native stats package as an alternative.
+      
+      Post-hoc pairwise chi-square tests with rcompanion
+      ### --------------------------------------------------------------
+      ### Post-hoc example, Chi-square independence, pp. 60–61
+      ### --------------------------------------------------------------
+      Input =("
+Supplement     No.cancer  Cancer
+'Selenium'     8177       575
+'Vitamin E'    8117       620
+'Selenium+E'   8147       555
+'Placebo'      8167       529
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      chisq.test(Matriz) 
+      
+      
+      library(rcompanion)
+      pairwiseNominalIndependence(Matriz,
+                                  fisher = FALSE,
+                                  gtest  = FALSE,
+                                  chisq  = TRUE,
+                                  method = "fdr")
+      
+      
+      Post-hoc pairwise chi-square tests with pairwise.table
+      ### --------------------------------------------------------------
+      ### Post-hoc example, Chi-square independence, pp. 60–61
+      ### As is, this code works on a matrix with two columns,
+      ###   and compares rows
+      ### --------------------------------------------------------------
+      Input =("
+Supplement     No.cancer  Cancer
+'Selenium'     8177       575
+'Vitamin E'    8117       620
+'Selenium+E'   8147       555
+'Placebo'      8167       529
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      chisq.test(Matriz)
+      
+      
+      FUN = function(i,j){    
+        chisq.test(matrix(c(Matriz[i,1], Matriz[i,2],
+                            Matriz[j,1], Matriz[j,2]),
+                          nrow=2,
+                          byrow=TRUE))$ p.value
+      }
+      
+      pairwise.table(FUN,
+                     rownames(Matriz),
+                     p.adjust.method="none")
+      
+      =======================
+        
+        Examples
+      
+      Chi-square test of independence with continuity correction and without correction
+      ### --------------------------------------------------------------
+      ### Helmet example, Chi-square independence, p. 63
+      ### --------------------------------------------------------------
+      Input =("
+PSE        Head.injury  Other.injury
+Helemt     372          4715
+No.helmet  267          1391
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      chisq.test(Matriz,
+                 correct=TRUE)       # Continuity correction for 2 x 2
+      #      table
+      
+      chisq.test(Matriz,
+                 correct=FALSE)      # No continuity correction for 2 x 2
+      #      table 
+      #     #     #
+      
+      Chi-square test of independence
+      ### --------------------------------------------------------------
+      ### Gardemann apolipoprotein example, Chi-square independence,
+      ###   p. 63
+      ### --------------------------------------------------------------
+      Input =("
+Genotype  No.disease Coronary.disease
+'ins/ins'   268        807
+'ins/del'   199        759
+'del/del'    42        184
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      chisq.test(Matriz)
+      #     #     #
+      
+      Simple bar plot with error bars showing confidence intervals
+      ### --------------------------------------------------------------
+      ### Plot example, herons and egrets, Chi-square test of association,
+      ###   pp. 63–64
+      ### --------------------------------------------------------------
+      Input =("
+Supplement     No.cancer  Cancer
+'Selenium'     8177       575
+'Vitamin E'    8117       620
+'Selenium+E'   8147       555
+'Placebo'      8167       529
+")
+      
+      Prostate = read.table(textConnection(Input),header=TRUE)
+      
+      ### Add sums and confidence intervals
+      
+      library(dplyr)
+      Prostate =
+        mutate(Prostate,
+               Sum = No.cancer + Cancer)
+      Prostate =
+        mutate(Prostate,
+               Prop = Cancer / Sum,
+               low.ci = apply(Prostate[c("Cancer", "Sum")], 1,
+                              function(y) binom.test(y['Cancer'], y['Sum'])$ conf.int[1]),
+               high.ci = apply(Prostate[c("Cancer", "Sum")], 1,
+                               function(y) binom.test(y['Cancer'], y['Sum'])$ conf.int[2])
+        )
+      Prostate
+      
+      
+      ### Plot (Bar chart plot)
+      library(ggplot2)
+      ggplot(Prostate,
+             aes(x=Supplement, y=Prop)) +
+        geom_bar(stat="identity", fill="gray40",
+                 colour="black", size=0.5,
+                 width=0.7) +
+        geom_errorbar(aes(ymax=high.ci, ymin=low.ci),
+                      width=0.2, size=0.5, color="black") +
+        xlab("Supplement") +
+        ylab("Prostate cancer proportion") +
+        scale_x_discrete(labels=c("Selenium", "Vitamin E",
+                                  "Selenium+E","Placebo")) +
+        ## ggtitle("Main title") +
+        theme(axis.title=element_text(size=14, color="black",
+                                      face="bold", vjust=3)) +
+        theme(axis.text = element_text(size=12, color = "gray25",
+                                       face="bold")) +
+        theme(axis.title.y = element_text(vjust= 1.8)) +
+        theme(axis.title.x = element_text(vjust= -0.5))
+      #     #     #  
+      
+      
+      Bar plot with categories and no error bars
+      
+      
+      ### --------------------------------------------------------------
+      ### Plot example, herons and egrets, Chi-square independence,
+      ###   p. 64
+      ### --------------------------------------------------------------
+      
+      Input =("
+Habitat      Bird   Count
+Vegetation   Heron   15
+Shoreline    Heron   20
+Water        Heron   14
+Structures   Heron    6
+Vegetation   Egret    8
+Shoreline    Egret    5
+Water        Egret    7
+Structures   Egret    1
+")
+      
+      Birds = read.table(textConnection(Input),header=TRUE)
+      
+      
+      ### Specify the order of factor levels
+      library(dplyr)
+      Birds=
+        mutate(Birds,
+               Habitat = factor(Habitat,levels=unique(Habitat)),
+               Bird = factor(Bird,levels=unique(Bird))
+        )
+      
+      ### Add sums and proportions
+      Birds$ Sum[Birds$ Bird == 'Heron'] =
+        sum(Birds$ Count[Birds$ Bird == 'Heron'])
+      
+      Birds$ Sum[Birds$ Bird == 'Egret'] =
+        sum(Birds$ Count[Birds$ Bird == 'Egret'])
+      
+      Birds=
+        mutate(Birds,
+               prop = Count / Sum
+        )
+      Birds 
+      
+      
+      ### Plot adapted from:
+      ### shinyapps.stat.ubc.ca/r-graph-catalog/
+      
+      library(ggplot2)
+      library(grid)
+      ggplot(Birds,
+             aes(x = Habitat, y = prop, fill = Bird, ymax=0.40, ymin=0)) +
+        geom_bar(stat="identity", position = "dodge", width = 0.7) +
+        geom_bar(stat="identity", position = "dodge", colour = "black",
+                 width = 0.7, show_guide = FALSE) +
+        scale_y_continuous(breaks = seq(0, 0.40, 0.05),
+                           limits = c(0, 0.40),
+                           expand = c(0, 0)) +
+        scale_fill_manual(name = "Bird type" ,
+                          values = c('grey80', 'grey30'),
+                          labels = c("Heron (all types)",
+                                     "Egret (all types)")) +
+        
+        ## geom_errorbar(position=position_dodge(width=0.7),
+        ##               width=0.0, size=0.5, color="black") +
+        labs(x = "Habitat Location", y = "Landing site proportion") +
+        ## ggtitle("Main title") +
+        theme_bw() +
+        theme(panel.grid.major.x = element_blank(),
+              panel.grid.major.y = element_line(colour = "grey50"),
+              plot.title = element_text(size = rel(1.5),
+                                        face = "bold", vjust = 1.5),
+              axis.title = element_text(face = "bold"),
+              legend.position = "top",
+              legend.title = element_blank(),
+              legend.key.size = unit(0.4, "cm"),
+              legend.key = element_rect(fill = "black"),
+              axis.title.y = element_text(vjust= 1.8),
+              axis.title.x = element_text(vjust= -0.5)
+        )
+      #     #     # 
+      
+      
+      How to do the test
+      Chi-square test of independence with data as a data frame
+      In the following example for the chi-square test of independence, 
+      the data is read in as a data frame, not as a matrix as in previous examples.
+      This allows more flexibility with how data are entered.  
+      For example you could have counts for same genotype and health distributed among several lines,
+      or have a count of 1 for each row, with a separate row for each individual observation.  
+      The xtabs function is used to tabulate the data and convert them to a contingency table.
+      ### --------------------------------------------------------------
+      ### Gardemann apolipoprotein example, Chi-square independence,
+      ###      SAS example, pp. 65–66
+      ###      Example using cross-tabulation
+      ### --------------------------------------------------------------
+      Input =("
+Genotype  Health       Count
+ins-ins   no_disease   268
+ins-ins   disease      807
+ins-del   no_disease   199
+ins-del   disease      759
+del-del   no_disease    42
+del-del   disease      184
+")
+      
+      Data.frame = read.table(textConnection(Input),header=TRUE)
+      
+      
+      ###  Cross-tabulate the data
+      Data.xtabs = xtabs(Count ~ Genotype + Health,
+                         data=Data.frame)
+      Data.xtabs 
+      
+      summary(Data.xtabs)     # includes N and factors
+      
+      ###  Chi-square test of independence
+      chisq.test(Data.xtabs)
+      #     #     #
+      
+      Power analysis
+      Power analysis for chi-square test of independence
+      ### --------------------------------------------------------------
+      ### Power analysis, chi-square independence, pp. 66–67
+      ### --------------------------------------------------------------
+      # This example assumes you are using a Chi-square test of
+      #   independence.  The example in the Handbook appears to use
+      #   a Chi-square goodness-of-fit test
+      # In the pwr package, for the Chi-square test of independence,
+      #   the table probabilities should sum to 1
+      
+      Input =("
+Genotype  No.cancer Cancer
+GG        0.18      0.165
+GA        0.24      0.225
+AA        0.08      0.110
+")
+      
+      P = as.matrix(read.table(textConnection(Input),
+                               header=TRUE,
+                               row.names=1))
+      P
+      ==
+        sum(P)        # Sum of values in the P matrix
+      [1] 1
+      
+      library(pwr)
+      effect.size = ES.w2(P) 
+      degrees = (nrow(P)-1)*(ncol(P)-1)  # Calculate degrees of freedom
+      
+      pwr.chisq.test(
+        w=effect.size,
+        N=NULL,            # Total number of observations
+        df=degrees,
+        power=0.80,        # 1 minus Type II probability
+        sig.level=0.05)    # Type I probability  
+      #     #     #
+      
+      
+      #------------------------G–test of Independence-------------------
+      G-test example with functions in DescTools and RVAideMemoire
+      ###--------------------------------------------------------------
+      ### Vaccination example, G-test of independence, pp. 68–69
+      ### --------------------------------------------------------------
+      Input =("
+ Injection.area  No.severe  Severe      
+ Thigh           4788       30
+ Arm             8916       76
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      library(DescTools)
+      GTest(Matriz,
+            correct="none")            # "none" "williams" "yates"  
+      
+      library(RVAideMemoire)
+      G.test(Matriz)
+      #     #     #
+      
+      Post-hoc tests
+      For the following example of post-hoc pairwise testing, 
+      we’ll use the pairwise.G.test function from the package RVAideMemoire to make the task easier.  
+      Then we’ll use pairwise.table in the native stats package as an alternative.
+      
+      
+      
+      Post-hoc pairwise G-tests with RVAideMemoire
+      
+      
+      ### --------------------------------------------------------------
+      ### Post-hoc example, G-test of independence, pp. 69–70
+      ### --------------------------------------------------------------
+      
+      Input =("
+ Supplement     No.cancer  Cancer
+ 'Selenium'     8177       575
+ 'Vitamin E'    8117       620
+ 'Selenium+E'   8147       555
+ 'Placebo'      8167       529
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      library(RVAideMemoire)
+      
+      G.test(Matriz)
+      
+      
+      library(RVAideMemoire)
+      pairwise.G.test(Matriz,
+                      p.method = "none")           # Can adjust p-values;
+      # see ?p.adjust for options
+      
+      
+      -------
+        Post-hoc pairwise G-tests with pairwise.table
+      As is, this function works on a matrix with two columns, and compares rows.
+      ### --------------------------------------------------------------
+      ### Post-hoc example, G-test of independence, pp. 69–70
+      ### --------------------------------------------------------------
+      Input =("
+Supplement      No.cancer  Cancer
+ 'Selenium'     8177       575
+ 'Vitamin E'    8117       620
+ 'Selenium+E'   8147       555
+ 'Placebo'      8167       529
+")
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      -------------------------
+        library(DescTools)   
+      GTest(Matriz,
+            correct="none") 
+      
+      FUN = function(i,j){    
+        GTest(matrix(c(Matriz[i,1], Matriz[i,2],
+                       Matriz[j,1], Matriz[j,2]),
+                     nrow=2,
+                     byrow=TRUE),
+              correct="none")$ p.value   # "none" "williams" "yates"
+      }
+      
+      pairwise.table(FUN,
+                     rownames(Matriz),
+                     p.adjust.method="none")       # Can adjust p-values
+      #     #     #
+      
+      
+      #---------------------Fisher’s Exact Test of Independence------------------
+      if(!require(rcompanion)){install.packages("rcompanion")}
+      
+      Post-hoc pairwise Fisher’s exact tests with RVAideMemoire
+      ### --------------------------------------------------------------
+      ### Post-hoc example, Fisher’s exact test, p. 79
+      ### --------------------------------------------------------------
+      Input =("
+Frequency  Damaged  Undamaged
+Daily       1        24
+Weekly      5        20
+Monthly    14        11
+Quarterly  11        14
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      --------------------------------------
+        library(rcompanion)
+      PT = pairwiseNominalIndependence(Matriz,
+                                       fisher = TRUE,
+                                       gtest  = FALSE,
+                                       chisq  = FALSE,
+                                       digits = 3)
+      PT
+      --------------------------------------
+        library(rcompanion)
+      cldList(comparison = PT$Comparison,
+              p.value    = PT$p.adj.Fisher,
+              threshold  = 0.05)
+      
+      
+      -----
+        Examples
+      Examples of Fisher’s exact test with data in a matrix
+      ### --------------------------------------------------------------
+      ### Chipmunk example, Fisher’s exact test, p. 80
+      ### --------------------------------------------------------------
+      
+      Input =("
+Distance    Trill  No.trill
+ 10m        16     8
+ 100m        3    18
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      
+      #     #     #
+      
+      
+      
+      
+      
+      ### --------------------------------------------------------------
+      ### Drosophila example, Fisher’s exact test, p. 81
+      ### --------------------------------------------------------------
+      
+      Input =("
+Variation             Synonymous  Replacement
+ 'Polymorphisms'      43          2
+ 'Fixed differences'  17          7
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      
+      
+      
+      
+      p-value = 0.006653
+      
+      
+      
+      #     #     #
+      
+      
+      
+      
+      
+      ### --------------------------------------------------------------
+      ### King penguin example, Fisher’s exact test, p. 81
+      ### --------------------------------------------------------------
+      
+      Input =("
+ Site     Alive  Dead
+ Lower    43     7
+ Middle   44     6
+ Upper    49     1
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      #     #     #
+      
+      
+      
+      
+      
+      ### --------------------------------------------------------------
+      ### Moray eel example, Fisher’s exact test, pp. 81–82
+      ### --------------------------------------------------------------
+      
+      Input =("
+
+ Site     G.moringa  G.vicinus      
+ Grass    127        116
+ Sand      99         67
+ Border   264        161
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      
+      
+      p-value = 0.04438
+      
+      alternative hypothesis: two.sided
+      #     #     #
+      
+      
+      
+      
+      
+      ### --------------------------------------------------------------
+      ### Herons example, Fisher’s exact test, p. 82
+      ### --------------------------------------------------------------
+      
+      Input =("
+ Site          Heron  Egret      
+ Vegetation    15     8
+ Shoreline     20     5
+ Water         14     7
+ Structures     6     1
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      fisher.test(Matriz,
+                  alternative="two.sided")
+      
+      
+      
+      p-value = 0.5491
+      
+      alternative hypothesis: two.sided
+      
+      
+      
+      #     #     #
+      
+      
+      
+      
+      
+      Graphing the results
+      
+      Graphing is discussed above in the “Chi-square Test of Independence” section.
+      
+      
+      
+      Similar tests – McNemar’s test
+      Care is needed in setting up the data for McNemar’s test.  
+      For a before-and-after test, the contingency table is set-up as before and after as row and column headings, 
+      or vice-versa.  Note that the total observations in the contingency table is equal to the number of experimental units.  
+      That is, in the following example there are 62 men, and the sum of the counts in the contingency table is 62.  
+      If you set up the table incorrectly, you might end with double this number, and this will not yield the correct results.
+      
+      
+      
+      McNemar’s test with data in a matrix
+      
+      
+      ### --------------------------------------------------------------
+      ### Dysfunction example, McNemar test, pp. 82–83
+      ### --------------------------------------------------------------
+      
+      Input =("
+ Row          After.no  After.yes      
+ Before.no    46        10
+ Before.yes    0         6
+")
+      
+      Matriz = as.matrix(read.table(textConnection(Input),
+                                    header=TRUE,
+                                    row.names=1))
+      
+      Matriz
+      
+      mcnemar.test(Matriz, correct=FALSE) 
+      
+      #     #     #
+      
+      
+      
+      
+      
+      McNemar’s test with data in a data frame
+      ### --------------------------------------------------------------
+      ### Dysfunction example, McNemar test, pp. 82–83
+      ###    Example using cross-tabulation
+      ### --------------------------------------------------------------
+      
+      Input =("
+ED.before  ED.after  Count
+ no         no       46
+ no         yes      10 
+ yes        no        0
+ yes        yes       6
+")
+      
+      Data = read.table(textConnection(Input),header=TRUE)
+      
+      Data.xtabs = xtabs(Count ~ ED.before + ED.after, data=Data)
+      
+      Data.xtabs
+      mcnemar.test(Data.xtabs, correct=FALSE)
+      #     #     #
+      
+      
+      How to do the test
+      Fisher’s exact test with data as a data frame
+      ### --------------------------------------------------------------
+      ### Chipmunk example, Fisher’s exact test, SAS example, p. 83
+      ### Example using cross-tabulation
+      ### --------------------------------------------------------------
+      
+      Input =("
+Distance    Sound   Count
+ 10m        trill   16
+ 10m        notrill  8
+ 100m       trill    3
+ 100m       notrill 18
+")
+      
+      Data = read.table(textConnection(Input), header=TRUE)
+      Data.xtabs = xtabs(Count ~ Distance + Sound, data=Data)
+      Data.xtabs
+      
+      summary(Data.xtabs)
+      
+      
+      
+      ### Fisher’s exact test of independence
+      
+      fisher.test(Data.xtabs,
+                  alternative="two.sided")
+      #     #     #
+      
+      ### --------------------------------------------------------------
+      ### Bird example, Fisher’s exact test, SAS example, p. 84
+      ### Example using cross-tabulation
+      ### --------------------------------------------------------------
+      Input =("
+
+Bird    Substrate   Count
+ heron  vegetation  15
+ heron  shoreline   20
+ heron  water       14
+ heron  structures   6
+ egret  vegetation   8
+ egret  shoreline    5
+ egret  water        7
+ egret  structures   1
+")
+      
+      Data = read.table(textConnection(Input), header=TRUE)
+      
+      Data.xtabs = xtabs(Count ~ Bird + Substrate, data=Data)
+      
+      Data.xtabs
+      
+      
+      summary(Data.xtabs)
+      
+      ### Fisher’s exact test of independence
+      fisher.test(Data.xtabs,
+                  alternative="two.sided")
+      #     #     #                      
+      
+      
+      How to do the test
+      Repeated G–tests of goodness-of-fit example
+      ### --------------------------------------------------------------
+      ### Arm crossing example, Repeated G–tests of goodness-of-fit,
+      ###      pp. 91–93
+      ### --------------------------------------------------------------
+      Input =("
+Ethnic.group  R    L
+ Yemen        168  174
+ Djerba       132  195
+ Kurdistan    167  204
+ Libya        162  212
+ Berber       143  194
+ Cochin       153  174
+")
+      
+      Data = read.table(textConnection(Input),header=TRUE)
+      ----------
+        
+        Individual G-tests
+      
+      
+      library(RVAideMemoire)
+      Fun.G = function (Q){                           # Functions
+        G.test(x=c(Q["R"], Q["L"]),           #   to calculate
+               p=c(0.5, 0.5)                  #   individual G’s,
+        )$statistic                    #   df’s, and p-values
+      }
+      
+      Fun.df = function (Q){
+        G.test(x=c(Q["R"], Q["L"]),
+               p=c(0.5, 0.5)
+        )$parameter
+      }
+      
+      Fun.p = function (Q){
+        G.test(x=c(Q["R"], Q["L"]),
+               p=c(0.5, 0.5)
+        )$p.value
+      }
+      
+      library(dplyr)
+      Data=
+        mutate(Data,
+               Prop.R = R / (R + L),                         # Calculate proportion
+               #     of right arms
+               G =       apply(Data[c("R", "L")], 1, Fun.G),
+               df =      apply(Data[c("R", "L")], 1, Fun.df),
+               p.Value = apply(Data[c("R", "L")], 1, Fun.p)
+        )
+      
+      Data
+      
+      --------------------
+        Heterogeneity G-test
+      
+      
+      Data.matrix = as.matrix(Data[c("D", "S")])      # We need a data matrix
+      #   to run G-test
+      Data.matrix                                     #   for heterogeneity
+      
+      
+      G.test(Data.matrix)                             # Heterogeneity
+      
+      
+      
+      Pooled G-test
+      
+      
+      Total.D = sum(Data$D)                           # Set up data for pooled
+      Total.S = sum(Data$S)                           #   G-test
+      
+      observed = c(Total.D, Total.S)
+      expected = c(0.5, 0.5)
+      
+      G.test(x=observed,                              # Pooled
+             p=expected)
+      
+      
+      Total G-test
+      
+      Total.G = sum(Data$G)                           # Set up data for total
+      #   G-test
+      degrees = 3
+      
+      Total.G  = sum(Data$G)                          # Set up data for total
+      #   G-test                                      
+      Total.df = sum(Data$df)
+      
+      Total.G                                         # Total
+      
+      Total.df
+      
+      pchisq(Total.G,
+             df=Total.df,
+             lower.tail=FALSE)
+      #     #     #  
+      
+      #===== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence =========
+      
+      if(!require(dplyr)){install.packages("dplyr")}
+      if(!require(DescTools)){install.packages("DescTools")}
+      if(!require(ggplot2)){install.packages("ggplot2")}
+      if(!require(grid)){install.packages("grid")}
+      if(!require(vcd)){install.packages("vcd")
+        
+        
+        Cochran–Mantel–Haenszel Test with data read by read.ftable
+        
+        
+        ### --------------------------------------------------------------
+        ### Handedness example, Cochran–Mantel–Haenszel test, p. 97–98
+        ###    Example using read.ftable
+        ### --------------------------------------------------------------
+        
+        # Note no spaces on lines before row names.
+        #   read.ftable can be fussy about leading spaces.
+        
+        Input =(
+          "                  Group W.Child B.adult PA.white W.men G.soldier
+Whorl      Handed
+Clockwise  Right            708     136      106    109      801
+           Left              50      24       32     22      102
+CounterCl  Right            169      73       17     16      180
+           Left              13      14        4     26       25
+")
+        
+        Tabla = as.table(read.ftable(textConnection(Input)))
+        
+        ftable(Tabla)                        # Display a flattened table
+        
+        
+        
+        Cochran–Mantel–Haenszel test
+        mantelhaen.test(Tabl
+                        
+                        
+                        Woolf test
+                        
+                        library(vcd)
+                        oddsratio(Tabla, log=TRUE)            # Show log odds for each 2x2
+                        
+                        library(vcd)
+                        woolf_test(Tabla)                # Woolf test for homogeneity of
+                        #   odds ratios across strata.
+                        #   If significant, C-M-H test
+                        #   is not appropriate
+                        
+                        Breslow-Day test
+                        
+                        library(DescTools)
+                        BreslowDayTest(Tabla)
+                        
+                        
+                        Individual Fisher exact tests
+                        
+                        
+                        n = dim(Tabla)[3]
+                        for(i in 1:n){
+                          Name = dimnames(Tabla)[3]$Group[i]
+                          P.value = fisher.test(Tabla[,,i])$p.value
+                          cat(Name, "\n")
+                          cat("Fisher test p-value: ", P.value, "\n")
+                          cat("\n")
+                        }
+                        
+                        ### Note: "Group" must be the name of the stratum variable
+                        --------------
+                          
+                          Cochran–Mantel–Haenszel Test with data entered as a data frame
+                        ### --------------------------------------------------------------
+                        ### Mussel example, Cochran–Mantel–Haenszel test, pp. 98–99
+                        ###    Example using cross-tabulation of a data frame
+                        ### --------------------------------------------------------------
+                        
+                        Input =("
+ Location    Habitat     Allele     Count
+  Tillamook  marine          94     56
+  Tillamook  estuarine       94     69
+  Tillamook  marine      non-94     40  
+  Tillamook  estuarine   non-94     77
+  Yaquina    marine          94     61 
+  Yaquina    estuarine       94    257
+  Yaquina    marine      non-94     57  
+  Yaquina    estuarine   non-94    301
+  Alsea      marine          94     73 
+  Alsea      estuarine       94     65
+  Alsea      marine      non-94     71  
+  Alsea      estuarine   non-94     79
+  Umpqua     marine          94     71  
+  Umpqua     estuarine       94     48
+  Umpqua     marine      non-94     55   
+  Umpqua     estuarine   non-94     48
+ ")
+                        
+                        Data = read.table(textConnection(Input),header=TRUE)
+                        
+                        ### Specify the order of factor levels
+                        ### Otherwise, R will alphabetize them
+                        
+                        library(dplyr)
+                        
+                        Data =
+                          mutate(Data,
+                                 Location = factor(Location, levels=unique(Location)),
+                                 Habitat = factor(Habitat, levels=unique(Habitat)),
+                                 Allele = factor(Allele, levels=unique(Allele))
+                          )
+                        
+                        ### Cross-tabulate the data
+                        ###   Note here, Location is stratum variable (is last)
+                        ###              Habitat x Allele are 2 x 2 tables
+                        
+                        Data.xtabs = xtabs(Count ~ Allele + Habitat + Location,
+                                           data=Data)
+                        
+                        ftable(Data.xtabs)                      # Display a flattened table
+                        
+                        
+                        Cochran–Mantel–Haenszel test
+                        
+                        mantelhaen.test(Data.xtabs)
+                        
+                        #that is fine for now
+                        
+                        # fisher exact test:
+                        tab <- tabyl(imdata3, mode, nicu)
+                        fisher.test(tab)
+                        # Chi-square test::
+                        tab <- tabyl(imdata3, mode, nicu)
+                        chisq.test(tab)
+                        
+                        chisq.test(tab)$residuals
+                        #======================================================
+                        =======================================================
+                          #------------------------------------modelling---------------------
+                        library(readxl)
+                        library(readr)
+                        library(rio)
+                        library(tidyverse)
+                        library(skimr)
+                        library(deSolve)
+                        library(reshape2)
+                        #Part one: SIR Mode-----------(Example one)_________________________
+                        
+                        sir<-function(time,state,parameters)
+                        {with(as.list(c(state,parameters)),
+                              {dS<--beta*S*I
+                              dI<-beta*S*I-gamma*I
+                              dR<-gamma*I
+                              return(list(c(dS,dI,dR)))})}
+                        
+                        # state/compartment =(SIR),  +   parameters =(beta, gamma)_________
+                        
+                        #Provide the initial values and some parameters as below:
+                        init<-c(S=1-1e-6,I=1e-6,0.0)
+                        parameters<-c(beta=1.4247,gamma=0.14286)
+                        times<-seq(0,70,by=1)
+                        
+                        #Put the results in dataframe    Ordinary differential equation (ode)
+                        ode<-as.data.frame(ode(y=init,times=times,func=sir,parms=parameters))
+                        summary(ode)
+                        
+                        out<-as.data.frame(ode)
+                        out$time<-NULL
+                        
+                        #Ploting the results
+                        matplot(times,out,type="l",xlab="Time",ylab="Susceptible and Recovered",main = "SIR Model",
+                                lwd = 1, lty = 1, bty = "l", col = 2:4)
+                        legend(40,0.7,c("Susceptible","Infected","Recovered"),pch=1,col=2:4)
+                        
+                        
+                        
+                        
+                        infections <- out$I
+                        peak <- max(infections)
+                        match(peak, infections) #this will show the day where peak is high
+                        
+                        #..................................................................
+                        
+                        # Step 1: writing the differential equations with() function below:
+                        
+                        sir_2 <- function(time, variables, parameters) {
+                          with(as.list(c(variables, parameters)), {
+                            dS <- -beta * I * S
+                            dI <- beta * I * S - gamma * I
+                            dR <- gamma * I
+                            return(list(c(dS, dI, dR)))
+                          })
+                        }
+                        
+                        #with() works on lists only, not on vectors.........
+                        
+                        #Step 2: defining some values for the parameters in a named vector:
+                        
+                        parameters_values <- c(
+                          beta = 0.004, # infectious contact rate (/person/day)
+                          gamma = 0.5 # recovery rate (/day)
+                        )
+                        #------------------------------------------------------------------
+                        #Step 3: defining initial values for the variables
+                        #The initial values of the variables need to be defined in a named vector:
+                        initial_values <- c(
+                          S = 999, # number of susceptible at time = 0
+                          I = 1, # number of infectious at time = 0
+                          R = 0 # number of recovered (and immune) at time = 0
+                        )
+                        #Step 4: the points in time where we need to calculate variables values
+                        #We want to know the values of our SIR model variables at these time points:
+                        time_values <- seq(0, 10) # days
+                        
+                        #Step 5: numerically solving the SIR model We have defined all the needed ingredients:
+                        ls()
+                        
+                        ## [1] "infections" "init" "initial_values"
+                        ## [4] "ode" "out" "parameters"
+                        ## [7] "parameters_values" "peak" "sir"
+                        ## [10] "sir_2" "time_values" "times"
+                        
+                        [1] “initial_values” “parameters_values” “sir_equations”
+                        [4] “time_values”
+                        
+                        sir_2
+                        ## function(time, variables, parameters) {
+                        ## with(as.list(c(variables, parameters)), {
+                        ## dS <- -beta * I * S
+                        ## dI <- beta * I * S - gamma * I
+                        ## dR <- gamma * I
+                        ## return(list(c(dS, dI, dR)))
+                        ## })
+                        ## }
+                        parameters_values
+                        ## beta gamma
+                        ## 0.004 0.500
+                        initial_values
+                        ## S I R
+                        ## 999 1 0
+                        time_values
+                        ## [1] 0 1 2 3 4 5 6 7 8 9 10
+                        
+                        #Clearly, everything looks fine so now we can use the ode() function of the deSolve package to numericallysolve our model:
+                        
+                        sir_values_1 <- ode(
+                          y = initial_values,
+                          times = time_values,
+                          func = sir_2,
+                          parms = parameters_values
+                        )
+                        sir_values_1
+                        #you can use these values for further analytical steps,  
+                        sir_values_1 <- as.data.frame(sir_values_1)  
+                        sir_values_1
+                        
+                        with(sir_values_1, {
+                          # plotting the time series of susceptibles:
+                          plot(time, S, type = "l", col = "blue",
+                               xlab = "time (days)", ylab = "number of people")
+                          # adding the time series of infectious:
+                          lines(time, I, col = "red")
+                          # adding the time series of recovered:
+                          lines(time, R, col = "green")
+                        })
+                        # adding a legend:
+                        legend("right", c("susceptibles", "infectious", "recovered"),
+                               col = c("blue", "red", "green"), lty = 1, bty = "n")
+                        
+                        -----------------------------------------------------
+                          #The value of the R0 is
+                          (999 + 1) * parameters_values["beta"] / parameters_values["gamma"]
+                        # Or __________________assigning N <- (999 + 1)
+                        N <- (999 + 1)
+                        N * parameters_values["beta"] / parameters_values["gamma"]
+                        # beta ------#8
+                        
+                        sir_try <- function(beta, gamma, S0, I0, R0, times) {
+                          require(deSolve) # for the "ode" function
+                          # the differential equations:
+                          sir_equations <- function(time, variables, parameters) {
+                            with(as.list(c(variables, parameters)), {
+                              dS <- -beta * I * S
+                              dI <- beta * I * S - gamma * I
+                              dR <- gamma * I
+                              return(list(c(dS, dI, dR)))
+                              9
+                            })
+                          }
+                          # the parameters values:
+                          parameters_values <- c(beta = beta, gamma = gamma)
+                          # the initial values of variables:
+                          initial_values <- c(S = S0, I = I0, R = R0)
+                          # solving
+                          out <- ode(initial_values, times, sir_equations, parameters_values)
+                          # returning the output:
+                          as.data.frame(out)
+                        }
+                        sir_try(beta = 0.004, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = seq(0, 10))
+                        ## time S I R
+                        ## 1 0 999.0000000 1.00000 0.000000
+                        ## 2 1 963.7055761 31.79830 4.496125
+                        ## 3 2 461.5687749 441.91575 96.515480
+                        ## 4 3 46.1563480 569.50418 384.339476
+                        ## 5 4 7.0358807 373.49831 619.465807
+                        ## 6 5 2.1489407 230.12934 767.721720
+                        ## 7 6 1.0390927 140.41085 858.550058
+                        ## 8 7 0.6674074 85.44479 913.887801
+                        ## 9 8 0.5098627 51.94498 947.545162
+                        ## 10 9 0.4328913 31.56515 968.001960
+                        ## 11 10 0.3919173 19.17668 980.431400
+                        
+                        # Comparing a model’s predictions with data-----------------------  
+                        
+                        ##flu <- read.table("https://bit.ly/2vDqAYN", header = TRUE)
+                        # The above link may be broken in the future so is a good practice to save
+                        #the data on your computer after first download from the internet
+                        load("flu.RData")
+                        flu
+                        ## day cases
+                        ## 1 0 1
+                        ## 2 1 6
+                        ## 3 2 26
+                        ## 4 3 73
+                        ## 5 4 222
+                        ## 6 5 293
+                        ## 7 6 258
+                        ## 8 7 236
+                        ## 9 8 191
+                        ## 10 9 124
+                        ## 11 10 69
+                        ## 12 11 26
+                        ## 13 12 11
+                        ## 14 13 4
+                        ##Plot the points of the flu data set and use the sir_try() function to visually compare the model’s predictions and the data points:
+                        
+                        with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
+                        predictions <- sir_try(beta = 0.004, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
+                        with(predictions, lines(time, I, col = "red"))
+                        
+                        
+                        #The above model did not fit the observed data well so we need to train the model on the data by changing
+                        #beta and gamma parameters. In this case, we will change only the beta parameter:
+                        
+                        with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
+                        predictions <- sir_try(beta = 0.0025, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
+                        with(predictions, lines(time, I, col = "red"))
+                        
+                        ------------------------------------------------------------------------- 
+                          
+                          ### The above model is better than the first model but not good yet
+                          Write a function that takes parameters values as inputs and draws the figure as an output. Play with that
+                        function to see how changing the values of parameters can bring the model’s predictions closer to the data
+                        points.
+                        model_fit <- function(beta, gamma, data, N = 763, ...) {
+                          I0 <- data$cases[1] # initial number of infected (from data)
+                          times <- data$day # time points (from data)
+                          # model's predictions:
+                          predictions <- sir_try(beta = beta, gamma = gamma, # parameters
+                                                 S0 = N - I0, I0 = I0, R0 = 0, # variables' intial values
+                                                 times = times) # time points
+                          # plotting the observed prevalences:
+                          with(data, plot(day, cases, ...))
+                          # adding the model-predicted prevalence:
+                          with(predictions, lines(time, I, col = "red"))
+                        } 
+                        
+                        model_fit(beta = 0.004, gamma = 0.5, flu, pch = 19, col = "red", ylim = c(0, 600))
+                        
+                        -----------------------------------------------------------------------------
+                          
+                          
+                          The above model did not fit the data well so let us change the beta parameter to train the data
+                        model_fit(beta = 0.0025, gamma = 0.5, flu, pch = 19, col = "red", ylim = c(0, 600))  
+                        
+                        
+                        The above model reasonably fits the data well.
+                        Let us get some model predictions based on the above model:
+                          beta=0.0025
+                        gamma=0.5
+                        s0=762
+                        I0=1
+                        R0=0
+                        time=flu$day
+                        predictions <- sir_try(beta = beta, gamma =gamma, S0 = s0, I0 = I0, R0 = R0, times = time)
+                        predictions
+                        ## time S I R
+                        ## 1 0 762.00000 1.000000 0.000000
+                        ## 2 1 757.84809 4.059187 1.092719
+                        ## 3 2 741.40936 16.111906 5.478730
+                        ## 4 3 682.07965 58.760314 22.160032
+                        ## 5 4 522.92669 164.772360 75.300946
+                        ## 6 5 296.50106 277.719531 188.779410
+                        ## 7 6 143.33630 285.513298 334.150405
+                        ## 8 7 75.29039 224.790636 462.918979
+                        ## 9 8 46.75452 158.037921 558.207561
+                        ## 10 9 33.73731 105.793282 623.469410
+                        ## 11 10 27.18922 69.184382 666.626394
+                        14
+                        ## 12 11 23.63171 44.695620 694.672672
+                        ## 13 12 21.59168 28.679392 712.728932
+                        ## 14 13 20.37877 18.329558 724.291668
+                        And we want to compare these model’s predictions with real prevalence data:
+                          One simple way to do so is to compute the “sum of squares” as below:
+                          sum((predictions$I - flu$cases)ˆ2)
+                        
+                        ## [1] 6980.877
+                        Which is the squared sum of the lengths of vertical black segments of the figure below:
+                          #the observed prevalences:
+                          with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
+                        # the model-predicted prevalences:
+                        with(predictions, lines(time, I, col = "red", type = "o"))
+                        # the "errors":
+                        segments(flu$day, flu$cases, predictions$time, predictions$I)
+                        
+                        And we want to predict beyond the observed time period (i.e., forecast) based on the best parameters from
+                        the fitted model above
+                        newtime=seq(0,20)
+                        model_forecast <- sir_try(beta = beta, gamma =gamma, S0 = s0, I0 = I0, R0 = R0, times = newtime)
+                        summary(model_forecast)
+                        ## time S I R
+                        ## Min. : 0 Min. : 18.49 Min. : 0.7717 Min. : 0.0
+                        ## 1st Qu.: 5 1st Qu.: 19.18 1st Qu.: 4.0592 1st Qu.:188.8
+                        ## Median :10 Median : 27.19 Median : 18.3296 Median :666.6
+                        ## Mean :10 Mean :204.13 Mean : 70.8674 Mean :488.0
+                        ## 3rd Qu.:15 3rd Qu.:296.50 3rd Qu.:105.7933 3rd Qu.:736.4
+                        ## Max. :20 Max. :762.00 Max. :285.5133 Max. :743.7
+                        matplot(model_forecast, type="l", lty=1, main="SIRS model", xlab="Time",ylab="Number of people")
+                        legend <- colnames(model_forecast)[2:4]
+                        legend(15000,900000, legend=legend, col=2:4, lty = 1)
+                        
+                        
+                        What are the effects of increasing or decreasing the values of the transmission contact rate (β) and the
+                        recovery rate (γ) on the shape of the epi curve?
+                          
+                          #Estimating model’s parameters
+                          Sums of squares
+                        This is our model’s predictions:
+                          predictions <- sir_try(beta = 0.004, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
+                        predictions
+                        ## time S I R
+                        ## 1 0 999.0000000 1.000000 0.000000
+                        ## 2 1 963.7055761 31.798299 4.496125
+                        ## 3 2 461.5687749 441.915745 96.515480
+                        ## 4 3 46.1563480 569.504176 384.339476
+                        ## 5 4 7.0358807 373.498313 619.465807
+                        ## 6 5 2.1489407 230.129339 767.721720
+                        ## 7 6 1.0390927 140.410850 858.550058
+                        ## 8 7 0.6674074 85.444792 913.887801
+                        ## 9 8 0.5098627 51.944975 947.545162
+                        ## 10 9 0.4328913 31.565149 968.001960
+                        ## 11 10 0.3919173 19.176683 980.431400
+                        ## 12 11 0.3689440 11.648910 987.982146
+                        ## 13 12 0.3556517 7.075651 992.568698
+                        ## 14 13 0.3478130 4.297635 995.354552
+                        And we want to compare these model’s predictions with real prevalence data:
+                          flu
+                        ## day cases
+                        ## 1 0 1
+                        ## 2 1 6
+                        ## 3 2 26
+                        ## 4 3 73
+                        ## 5 4 222
+                        ## 6 5 293
+                        ## 7 6 258
+                        ## 8 7 236
+                        ## 9 8 191
+                        ## 10 9 124
+                        ## 11 10 69
+                        ## 12 11 26
+                        ## 13 12 11
+                        ## 14 13 4
+                        One simple way to do so is to compute the “sum of squares” as below:
+                          sum((predictions$I - flu$cases)ˆ2)
+                        ## [1] 514150.7
+                        Which is the squared sum of the lengths of vertical black segments of the figure below
+                        
+                        #the observed prevalences:
+                        with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
+                        # the model-predicted prevalences:
+                        with(predictions, lines(time, I, col = "red", type = "o"))
+                        # the "errors":
+                        segments(flu$day, flu$cases, predictions$time, predictions$I)
+                        
+                        #=================-----------==========================================
+                        
+                        Working with programmable decision: Shiny
+                        User-defined models Users can also specify their own models using the neweqns argument. neweqns takes a
+                        function containing the equations for the new model, with syntax as outlined in the example below. Note
+                        the syntax follows that used by the popular ODE solver deSolve.
+                        require(shinySIR)
+                        ## Loading required package: shinySIR
+                        ## Loading required package: dplyr
+                        ##
+                        ## Attaching package: ’dplyr’
+                        ## The following objects are masked from ’package:stats’:
+                        ##
+                        ## filter, lag
+                        ## The following objects are masked from ’package:base’:
+                        ##
+                        ## intersect, setdiff, setequal, union
+                        ## Loading required package: tidyr
+                        ## Loading required package: ggplot2
+                        ## Loading required package: shiny
+                        run_shiny(model = "SIR")
+                        ## Warning in run_shiny(model = "SIR"): The length of the manual colour scale
+                        ## vector (’values’) must equal the number of model variables. Using default
+                        ## ggplot colours instead.
+                        ##
+                        ## Listening on http://127.0.0.1:3912
+                        ## Warning: ‘tbl_df()‘ was deprecated in dplyr 1.0.0.
+                        ## i Please use ‘tibble::as_tibble()‘ instead.
+                        ## i The deprecated feature was likely used in the shinySIR package.
+                        ## Please report the issue to the authors.
+                        ## This warning is displayed once every 8 hours.
+                        ## Call ‘lifecycle::last_lifecycle_warnings()‘ to see where this warning was
+                        ## generated.
+                        
+                        mySIRS <- function(t, y, parms) {
+                          with(as.list(c(y, parms)),{
+                            # Change in Susceptibles
+                            dS <- - beta * S * I + delta * R
+                            # Change in Infecteds
+                            dI <- beta * S * I - gamma * I
+                            # Change in Recovereds
+                            dR <- gamma * I - delta * R
+                            return(list(c(dS, dI, dR)))
+                          })
+                        }
+                        #The interactive plot can then be created by calling this function with neweqns, specifying initial conditions
+                        # for all model variables (ics), and specifying vectors for the parameter attributes, including parameter starting
+                        # values (parm0), names to be displayed in the interactive menu (parm_names), and minimum and maximum
+                        # values for the interactive menu (parm_min and parm_max, respectivel
+                        
+                        run_shiny(model = "SIRS (w/out demography)",
+                                  neweqns = mySIRS,
+                                  ics = c(S = 9999, I = 1, R = 0),
+                                  parm0 = c(beta = 5e-5, gamma = 1/7, delta = 0.1),
+                                  parm_names = c("Transmission rate", "Recovery rate", "Loss of immunity"),
+                                  parm_min = c(beta = 1e-5, gamma = 1/21, delta = 1/365),
+                                  parm_max = c(beta = 9e-5, gamma = 1 , delta = 1))
+                        ## Warning in run_shiny(model = "SIRS (w/out demography)", neweqns = mySIRS, : The
+                        ## length of the manual colour scale vector (’values’) must equal the number of
+                        ## model variables. Using default ggplot colours instead.
+                        ##
+                        ## Listening on http://127.0.0.1:3931
+                        
+                        ==============================================================================
+                          ------------------------------------------------------------------------------
+                          =============================================================================== 
+                          Part two: SIRS models in R (the focus of this session)
+                        Modelling Waning Immunity
+                        It is possible that people gain immunity after recovering from the infection but the immunity doesn’t last
+                        forever. So, these individuals become susceptible again. Here, σ is the waning rate.
+                        The SIRS model is an extension of SIR model. For SIRS, additional compartment called “waning immunity”
+                        is added to the SIR model. Thus, The basic SIRS model has three compartments with three parameters 
+                        
+                        ∂S
+                        ∂t
+                        = -(β x S) + (σ x R) . . . . . . . . . . . . (6)
+                        ∂I
+                        ∂t
+                        = (β x S) - (γ x I) . . . . (7)
+                        ∂R
+                        ∂t
+                        = (γ x I) - (σ x R) . . . . . . . . . . . . . . . . . . (8)
+                        Waning immunity
+                        Assume σ =0.2 per day,β =0.4 per day and waning rate,*σ =1/10 per year if average immunity period is
+                        taken as 10 years. The model is run for a time period of 50 years in daily intervals.
+                        require(ggplot2)
+                        require(deSolve)
+                        require(reshape2)
+                        ## Loading required package: reshape2
+                        ##
+                        ## Attaching package: ’reshape2’
+                        ## The following object is masked from ’package:tidyr’:
+                        ##
+                        ## smiths
+                        # Model input
+                        initial_values=c(S=999999,I=1,R=0)
+                        parameters=c(gamma=0.2*365,beta=0.4*365,sigma=1/(10))
+                        # Time points
+                        time=seq(from=1,to=50,by=1/365)
+                        #SIR model function
+                        sirs_model <- function(time,state,parameters){
+                          with(as.list(c(state,parameters)),{
+                            N=S+I+R
+                            lambda=beta*(I/N)
+                            dS=-lambda*S+sigma*R
+                            dI=lambda*S-gamma*I
+                            dR=gamma*I-sigma*R
+                            return(list(c(dS,dI,dR)))
+                          })
+                        }
+                        # Solving the differential equations:
+                        model_sirs<-as.data.frame(ode(y=initial_values,func = sirs_model,parms=parameters,times = time))
+                        names(model_sirs)
+                        ## [1] "time" "S" "I" "R"
+                        matplot(model_sirs, type="l", lty=1, main="SIRS model", xlab="Time",ylab="Number of people")
+                        legend <- colnames(model_sirs)[2:4]
+                        legend(15000,900000, legend=legend, col=2:4, lty = 1)
+                        
+                        
+                        # Note that We can plot the prevalence instead of the number of people by
+                        # dividing the values by 1,000,000
+                        #Alternatively, plot the prevalence with ggplot2
+                        model_sirs_long=melt(model_sirs,id="time")
+                        names(model_sirs_long)
+                        ## [1] "time" "variable" "value"
+                        #Prevalence plot
+                        ggplot(data = model_sirs_long,
+                               aes(x = time, y = value/1000000, colour = variable, group = variable)) +
+                          geom_line() +
+                          xlab("Time (years)")+
+                          ylab("Prevalence") +scale_color_discrete(name="State")
+                        
+                        ==============================================================================
+                          ------------------------------------------------------------------------------
+                          ==============================================================================
+                          Part three: SEIR model (the focus of this session)
+                        SEIR model fitting
+                        The SEIR model is an extension of SIR model. For SEIR, additional compartment called “exposed” is added
+                        to the SIR model. Thus, The basic SEIR model has four compartments represented as:
+                          
+                          1. S - “Susceptible” – individuals who have not been exposed to the virus
+                        2. E - “Exposed” – individuals exposed to the virus, but not yet infectious
+                        3. I - “Infectious” – exposed individuals who go on to become infectious
+                        4. R - “Recovered” – infectious individuals who recover and become immune to the virus
+                        5. Population size N is the sum of the individuals in the 4 compartments.
+                        
+                        
+                        
+                        Parameters of the SEIR model
+                        The flow of individuals between compartments is characterised by a number of parameters.
+                        β (beta): is the transmission coefficient. Think of this as the average number of infectious contacts an
+                        infectious individual in the population makes at each time period. A high value of β means the virus has
+                        more opportunity to spread.
+                        σ (sigma): is the rate at which exposed individuals become infectious. Think of it as the reciprocal of the
+                        average time it takes to become infectious. That is, if an individual becomes infectious after 4 days on
+                        average, σ will be 1/4 (or 0.25).
+                        γ (gamma): is the rate at which infectious individuals recover. As before, think of it as the reciprocal of the
+                        average time it takes to recover. That is, if it takes 10 days on average to recover, γ will be 1/10 (or 0.1).
+                        μ (mu): is an optional parameter to describe the mortality rate of infectious individuals. The higher μ is,
+                        the more deadly the virus.
+                        From these parameters, you can construct a set of differential equations. These describe the rate at which
+                        each compartment changes size.
+                        Setting-up SEIR Equations
+                        Equation (9) - Susceptible
+                        The first thing to see from the model is that there is no way S can increase over time. There are no flows
+                        back into the compartment. Equation (6) must be negative, as S can only ever decrease.
+                        In what ways can an individual leave compartment S?
+                          Well, they can become infected by an infectious individual in the population.
+                        At any stage, the proportion of infectious individuals in the population = I/N.
+                        And the proportion of susceptible individuals will be S/N.
+                        Under the assumption of perfect mixing (that is, individuals are equally likely to come into contact with any
+                                                                other in the population), the probability of any given contact being between an infectious and susceptible
+                        individual is (I / N) * (S / N).
+                        This is multiplied by the number of contacts in the population. This is found by multiplying the transmission
+                        coefficient β, by the population size N.
+                        Combining that all together and simplifying gives equation (9):
+                          ∂S
+                        ∂t
+                        = - (β x S x I) / N . . . . . . . . . . (9)
+                        Equation (10) - Exposed
+                        Next, let’s consider the “exposed” compartment, E. Individuals can flow into and out of this compartment.
+                        The flow into E will be matched by the flow out of S. So the first part of the next equation will simply be
+                        the opposite of the previous term.
+                        Individuals can leave E by moving into the infectious compartment. This happens at a rate determined by
+                        two variables – the rate σ and the current number of individuals in E.
+                        So overall equation (10) is:
+                          
+                          
+                          ∂E
+                        ∂t
+                        = (β x S x I) - (σ x E) . . . . (10)
+                        Equation (11) - Infectious
+                        The next compartment to consider is the “infectious” compartment, I.
+                        There is one way into this compartment, which is from the “exposed” compartment.
+                        There are two ways an individual can leave the “infectious” compartment.
+                        Some will move to “recovered”. This happens at a rate γ.
+                        Others will not survive the infection. They can be modeled using the mortality rate μ.
+                        So equation (11) looks like:
+                          ∂I
+                        ∂t
+                        = (σ x E) - (γ x I) - (μ x I) . . . . (11)
+                        Equation (12) - Recovered
+                        Now let’s look at the “recovered” compartment, R.
+                        This time, individuals can flow into the compartment (determined by the rate γ).
+                        And no individuals can flow out of the compartment (although in some models, it is assumed possible to
+                                                                            move back into the “susceptible” compartment - especially infectious diseases where re-infection is possible
+                                                                            - COVID-19?).
+                        So the overall equation (12) looks like this:
+                          ∂R
+                        ∂t
+                        = γ x I . . . . . . . . . . . . . . . . . . (12)
+                        Equation (13) - Mortality (optional)
+                        Using similar reasoning, you could also construct equation (13) for the change in mortality. You might
+                        consider this a fifth compartment in the model.
+                        ∂M
+                        ∂t
+                        = μ x I . . . . . . . . . . . . . . . . . . (13)
+                        You may set μ to zero (0) to exclude this compartment from the model.
+                        Thus, we have given the full set of differential equations (9-13)
+                        Solving equations 9-13 (SEIR model) in R
+                        require(deSolve)
+                        SEIR <- function(time, current_state, params){
+                          with(as.list(c(current_state, params)),{
+                            N <- S+E+I+R
+                            dS <- -(beta*S*I)/N
+                            dI <- sigma*E - gamma*I - mu*I
+                            dR <- gamma*I
+                            dM <- mu*I
+                            return(list(c(dS, dE, dI, dR, dM)))
+                          })
+                        }
+                        
+                        
+                        The above function describes and provides 3 arguments:
+                          (a) The current time step.
+                        (b) A list of the current states of the system (that is, the estimates for each of S, E, I and R at the current
+                                                                        time step).
+                        (c) A list of parameters used in the equations (recall these are β, σ, γ, and μ).
+                        Inside the function body, you define the system of differential equations as described above. These are
+                        evaluated for the given time step and are returned as a list. The order in which they are returned must
+                        match the order in which you provide the current states.
+                        Now take a look at the code below:
+                          params <- c(beta=0.5, sigma=0.25, gamma=0.2, mu=0.001)
+                        initial_state <- c(S=999999, E=1, I=0, R=0, M=0)
+                        times <- 0:365
+                        The above codes initialises the parameters and initial state (starting conditions) for the model.
+                        It also generates a vector of times from zero to 365 days.
+                        Now, create the model:
+                          model <- ode(initial_state, times, SEIR, params)
+                        This uses deSolve’s ode() function to solve the equations with respect to time.
+                        See here for the documentation.
+                        
+                        The arguments required are:
+                          1. The initial state for each of the compartments
+                        2. The vector of times (this example solves for up to 365 days)
+                        3. The SEIR() function, which defines the system of equations
+                        4. A vector of parameters to pass to the SEIR() function
+                        
+                        Running the command below will give the summary statistics of the model.
+                        
+                        summary(model)
+                        ## S E I R M
+                        ## Min. 108263.6 3.616607e-07 0.000000e+00 0.00 0.0000
+                        ## 1st Qu. 108263.7 5.957435e-03 1.414971e-02 63894.43 319.4721
+                        ## Median 108395.7 8.470071e+00 1.273726e+01 886814.36 4434.0718
+                        ## Mean 362798.6 9.745754e+03 1.212158e+04 612272.74 3061.3637
+                        ## 3rd Qu. 852375.5 1.734331e+03 2.533956e+03 887299.83 4436.4991
+                        ## Max. 999999.0 1.092967e+05 1.265161e+05 887299.86 4436.4993
+                        ## N 366.0 3.660000e+02 3.660000e+02 366.00 366.0000
+                        ## sd 381257.2 2.475783e+04 2.969234e+04 387333.47 1936.6673
+                        
+                        Already, you will find some interesting insights.
+                        1. Out of a million individuals, 108,264 did not become infected.
+                        2. At the peak of the epidemic, 126,516 individuals were infectious simultaneously.
+                        3. 887,300 individuals recovered by the end of the model.
+                        4. A total of 4436 individuals died during the epidemic.
+                        You can also visualise the evolution of the pandemic using the matplot() function.
+                        colnames(model)
+                        ## [1] "time" "S" "E" "I" "R" "M"
+                        matplot(model, type="l", lty=1, main="SEIR model", xlab="Time")
+                        legend <- colnames(model)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1)
+                        
+                        
+                        #Assign both x and y axis labels
+                        matplot(model, type="l", lty=1, main="SEIR model", xlab="Time",ylab="Number of people")
+                        legend <- colnames(model)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1)
+                        #Add the peak time line vertically
+                        matplot(model, type="l", lty=1, main="SEIR model", xlab="Time",ylab="Number of people")
+                        abline(v=112,col="blue")
+                        legend <- colnames(model)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1) 
+                        
+                        #Add the peak time line vertically
+                        matplot(model, type="l", lty=1, main="SEIR model", xlab="Time",ylab="Number of people")
+                        abline(v=112,col="blue")
+                        text(112,920000,"Peak day: 112",cex = 0.7,pos=3)
+                        legend <- colnames(model)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1)
+                        
+                        #The associated plot is shown above:
+                        #You can also coerce the model output to a dataframe type. Then, you can analyse the model further.
+                        
+                        infections <- as.data.frame(model)$I
+                        peak <- max(infections)
+                        match(peak, infections)
+                        ## [1] 112
+                        ===============================================================================
+                          -------------------------------------------------------------------------
+                          SEIR model with intervention methods
+                        The SEIR model is an interesting example of how an epidemic develops without any changes in the population’s
+                        behaviour.
+                        You can build more sophisticated models by taking the SEIR model as a starting point and adding extra
+                        features.
+                        This lets you model changes in behaviour (either voluntary or as a result of government intervention).
+                        Many (but not all) countries around the world entered some form of “lockdown” during the coronavirus
+                        pandemic of 2019.
+                        Ultimately, the intention of locking down is to alter the course of the epidemic by reducing the transmission
+                        coefficient, β.
+                        The code below defines a model which changes the value of β between the start and end of a period of
+                        lockdown.
+                        All the numbers used are purely illustrative. You could make an entire research career (several times over)
+                        trying to figure out the most realistic values.
+                        SEIR_lockdown <- function(time, current_state, params){
+                          with(as.list(c(current_state, params)),{
+                            beta = ifelse(
+                              (time <= start_lockdown || time >= end_lockdown),
+                              0.5, 0.1
+                            )
+                            N <- S+E+I+R
+                            dS <- -(beta*S*I)/N
+                            dE <- (beta*S*I)/N - sigma*E
+                            dI <- sigma*E - gamma*I - mu*I
+                            dR <- gamma*I
+                            dM <- mu*I
+                            return(list(c(dS, dE, dI, dR, dM)))
+                          })
+                        }
+                        The only change is the extra ifelse() statement to adjust the value of β to 0.1 during lockdown and β to 0.5
+                        before and after the lockdown.Thus, if before or after the lockdown, give beta value to be 0.5 (i.e., increased
+                                                                                                                        transmission rate) but if within the lockdown periods, assign beta value to be 0.1 (i.e., reduced transmission
+                                                                                                                                                                                                            rate)
+                        You need to pass two new parameters to the model. These are the start and end times of the lockdown
+                        periods.
+                        Here, the lockdown begins on day 90, and ends on day 150.
+                        params <- c(
+                          sigma=0.25,
+                          gamma=0.2,
+                          mu=0.001,
+                          start_lockdown=90,
+                        )
+                        initial_state <- c(S=999999, E=1, I=0, R=0, M=0)
+                        times <- 0:365
+                        model2 <- ode(initial_state, times, SEIR_lockdown, params)
+                        Now you can view the summary and graphs associated with this model.
+                        summary(model2)
+                        ## S E I R M
+                        ## Min. 156885.7 7.699207e-01 0.00000 0.00 0.0000
+                        ## 1st Qu. 160478.2 6.929205e+01 97.71405 63668.75 318.3438
+                        ## Median 789214.4 1.246389e+03 1735.66330 194379.16 971.8958
+                        ## Mean 589558.9 9.216918e+03 11460.62036 387824.44 1939.1222
+                        ## 3rd Qu. 867639.6 1.030043e+04 13780.17591 829898.56 4149.4928
+                        ## Max. 999999.0 6.083432e+04 72443.97892 838916.89 4194.5845
+                        ## N 366.0 3.660000e+02 366.00000 366.00 366.0000
+                        ## sd 350719.3 1.570278e+04 18893.31145 346542.57 1732.7128
+                        This will reveal:
+                          You can see:
+                          1. Out of a million individuals, 156,886 did not become infected.
+                        2. At the peak of the epidemic, 72,444 individuals were infectious simultaneously. 838,917 individuals
+                        recovered by the end of the model.
+                        3. A total of 4195 individuals died during the epidemic.
+                        4. Plotting the model using matplot() reveals a strong “second wave” effect (as was seen across many countries in Europe towards the end of 2020).
+                        matplot(
+                          model2,
+                          type="l",
+                          lty=1,
+                          main="SEIR model (with intervention)",
+                          xlab="Time"
+                        )
+                        legend <- colnames(model2)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1)
+                        
+                        
+                        Put the start and end of the lockdown periods for better visualization
+                        matplot(
+                          model2,
+                          type="l",
+                          lty=1,
+                          main="SEIR model (with intervention)",
+                          xlab="Time",
+                          ylab="Number of people"
+                        )
+                        abline(v=90, col="blue")
+                        abline(v=150, col="blue")
+                        text(112,600000,"start & end- lockdown: day 90 & 150",cex = 0.7,pos=3)
+                        legend <- colnames(model2)[2:6]
+                        legend("right", legend=legend, col=2:6, lty = 1)
+                        
+                        
+                        
+                        Finally, you can coerce the model to a dataframe and carry out more detailed analysis from there.
+                        infections <- as.data.frame(model2)$I
+                        peak <- max(infections)
+                        match(peak, infections)
+                        ## [1] 223
+                        1. In this scenario, the number of infections peaked on day 223.
+                        2. In other scenarios, you could model the effect of vaccination. Or, you could build in seasonal differences
+                        in the transmission rate.
+                        
+                        Exercise for participants (duration - one hour)
+                        Using the last model above, fit a similar model for the scenarios below separately, and interpret your results
+                        for each scenario:
+                          
+                          (1) vary the value of β between the start and end of a period of lockdown as 0.5 and 0.2 respectively.
+                        (2) vary the value of β between the start and end of a period of lockdown as 0.6 and 0.2 respectively.
+                        (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1
+                        respectively.
+                        
