@@ -398,39 +398,38 @@ summarySE(data=imdata,
           groupvars="expose",    
           conf.interval = 0.95)
 
-#----------------Confidence interval for proportions___with  binom.test function
+#-----------------Confidence interval for proportions___with binom.test function
 binom.test(2, 20, 0.5,
            alternative="two.sided",
            conf.level=0.95)
 
-#----------------Confidence interval for single proportion
+#-----------------Confidence interval for single proportion
 library(DescTools)
 BinomCI(2, 20,
         conf.level = 0.95,
         method = "modified wilson")
 
-#----------------Confidence interval for multinomial proportion
+#-----------------Confidence interval for multinomial proportion
 library(DescTools)
 observed = c(35,74,22,69)
 MultinomCI(observed, conf.level=0.95, method="goodman")
 
 #     #     # 
 
-#----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------------#
+#----------------- TEST OF ONE / TWO MEASUREMENRT OF VARIABLES ----------------#
 
-#-------------------------One sample t-test with observations as vector
+#------------------------One sample t-test with obs as VECTORS
 observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
 t.test(observed,
        mu = theoretical,
        conf.int = 0.95)
-#------------------------One sample t-test with observations in data frame
-observed    = Data$ Angle
+#------------------------One sample t-test with obs as DATA.FRAME
+observed    = Data$Angle
 theoretical = 50
 t.test(observed,
        mu = theoretical,
        conf.int=0.95)
-
 
 -------Histogram
 hist(Data$ Angle,   
@@ -438,12 +437,7 @@ hist(Data$ Angle,
      main="Histogram of values",
      xlab="Angle")
 
-
-#----Power analysis
-library(pwr)
-sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
-sample1
--------------------Power analysis for one-sample t-test-------------------------
+--------------------Power analysis for one-sample t-test------------------------
   M1  = 70                        # Theoretical mean
 M2  = 71                        # Mean to detect
 S1  =  2.4                      # Standard deviation
@@ -460,36 +454,43 @@ pwr.t.test(
   type = "one.sample",       # Change for one- or two-sample
   alternative = "two.sided")
 
-#-------------------Student’s t–test for Two Samples-------------------------#
+#================================ TWO SAMPLE Test ==============================
+#---------------------------------Student’s t–test for Two Samples
 Two-sample t-test, independent (unpaired) observations
 bartlett.test(Value ~ Group, data=Data)
-### If p-value >= 0.05, use var.equal=TRUE below.
+----------------------------------#If p-value >= 0.05, use var.equal=TRUE below.
+#paired t.test  
+t.test(Value ~ Group, data=Data,  
+       var.equal=TRUE,
+       conf.level=0.95)
+#independent t.test
+t.test(Value ~ Group, data=Data,  
+       var.equal=FALSE,
+       conf.level=0.95)
 
+t.test(age ~ CaseControl, data=imdata, 
+       var.equal=FALSE,
+       conf.level=0.95)
 ----------------------------------------------------
-  t.test(Value ~ Group, data=Data,  #for paired group
-         var.equal=TRUE,
-         conf.level=0.95)
-----------------------------------------------------
-  t.test(Value ~ Group, data=Data, #for unpaired group
-         var.equal=FALSE,
-         conf.level=0.95)
-----------------------------------------------------
-  
-  Plot of histograms
+ Plot of histograms
 library(lattice)
 histogram(~ Value | Group,
           data=Data,
-          layout=c(1,2)      #  columns and rows of individual plots
+          layout=c(1,2)
+          col="gray"     #  columns and rows of individual plots
 )
----------------------
-  boxplot(Value ~ Group,
-          data = Data,
-          names=c("2 pm","5 pm"),
-          ylab="Value")
----------------------
+#---------------------------Histogram
+histogram(~ age | CaseControl,
+          data=imdata
+)
+#---------------------------Boxplot
+  boxplot(age ~ CaseControl,
+          data = imdata,
+          names=c("Case","Control"),
+          ylab="age")
   
-  #--------Power analysis
-  -------------------------Power analysis for t-tes-------------------------------
+  #--------Power analysis 
+-------------------------Power analysis for t-test------------------------------
   
   M1  = 100.6                      # Mean for sample 1
 M2  = 103.6                      # Mean for sample 2
@@ -508,19 +509,26 @@ pwr.t.test(
   alternative = "two.sided")
 
 #-----------------Mann–Whitney and Two-sample Permutation Test------------------
-Box plots
+wilcox.test(Value ~ Group, data=Data, exact = FALSE)
+wilcox.test(Value ~ Group, data=Data)
+#Box plots
 boxplot(Value ~ Group,
         data = Data,
         names=c("2 pm","5 pm"),
         ylab="Value")
 
--------------------------------------
-  wilcox.test(Value ~ Group, data=Data)
-
-
-#------------------------------ One-way Anova ----------------------------------
-The following commands will install these packages if they are not already installed:
-  if(!require(dplyr)){install.packages("dplyr")}
+#-----------------------------Wilcoxon Signed-rank Test-------------------------
+wilcox.test(Data$August, Data$November, paired=TRUE)
+  #Simple 1-to-1 plot of values
+plot(Data$August, Data$November,
+     pch = 16,
+     xlab="August",
+     ylab="November")
+abline(0,1, col="blue", lwd=2)  
+  
+#------------------------------ One-way Anova ---------------------------------
+#install these packages if they are not already installed:
+if(!require(dplyr)){install.packages("dplyr")}
 if(!require(FSA)){install.packages("FSA")}
 if(!require(car)){install.packages("car")}
 if(!require(agricolae)){install.packages("agricolae")}
@@ -532,41 +540,36 @@ if(!require(Rmisc)){install.packages("Rmisc")}
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(pwr)){install.packages("pwr")}
 --------------------------------------------------
-  #Specify the order of factor levels for plots and Dunnett comparison
-  library(dplyr)
+#Specify the order of factor levels for plots and Dunnett comparison
+library(dplyr)
 Data =
-  mutate(Data,
-         Location = factor(Location, levels=unique(Location)))
+ mutate(Data,
+        Location = factor(Location, levels=unique(Location)))
 
---------------------------- 
-  #Produce summary statistics
-  library(FSA)  
+#Produce summary statistics
+library(FSA)  
 Summarize(Aam ~ Location,
           data=Data,
           digits=3)
 
---------------------------
-  
-  #Fit the linear model and conduct ANOVA 
+#Fit the linear model and conduct ANOVA 
   model = lm(Aam ~ Location,
              data=Data)
 
 library(car)
-Anova(model, type="II")                    # Can use type="III"
+Anova(model, type="II")                    
 
-### If you use type="III", you need the following line before the analysis
-### options(contrasts = c("contr.sum", "contr.poly"))
+# Can use type="III"
+Anova(model, type="III",options(contrasts = c("contr.sum", "contr.poly")) )
+# Produces type I sum of squares
+anova(model)                               
+# Produces r-square, overall p-value, parameter estimates
+summary(model)     
 
-anova(model)                               # Produces type I sum of squares
-summary(model)     # Produces r-square, overall p-value, parameter estimates
---------------
-  
-  #Checking assumptions of the model
-  
-  hist(residuals(model),
-       col="darkgray")
-
----------------------
+#Checking assumptions of the model
+hist(residuals(model),
+     col="darkgray")
+#---------------------
   plot(fitted(model),
        residuals(model))
 
@@ -576,31 +579,25 @@ For an illustration of these properties,see this diagram by Steve Jost at DePaul
 
 ### additional model checking plots with: plot(model)
 ### alternative: library(FSA); residPlot(model)
-
 Tukey and LSD mean separation tests (pairwise comparisons)
-The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for 
-cases where there are unbalanced data or unequal variances among levels of the factor, 
-though TukeyHSD does make an adjustment for mildly unbalanced data.  
-It is my understanding that the multcomp and lsmeans packages are more appropriate
-for unbalanced data.
-Another alternative is the DTK package that performs mean separation tests on data 
-with unequal sample sizes and no assumption of equal variances.
+The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for cases where there are unbalanced data 
+or unequal variances among levels of the factor, though TukeyHSD does make an adjustment for mildly unbalanced data.
 
--------------------------------------
-  Tukey comparisons in agricolae package
-library(agricolae)
-(HSD.test(model, "Location"))          # outer parentheses print result
+It is my understanding that the multcomp and lsmeans packages are more appropriate for unbalanced data.
+Another alternative is the DTK package that performs mean separation tests on data with unequal sample sizes 
+and no assumption of equal variances.
 
-------------------------------------
-  LSD comparisons in agricolae package
+#Tukey comparisons in agricolae package
 library(agricolae)
-(LSD.test(model, "Location",   # outer parentheses print result
+(HSD.test(model, "Location"))                   # outer parentheses print result
+
+#LSD comparisons in agricolae package
+library(agricolae)
+(LSD.test(model, "Location",                    
           alpha = 0.05,      
-          p.adj="none"))      # see ?p.adjust for options
-
-------------------------------------
-  Multiple comparisons in multcomp package
-Note that “Tukey” here does not mean Tukey-adjusted comparisons. 
+          p.adj="none"))                             # see ?p.adjust for options
+#---------------------------------------------------
+Multiple comparisons in multcomp package Note that “Tukey” here does not mean Tukey-adjusted comparisons. 
 It just sets up a matrix to compare each mean to each other mean.
 
 library(multcomp)
@@ -608,37 +605,32 @@ mc = glht(model,
           mcp(Location = "Tukey"))
 mcs = summary(mc, test=adjusted("single-step"))
 mcs
-### Adjustment options: "none", "single-step", "Shaffer",
-###                     "Westfall", "free", "holm", "hochberg",
-###                     "hommel", "bonferroni", "BH", "BY", "fdr"
+#------------------------------Adjustment options:------------------------------------------------------------- 
+#"none","single-step", "Shaffer","Westfall", "free","holm","hochberg","hommel", "bonferroni", "BH", "BY", "fdr"     
 
 cld(mcs,
     level=0.05,
     decreasing=TRUE)
----------------
-  Multiple comparisons to a control in multcomp package
-### Control is the first level of the factor
+
+Multiple comparisons to a control in multcomp package.
+#Control is the first level of the factor
 library(multcomp)
 mc = glht(model,
           mcp(Location = "Dunnett"))
 summary(mc, test=adjusted("single-step"))
 
-### Adjustment options: "none", "single-step", "Shaffer",
-###                     "Westfall", "free", "holm", "hochberg",
-###                     "hommel", "bonferroni", "BH", "BY", "fdr"
-------------------
-  Multiple comparisons to a control with Dunnett Test
-### The control group can be specified with the control option,
-###   or will be the first level of the factor
+#------------------------------Adjustment options:------------------------------------------------------------- 
+#"none","single-step", "Shaffer","Westfall", "free","holm","hochberg","hommel", "bonferroni", "BH", "BY", "fdr"     
 
+  Multiple comparisons to a control with Dunnett Test 
+# The control group can be specified with the control option, or will be the first level of the factor
 library(DescTools)
 DunnettTest(Aam ~ Location,
             data = Data)
-----------------
-  Multiple comparisons with least square means
-Least square means can be calculated for each group.  
-Here a Tukey adjustment is applied for multiple comparisons among group least square means.
-The multiple comparisons can be displayed as a compact letter display.
+
+Multiple comparisons with least square means___can be calculated for each group.  
+#Here a Tukey adjustment is applied for multiple comparisons among group least square means.
+#The multiple comparisons can be displayed as a compact letter display.
 
 library(lsmeans)
 library(multcompView)
@@ -652,37 +644,36 @@ cld(leastsquare,
     adjust="tukey")
 -------------------
   
-  Welch’s anova
+#----------------------------- Welch’s anova ------------------------------
 Bartlett’s test and Levene’s test can be used to check the homoscedasticity of groups from a one-way anova.
 A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic.
-One approach with heteroscedastic data in a one way anova is to use the Welch correction 
-with the oneway.test function in the native stats package. 
+One approach with heteroscedastic data in a one way anova is to use the Welch correction with the oneway.test 
+function in the native stats package. 
 A more versatile approach is to use the white.adjust=TRUE option in the Anova function from the car package.
 
-### Bartlett test for homogeneity of variance
+# Bartlett test for homogeneity of variance
 bartlett.test(Aam ~ Location,
               data = Data)
--------------------------------------------
-  ### Levene test for homogeneity of variance
+
+# Levene test for homogeneity of variance
   library(car)
 leveneTest(Aam ~ Location,
            data = Data)
-------------------------------------------
-  ### Welch’s anova for unequal variances
+
+# Welch’s anova for unequal variances
   oneway.test(Aam ~ Location,
               data=Data,
               var.equal=FALSE)
-------------------------------------------
-  ### White-adjusted anova for heteroscedasticity
+
+# White-adjusted anova for heteroscedasticity
   model = lm(Aam ~ Location,
              data=Data)
 library(car)
 Anova(model, Type="II",
       white.adjust=TRUE)
 
----------------------Power analysis for one-way anova---------------------------
-  
-  library(pwr) 
+---------------------Power analysis for one-way anova--------------------------
+library(pwr) 
 groups = 5
 means = c(10, 10, 15, 15, 15)
 sd = 12
@@ -695,7 +686,7 @@ pwr.anova.test(k = groups,
                sig.level = 0.05,
                power = 0.80)
 
-#----------------Kruskal–Wallis Test-------------------------------------------#
+#----------------Kruskal–Wallis Test-------------------------------------------
 if(!require(FSA)){install.packages("FSA")}
 if(!require(DescTools)){install.packages("DescTools")}
 if(!require(rcompanion)){install.packages("rcompanion")}
@@ -724,7 +715,6 @@ The most popular test for this is the Dunn test, which is performed with the dun
 Adjustments to the p-values could be made using the method option to control the familywise error rate or 
 to control the false discovery rate.  
 
-
 ### Order groups by median
 Data$Health = factor(Data$Health,
                      levels=c("OAD", "Normal", "Asbestosis"))
@@ -738,15 +728,13 @@ PT = dunnTest(Efficiency ~ Health,
 # See ?p.adjust for options
 
 PT
--------------
-  ### Specify the order of factor levels
-  ##   otherwise R will alphabetize them
-  Data$Sex = factor(Data$Sex, levels=unique(Data$Sex))
 
-### Examine data frame
+# Specify the order of factor levels--------- otherwise R will alphabetize them
+Data$Sex = factor(Data$Sex, levels=unique(Data$Sex))
+library(FSA)
+# Examine data frame
 str(Data)
 ### Summarize data
-library(FSA)
 Summarize(Rank ~ Sex,
           data = Data)
 
@@ -759,12 +747,11 @@ if(!require(lsmeans)){install.packages("lsmeans")}
 if(!require(grid)){install.packages("grid")}
 if(!require(nlme)){install.packages("nlme")}
 if(!require(lme4)){install.packages("lme4")}
-if(!require(lmerTest)){install.packages("lmerTest")} if(!require(rcompanion)){install.packages("rcompanion")}
+if(!require(lmerTest)){install.packages("lmerTest")} 
+if(!require(rcompanion)){install.packages("rcompanion")}
 
---------------------------------------
-  #Means and summary statistics by group
-  
-  library(Rmisc)
+#Means and summary statistics by group
+library(Rmisc)
 sum = summarySE(Data,
                 measurevar="Activity",
                 groupvars=c("Sex","Genotype"))
@@ -772,7 +759,7 @@ sum
 
 --------------Interaction plot using summary statistics------------------------
   
-  library(ggplot2)
+library(ggplot2)
 pd = position_dodge(.2)
 ggplot(sum, aes(x=Genotype,
                 y=Activity,
@@ -796,39 +783,36 @@ boxplot(Activity ~ Genotype,
         ylab = "MPI Activity",
         col  = "white")
 
----------------
-  Fit the linear model and conduct ANOVA
+#Fit the linear model and conduct ANOVA
 model = lm(Activity ~ Sex + Genotype + Sex:Genotype,
            data=Data)
 library(car)
 Anova(model, type="II")                    
 
-### If you use type="III", you need the following line before the analysis
-### options(contrasts = c("contr.sum", "contr.poly"))
-
-anova(model)                               # Produces type I sum of squares
-summary(model)     # Produces r-square, overall p-value, parameter estimates
+### If you use type="III", options(contrasts = c("contr.sum", "contr.poly"))
+# Produces type I sum of squares
+anova(model) 
+# Produces r-square, overall p-value, parameter estimates
+summary(model)     
 ------------------
-  #Checking assumptions of the model
-  
+# Checking assumptions of the model
   hist(residuals(model),
-       col="darkgray")
+     col="darkgray")
 
 plot(fitted(model),
      residuals(model))
 
------------------------
-  Fit the linear model and conduct ANOVA
+#Fit the linear model and conduct ANOVA
 model = lm(Openings ~ Day + Snake,
            data=Data)
 library(car)
-Anova(model, type="II")                    # Can use type="III"
-anova(model)                               # Produces type I sum of squares
-summary(model)     # Produces r-square, overall p-value, parameter estimates
+Anova(model, type="II")           
+# Produces type I sum of squares
+anova(model)                               
+# Produces r-square, overall p-value, parameter estimates
+summary(model)     
 
-
------------------------
-  Checking assumptions of the model
+#------------------ Checking assumptions of the model -------------------------
 
 hist(residuals(model),
      col="darkgray")
@@ -836,14 +820,12 @@ hist(residuals(model),
 plot(fitted(model),
      residuals(model))
 
-#---------------------------- Paired t–test -----------------------------
+#----------------------------- Paired t–test ----------------------------------
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(coin)){install.packages("coin")}
 if(!require(pwr)){install.packages("pwr")}
 
 #Paired t-test
-
-
 t.test(Data$Typical,
        Data$Odd,
        paired=TRUE,
@@ -856,26 +838,13 @@ plot(Difference,
      ylab="Difference (Odd – Typical)")
 abline(0,0, col="blue", lwd=2)
 
---------------
-  #Simple 1-to-1 plot of values
+#Simple 1-to-1 plot of values
   plot(Data$Typical, Data$Odd,
        pch = 16,
        xlab="Typical feathers",
        ylab="Odd feathers")
 abline(0,1, col="blue", lwd=2)
------------
   
-  #-----------------------------Wilcoxon Signed-rank Test-------------------------
-wilcox.test(Data$August,
-            Data$November,
-            paired=TRUE)
-
-#Simple 1-to-1 plot of values
-plot(Data$August, Data$November,
-     pch = 16,
-     xlab="August",
-     ylab="November")
-abline(0,1, col="blue", lwd=2)
 
 #-------------------------Correlation and Linear Regression---------------------
 Correlation
@@ -910,22 +879,28 @@ cor.test( ~ Species + Latitude,
           method = "spearman",
           continuity = FALSE,
           conf.level = 0.95)
---------------------------------------------------------------------------------
-  #Linear regression
+---------------------------Power analysis for correlation-----------------------
+  pwr.r.test(n = NULL,
+             r = 0.500,
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "two.sided")
+
+
+#------------------------------ Linear regression ------------------------------
   Linear regression can be performed with the lm function in the native stats package.
 A robust regression can be performed with the lmrob function in the robustbase package.
 
 model = lm(Species ~ Latitude,
            data = Data)
-
-summary(model)                    # shows parameter estimates,
-# p-value for model, r-square
+# shows parameter estimates, p-value for model, r-square
+summary(model)                    
 
 library(car)
-Anova(model, type="II")              # shows p-value for effects in model
+# shows p-value for effects in model
+Anova(model, type="II")              
 
-
-Plot linear regression
+#Plot linear regression
 int =  model$coefficient["(Intercept)"]
 slope =model$coefficient["Latitude"]
 plot(Species ~ Latitude,
@@ -949,7 +924,6 @@ The residuals should be unbiased and homoscedastic.
 ### additional model checking plots with: plot(model)
 ### alternative: library(FSA); residPlot(model)
 
-#----------Power analysis
 ---------------------------Power analysis for correlation-----------------------
   pwr.r.test(n = NULL,
              r = 0.500,
@@ -958,14 +932,12 @@ The residuals should be unbiased and homoscedastic.
              alternative = "two.sided")
 
 #------------------------ Curvilinear Regression -------------------------------
-How to do the test
-This chapter will fit models to curvilinear data using three methods: 
-  1) Polynomial regression;  
+How to fit models to curvilinear data using three methods:
+1) Polynomial regression;  
 2) B-spline regression with polynomial splines;  
 3) Nonlinear regression with the nls function.  
 
-Each of these three will find essentially the same best-fit curve with very similar 
-p-values and R-squared values. 
+Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
 
 #Polynomial regression
 Polynomial regression is really just a special case of multiple regression, 
@@ -1002,7 +974,7 @@ library(psych)
 corr.test(Data.num,
           use = "pairwise",
           method="pearson",
-          adjust="none",     # Can adjust p-values; see ?p.adjust for options
+          adjust="none",        # Can adjust p-values; see ?p.adjust for options
           alpha=.05)
 
 pairs(data=Data,
@@ -1047,15 +1019,13 @@ step(model.null,
      direction="both",
      data=Data)
 
----------------------------------------------------
-  #Define final model
-  
-  model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
+#Define final model
+model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
                    data=Data)
-summary(model.final)      # Show coefficients, R-squared, and overall p-value
+# Show coefficients, R-squared, and overall p-value
+summary(model.final)      
 
 #Simple plot of predicted values with 1-to-1 line
-
 Data$predy = predict(model.final)
 plot(predy ~ Longnose,
      data=Data,
@@ -1067,51 +1037,47 @@ abline(0,1, col="blue", lwd=2)
 #-----------------------------Simple Logistic Regression ----------------------
 if(!require(car)){install.packages("car")}
 if(!require(lmtest){install.packages("lmtest")}
-   if(!require(tidyr)){install.packages("tidyr")}
-   if(!require(rcompanion)){install.packages("rcompanion")}
-   if(!require(FSA){install.packages("FSA")}
-      if(!require(popbio)){install.packages("popbio")}
+if(!require(tidyr)){install.packages("tidyr")}
+if(!require(rcompanion)){install.packages("rcompanion")}
+if(!require(FSA){install.packages("FSA")}
+if(!require(popbio)){install.packages("popbio")}
       
+plot(Factor.num  ~ Continuous,
+     data = Data,
+     xlab="Continuous",
+     ylab="Factor",
+     pch=19)             
+curve(predict(model,data.frame(Continuous=x),type="response"),
+      lty=1, lwd=2, col="blue",                           
+      add=TRUE)   
       
-      plot(Factor.num  ~ Continuous,
-           data = Data,
-           xlab="Continuous",
-           ylab="Factor",
-           pch=19)             
-      curve(predict(model,data.frame(Continuous=x),type="response"),
-            lty=1, lwd=2, col="blue",                           
-            add=TRUE)   
+library(popbio)
+logi.hist.plot(Data$Continuous,
+               Data$Factor.log,
+               boxp=FALSE,
+               type="hist",
+               col="gray",
+               xlabel="Height")
       
-      ----------------------------------------------------------  
-        library(popbio)
-      logi.hist.plot(Data$Continuous,
-                     Data$Factor.log,
-                     boxp=FALSE,
-                     type="hist",
-                     col="gray",
-                     xlabel="Height")
+#--------------------------- TEST OF NOMINAL VARIABLE -------------------------#
+  --------------Exact Test of Goodness-of-Fit----------------------------
       
+#The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
+The arguments passed to the function are: the number of successes,the number of trials, 
+and the hypothesized probability of success.The probability can be entered as a decimal or a fraction.  
+
+#Other options include the confidence level for the confidence interval about the proportion and whether 
+#the function performs a one-sided or two-sided (two-tailed) test.In most circumstances, the two-sided test is used.
       
-      #-----------------TEST OF NOMINAL VARIABLE------------------------------#
-      #--------------Exact Test of Goodness-of-Fit----------------------------#
-      
-      #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
-      The arguments passed to the function are: the number of successes, 
-      the number of trials, and the hypothesized probability of success.#
-      The probability can be entered as a decimal or a fraction.  
-      #Other options include the confidence level for the confidence interval about the proportion,
-      # and whether the function performs a one-sided or two-sided (two-tailed) test.  
-      #In most circumstances, the two-sided test is used.
-      
-      #Packages used in this chapter
-      The following commands will install these packages if they are not already installed:
+#Packages used in this chapter
+The following commands will install these packages if they are not already installed:
         
-        if(!require(XNomial)){install.packages("XNomial")}
-      if(!require(pwr)){install.packages("pwr")}
-      if(!require(BSDA)){install.packages("BSDA")}
+if(!require(XNomial)){install.packages("XNomial")}
+if(!require(pwr)){install.packages("pwr")}
+if(!require(BSDA)){install.packages("BSDA")}
       
-      #How the test works
-      #Binomial test examples
+#How the test works
+Binomial test examples
       
       ### --------------------------------------------------------------
       ### Cat paw example, exact binomial test, pp. 30–31
@@ -3563,4 +3529,8 @@ install.packages("sf")
 library(tidyverse)
 library(mapview)
 library(sf)
-                        
+
+
+library(pwr)
+sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
+sample1
