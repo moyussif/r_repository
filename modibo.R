@@ -58,15 +58,16 @@ library(pdftools)
 library(htmlwidgets)
 library(psych)
 library(DescTools)
-#------
+install.packages('DescTools')
+#-----
 getwd()
 #------------------------ Import functions -------------------------------------
-child_data1 <- read.csv(file = 'children_data.csv')                   # import .csv file
-child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")      #introducing sep = ","
-child_data3 <- read.delim(file = 'children_data.txt')                 # delim file with sep = "\t"
-child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE) #for categorical
+child_data1 <- read.csv(file = 'children_data.csv')                             # import .csv file
+child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")                # introducing sep = ","
+child_data3 <- read.delim(file = 'children_data.txt')                           # delim file with sep = "\t"
+child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)           # for categorical
 library(readr)
-all_data2 <- read_csv(file = 'children_data.csv')                     #comma delimited files
+all_data2 <- read_csv(file = 'children_data.csv')                               # comma delimited files
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
@@ -77,7 +78,6 @@ View(imdata)
 View(HTdata)
 library(skimr)
 skim_without_charts(imdata) 
-
 #:::::::::::::::::::::::::::: Data manipulations:::::::::::::::::::::::::::::::#
 library(tidyverse)
 library(dplyr)
@@ -110,18 +110,15 @@ summarise(data_frm,median_hb = median(hb))
 library(tidyr) 
 HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
 print(HTdata)
-
 # use gather()function to make data longer
 long <- HTdata %>%  
   gather(fullName, Frequency, 
          first_trimester, second_trimester, third_trimester)
 print(long)
-
 # use separate()function 
 separate_data <- long %>%  
   separate(fullName, c("firstName","secondName"))
 separate_data
-
 # use unite() function 
 unite_data <- separate_data %>%  
   unite(fullName, firstName, secondName, sep = " ") 
@@ -141,7 +138,6 @@ wdata <- pivot_wider(
   values_from = "value",
 )
 View(wdata)
-
 #:::::::::::::::::::::: Visualization with ggplot2 ::::::::::::::::::::::::::#
 library(ggplot2)
 library(RColorBrewer)
@@ -297,7 +293,7 @@ immuLAB
 ggsave("immuLAB.png")
 
 
-#::::::::::::::::::::: Pie-charts & Bar-chart :::::::::::::::::::::::::::#
+#:::::::::::::::::::: charts with LessR (Pie/Bar) ::::::::::::::::::::::::::::#
 library(lessR)
 imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
 
@@ -353,18 +349,30 @@ BarChart(expose, data = data,
          values_color = c(rep("white", 4), 1),
          values_size = 0.85)
 
-#::::::::::: sample size ::
-library(pwr)
-sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
-sample1
+#::::::::::::::::::::::: Descriptive statistics :::::::::::::::::::::::::::::# 
+library(skimr)
+skim_without_charts(imdata)
+library(psych)
+summary(imdata)
+describe(imdata)
 
-#::::::::::: categorical descriptive :::::::::::::# 
-#aggregate data
+summary(imdata$bwgt)
+describe(imdata$bwgt)
+
+Histogram
+hist(imdata$ bwgt,   
+     col="gray", 
+     main="Immuno assay data",
+     xlab="Birthwgt")
+# Will also report count of NA’
+describe(imdata$bwgt,    
+         type=2)    
+#------------------ aggregate data
 library(janitor)
 library(readxl)
-imdata3 <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-print(imdata3)
-imdata3 %>%
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+imdata %>%
   tabyl(hb, sex) %>%
   adorn_totals(where = "row") %>%
   adorn_percentages(denominator = "col") %>%
@@ -376,135 +384,37 @@ imdata3 %>%
     placement = "combined") %>% 
   flextable::flextable() %>% 
   flextable::autofit()
+#=========================== CONFIDENCE INTERVALS ==============================
 
-
-
-#:::::::::::::::::::::::::::::: Statistics ::::::::::::::::::::::::::#
-library(rstatix)
-
-library(car)
-#:::correlation matrix::::
-library(Hmisc)
-library(plotrix)
-
-#:::::::::::::::::::: regress and model building::::::::::::::::::::#
-library(car)
-summary(microbes)
-model <- lm(Occupation ~ No.of.births, data = microbes)
-summary(model)
-plot(microbes$No.of.births, microbes$Onset.of.labour)
-abline(model)
-# Plot residuals against the fitted values
-residualPlots(model)
-# Perform anova on the model
-anova(model)
-
-library(olsrr)
-
-
-#--------------------- Time Series Analysis ----------------------------------#
-
-#Typical Questions__when is consumption highest / lowest
-#__variation with season
-#__trends
-#__change overtime.
-library(readxl)
-TTdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
-View(TTdata)
-library(tidyverse)
-library(dplyr)
-library(ggplot2)
-library(RColorBrewer)
-
-# arrange data by age
-######################### Mapping with r ######################################
-
-install.packages("sf")
-library(tidyverse)
-library(mapview)
-library(sf)
+#-----------------Confidence interval of the mean
+  t.test(imdata$ bwgt,
+       conf.level=0.95)         
   
-#---++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-------------------------------------------------------------------------------
-#============================R Companion ====================================#
-
-
-summary(Data$ Fish)          # Also works on whole data frames
-# Will also report count of NA’
-library(psych)
-describe(Data$ Fish,          # Also works on whole data frames
-         type=2)        # Type of skew and kurtosis
-
-range(Data$ Fish, na.rm=TRUE)
-max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE)
-var(Data$ Fish, na.rm=TRUE)    #Sample variance
-sd(Data$ Fish, na.rm=TRUE)     #Standard deviation
-
-sd(Data$ Fish, na.rm=TRUE)/
-  mean(Data$ Fish, na.rm=TRUE)*100       #Coefficient of variation, as percent
-===============
-  Custom function of desired measures of central tendency and dispersion
-### Note NA’s removed in the following function
-
-summary.list = function(x)list(
-  N.with.NA.removed= length(x[!is.na(x)]),
-  Count.of.NA= length(x[is.na(x)]),
-  Mean=mean(x, na.rm=TRUE),
-  Median=median(x, na.rm=TRUE),
-  Max.Min=range(x, na.rm=TRUE),
-  Range=max(Data$ Fish, na.rm=TRUE) - min(Data$ Fish, na.rm=TRUE),
-  Variance=var(x, na.rm=TRUE),
-  Std.Dev=sd(x, na.rm=TRUE),
-  Coeff.Variation.Prcnt=sd(x, na.rm=TRUE)/mean(x, na.rm=TRUE)*100,
-  Std.Error=sd(x, na.rm=TRUE)/sqrt(length(x[!is.na(x)])),
-  Quantile=quantile(x, na.rm=TRUE)
-)
-summary.list(Data$ Fish)
------
-  sd(Data$ Fish, na.rm=TRUE) /  
-  sqrt(length(Data$Fish[!is.na(Data$ Fish)]))      # Standard error
-------
-  t.test(Data$ Fish,
-         conf.level=0.95)         # Confidence interval of the mean
-------
-  library(Rmisc)
-
-summarySE(data=D2,               # Will produce confidence intervals
-          measurevar="Count",    #  for groups defined by a variable
-          groupvars="Animal",    
+# ----------------confidence intervals for groups defined by a variable
+install.packages("Rmisc")
+library(Rmisc)
+summarySE(data=imdata,               
+          measurevar="age",    
+          groupvars="expose",    
           conf.interval = 0.95)
-----
-  Confidence interval for proportions
-The confidence interval for a proportion can be determined with the binom.test function, 
-and more options are available in the BinomCI function and MultinomCI function in the
-DescTools package.  More advanced techniques for confidence intervals on proportions
-and differences in proportions can be found in the PropCIs package.
 
+#----------------Confidence interval for proportions___with  binom.test function
 binom.test(2, 20, 0.5,
            alternative="two.sided",
            conf.level=0.95)
---------------
-  Confidence interval for single proportion
-### --------------------------------------------------------------
+
+#----------------Confidence interval for single proportion
 library(DescTools)
 BinomCI(2, 20,
         conf.level = 0.95,
         method = "modified wilson")
----------
-  Confidence interval for multinomial proportion
-### --------------------------------------------------------------
-observed = c(35,74,22,69)
+
+#----------------Confidence interval for multinomial proportion
 library(DescTools)
+observed = c(35,74,22,69)
 MultinomCI(observed, conf.level=0.95, method="goodman")
 
 #     #     # 
-=======
-  Histogram
-hist(Data$ Fish,   
-     col="gray", 
-     main="Maryland Biological Stream Survey",
-     xlab="Fish count")    
-#     #     #
 
 #----------------TEST OF ONE / TWO MEASUREMENRT OF VARIABLES -----------------#
 
@@ -530,6 +440,9 @@ hist(Data$ Angle,
 
 
 #----Power analysis
+library(pwr)
+sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
+sample1
 -------------------Power analysis for one-sample t-test-------------------------
   M1  = 70                        # Theoretical mean
 M2  = 71                        # Mean to detect
@@ -3615,4 +3528,39 @@ CounterCl  Right            169      73       17     16      180
                         (2) vary the value of β between the start and end of a period of lockdown as 0.6 and 0.2 respectively.
                         (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1
                         respectively.
+
+#:::::::::::::::::::: regress and model building ::::::::::::::::::::#
+library(car)summary(microbes)
+model <- lm(Occupation ~ No.of.births, data = microbes)
+summary(model)
+plot(microbes$No.of.births, microbes$Onset.of.labour)
+abline(model)
+# Plot residuals against the fitted values
+residualPlots(model)
+# Perform anova on the model
+anova(model)
+                        
+library(olsrr)
+                        
+#--------------------- Time Series Analysis ----------------------------------#
+                        
+#Typical Questions__when is consumption highest / lowest
+#__variation with season
+#__trends
+#__change overtime.
+library(readxl)
+TTdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+View(TTdata)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+                        
+# arrange data by age
+######################### Mapping with r ######################################
+                        
+install.packages("sf")
+library(tidyverse)
+library(mapview)
+library(sf)
                         
