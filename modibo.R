@@ -508,6 +508,36 @@ pwr.t.test(
   type = "two.sample",        # Change for one- or two-sample
   alternative = "two.sided")
 
+
+---------------------Power analysis for unpaired t-test ----------------------
+  #--------------------Power analysis, t-test, student height, pp. 43–44--------
+#-----------------------------------------------------------------------------
+M1  = 66.6                      # Mean for sample 1
+M2  = 64.6                      # Mean for sample 2
+S1  =  4.8                      # Std dev for sample 1
+S2  =  3.6                      # Std dev for sample 2
+
+Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+
+library(pwr)                                  
+pwr.t.test(
+  n = NULL,                  # Observations in _each_ group
+  d = Cohen.d,           
+  sig.level = 0.05,          # Type I probability
+  power = 0.80,              # 1 minus Type II probability
+  type = "two.sample",       # Change for one- or two-sample
+  alternative = "two.sided"
+)
+
+
+Two-sample t test power calculation
+n = 71.61288
+NOTE: n is number in *each* group 71.61288
+
+#     #     #
+
+
+
 #-----------------Mann–Whitney and Two-sample Permutation Test------------------
 wilcox.test(Value ~ Group, data=Data, exact = FALSE)
 wilcox.test(Value ~ Group, data=Data)
@@ -525,7 +555,8 @@ plot(Data$August, Data$November,
      xlab="August",
      ylab="November")
 abline(0,1, col="blue", lwd=2)  
-  
+
+
 #------------------------------ One-way Anova ---------------------------------
 #install these packages if they are not already installed:
 if(!require(dplyr)){install.packages("dplyr")}
@@ -1059,158 +1090,128 @@ logi.hist.plot(Data$Continuous,
                col="gray",
                xlabel="Height")
       
-#--------------------------- TEST OF NOMINAL VARIABLE -------------------------#
-  --------------Exact Test of Goodness-of-Fit----------------------------
+#------------------------ TEST OF NOMINAL VARIABLE ----------------------------#
+  
+-------------------- Exact Test of Goodness-of-Fit ----------------------------
       
-#The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.#
-The arguments passed to the function are: the number of successes,the number of trials, 
-and the hypothesized probability of success.The probability can be entered as a decimal or a fraction.  
+#The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.
+The probability can be entered as a decimal or a fraction.  
+#Other options include the confidence level for the confidence interval about the proportion
+#In most circumstances, the two-sided test is used.
 
-#Other options include the confidence level for the confidence interval about the proportion and whether 
-#the function performs a one-sided or two-sided (two-tailed) test.In most circumstances, the two-sided test is used.
-      
-#Packages used in this chapter
-The following commands will install these packages if they are not already installed:
-        
 if(!require(XNomial)){install.packages("XNomial")}
 if(!require(pwr)){install.packages("pwr")}
 if(!require(BSDA)){install.packages("BSDA")}
       
-#How the test works
-Binomial test examples
+
+#Binomial test examples
+#-----------------------------------------------------------------------
+                          Exact binomial test
+------------------------------------------------------------------------
+#In this example:
+# 2 is the number of successes
+# 10 is the number of trials
+# 0.5 is the hypothesized probability of success
+# Probability of single event only! Not binomial test!
+
+dbinom(2, 10, 0.5)   
+
+binom.test(2, 10, 0.5,
+           alternative="less",  
+           conf.level=0.95) 
+
       
-      ### --------------------------------------------------------------
-      ### Cat paw example, exact binomial test, pp. 30–31
-      ### --------------------------------------------------------------
-      ### In this example:
-      ###   2 is the number of successes
-      ###   10 is the number of trials
-      ###   0.5 is the hypothesized probability of success
+binom.test(2, 10, 0.5,
+           alternative="two.sided",
+           conf.level=0.95)
+
+#   #   #      
       
-      dbinom(2, 10, 0.5)            # Probability of single event only!
-      #   Not binomial test!
+
+#Probability density plot
+#---------------------------------------------------------------------
+               Probability density plot, binomial distribution
+ ---------------------------------------------------------------------
+# In this example:
+# You can change the values for trials and prob
+# You can change the values for xlab and ylab
       
-      [1] 0.04394531  
+trials = 10
+prob = 0.5
       
+x = seq(0, trials)                   # x is a sequence, 1 to trials
+y = dbinom(x, size=trials, p=prob)   # y is the vector of heights
       
-      binom.test(2, 10, 0.5,
-                 alternative="less",       # One-sided test
-                 conf.level=0.95) 
+barplot (height=y,
+         names.arg=x,
+         xlab="Number of uses of right paw",
+         ylab="Probability under null hypothesis")
+
+#   #   #      
       
-      p-value = 0.05469
+#Comparing doubling a one-sided test and using a two-sided test
+#----------------------------------------------------------------------
+Exact binomial test, Compares performing a one-sided test and 
+doubling the probability, and performing a two-sided test
+-----------------------------------------------------------------------
+binom.test(7, 12, 3/4,
+           alternative="less",
+          conf.level=0.95) 
+
+# Create an object called Test with the test results      
+Test = binom.test(7, 12, 3/4,             
+                  alternative="less",      
+                  conf.level=0.95)      
       
-      binom.test(2, 10, 0.5,
-                 alternative="two.sided",  # Two-sided test
-                 conf.level=0.95)
+2 * Test$ p.value 
+# This extracts the p-value from the test result, we called Test and multiplies it by 2
+binom.test(7, 12, 3/4, alternative="two.sided", conf.level=0.95)
       
-      
-      p-value = 0.1094
-      
-      # #     
-      #Probability density plot
-      
-      ### --------------------------------------------------------------
-      ### Probability density plot, binomial distribution, p. 31
-      ### --------------------------------------------------------------
-      # In this example:
-      #   You can change the values for trials and prob
-      #   You can change the values for xlab and ylab
-      
-      trials = 10
-      prob = 0.5
-      
-      x = seq(0, trials)                   # x is a sequence, 1 to trials
-      y = dbinom(x, size=trials, p=prob)   # y is the vector of heights
-      
-      barplot (height=y,
-               names.arg=x,
-               xlab="Number of uses of right paw",
-               ylab="Probability under null hypothesis")
-      
-      
-      #Comparing doubling a one-sided test and using a two-sided test
-      
-      ### --------------------------------------------------------------
-      ### Cat hair example, exact binomial test, p. 31–32
-      ###  Compares performing a one-sided test and doubling the
-      ###    probability, and performing a two-sided test
-      ### --------------------------------------------------------------
-      
-      binom.test(7, 12, 3/4,
-                 alternative="less",
-                 conf.level=0.95) 
-      
-      p-value = 0.1576
-      
-      Test = binom.test(7, 12, 3/4,             # Create an object called
-                        alternative="less",     #  Test with the test
-                        conf.level=0.95)        #  results.
-      
-      2 * Test$ p.value               # This extracts the p-value from the
-      #   test result, we called Test
-      #   and multiplies it by 2
-      
-      [1] 0.3152874
+#     #     #
       
       
-      binom.test(7, 12, 3/4, alternative="two.sided", conf.level=0.95)
+#Post-hoc test with manual pairwise tests
+#A multinomial test can be conducted with the xmulti function in the package XNomial. 
+This can be followed with the individual binomial tests for each proportion, as post-hoc tests.
+#-------------------------------------------------------------------------------
+          Post-hoc example, multinomial and binomial test
+ -------------------------------------------------------------------------------
       
-      p-value = 0.1893      # Equal to the "small p values" method in the Handbook
-      #     #     #
+observed = c(72, 38, 20, 18)
+expected = c(9, 3, 3, 1)
       
-      
-      Post-hoc test
-      
-      Post-hoc example with manual pairwise tests
-      A multinomial test can be conducted with the xmulti function in the package XNomial. 
-      This can be followed with the individual binomial tests for each proportion, as post-hoc tests.
-      
-      
-      
-      ### --------------------------------------------------------------
-      ### Post-hoc example, multinomial and binomial test, p. 33
-      ### --------------------------------------------------------------
-      
-      observed = c(72, 38, 20, 18)
-      expected = c(9, 3, 3, 1)
-      
-      library(XNomial)
-      xmulti(observed,
-             expected,
-             detail = 2)         # 2: Reports three types of p-value
+library(XNomial)
+xmulti(observed,
+       expected,
+       detail = 2)         
+
+# Reports three types of p-value
+P value  (LLR)  =  0.003404  # log-likelihood ratio
+P value (Prob)  =  0.002255  # exact probability
+P value (Chisq) =  0.001608  # Chi-square probability
       
       
-      P value  (LLR)  =  0.003404  # log-likelihood ratio
-      
-      P value (Prob)  =  0.002255  # exact probability
-      
-      P value (Chisq) =  0.001608  # Chi-square probability
-      
-      
-      
-      ### Note last p-value below agrees with Handbook
-      
+# Note last p-value below agrees with Handbook
       successes   = 72
       total       = 148
       numerator   = 9
       denominator = 16
       
-      binom.test(successes, total, numerator/denominator,
-                 alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator,
+           alternative="two.sided", conf.level=0.95) 
       
       p-value = 0.06822 
-      
+----------------------------------------------------------      
       successes   = 38
       total       = 148
       numerator   = 3
       denominator = 16
       
-      binom.test(successes, total, numerator/denominator,
-                 alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator,
+           alternative="two.sided", conf.level=0.95) 
       
       p-value = 0.03504
-      
-      
+----------------------------------------------------------      
       successes   = 20
       total       = 148
       numerator   = 3
@@ -1220,30 +1221,27 @@ Binomial test examples
                  alternative="two.sided", conf.level=0.95) 
       
       p-value = 0.1139
-      
+----------------------------------------------------------      
       successes   = 18
       total       = 148
       numerator   = 1
       denominator = 16
       
-      binom.test(successes, total, numerator/denominator,
-                 alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator,
+           alternative="two.sided", conf.level=0.95) 
       
       p-value = 0.006057
       #     #     #
       
-      Post-hoc test alternate method with custom function
-      When you need to do multiple similar tests, however, 
-      #it is often possible to use the programming capabilities in R to do the tests more efficiently.
-      #The following example may be somewhat difficult to follow for a beginner.  
-      #It creates a data frame and then adds a column called p.Value that contains the p-value 
-      from the binom.test performed on each row of the data frame.
-      
-      ### --------------------------------------------------------------
-      ### Post-hoc example, multinomial and binomial test, p. 33
-      ###    Alternate method for multiple tests
-      ### --------------------------------------------------------------
-      
+#Post-hoc test alternate method with custom function When you need to do multiple similar tests, however, 
+#it is often possible to use the programming capabilities in R to do the tests more efficiently.
+#The following example may be somewhat difficult to follow for a beginner.  
+#It creates a data frame and then adds a column called p.Value that contains the p-value from the binom.test 
+#performed on each row of the data frame.
+#------------------------------------------------------------------------------
+             Post-hoc example, multinomial and binomial test
+                  # Alternate method for multiple tests
+        ----------------------------------------------------------------------- 
       Input =("
 Successes Total Numerator Denominator
  72        148   9         16
@@ -1252,55 +1250,52 @@ Successes Total Numerator Denominator
  18        148   1         16
 ")
       
-      D1 = read.table(textConnection(Input),header=TRUE)
+D1 = read.table(textConnection(Input),header=TRUE)
       
-      Fun = function (x){
-        binom.test(x["Successes"],x["Total"],
-                   x["Numerator"]/x["Denominator"])$ p.value
+Fun = function (x){
+  binom.test(x["Successes"],x["Total"],
+             x["Numerator"]/x["Denominator"])$ p.value
       }
       
-      D1$ p.Value = apply(D1, 1, Fun)
-      D1 
+D1$ p.Value = apply(D1, 1, Fun)
+D1 
       
       
-      #Binomial test examples
-      ### --------------------------------------------------------------
-      ### Parasitoid examples, exact binomial test, p. 34
-      ### --------------------------------------------------------------
-      binom.test(10, (17+10), 0.5,
-                 alternative="two.sided",
+#Binomial test examples
+#-----------------------------------------------------------------------
+                Parasitoid examples, exact binomial test
+------------------------------------------------------------------------
+binom.test(10, (17+10), 0.5,
+           alternative="two.sided",
+           conf.level=0.95)
+      
+      
+binom.test(36, (7+36), 0.5,
+           alternative="two.sided",
+           conf.level=0.95)
+      
+#     #     #
+
+#-----------------------------------------------------------------------
+               Drosophila example, exact binomial test
+------------------------------------------------------------------------
+binom.test(140, (106+140), 0.5,
+           alternative="two.sided",
                  conf.level=0.95)
-      p-value = 0.2478
-      binom.test(36, (7+36), 0.5,
-                 alternative="two.sided",
-                 conf.level=0.95)
       
-      p-value = 8.963e-06
-      #     #     #
+#     #     #
       
-      ### --------------------------------------------------------------
-      ###  Drosophila example, exact binomial test, p. 34
-      ### --------------------------------------------------------------
+#Sign test example
+The following is an example of the two-sample dependent-samples sign test.
+The data are arranged as a data frame in which each row contains the values for both measurements being compared 
+for each experimental unit.
+This is sometimes called “wide format” data. The SIGN.test function in the BSDA package is used.  
+The option md=0 indicates that the expected difference in the medians is 0 (null hypothesis).
+#This function can also perform a one-sample sign test.
       
-      binom.test(140, (106+140), 0.5,
-                 alternative="two.sided",
-                 conf.level=0.95)
-      p-value = 0.03516
-      #     #     #
-      
-      #Sign test example
-      The following is an example of the two-sample dependent-samples sign test.
-      The data are arranged as a data frame in which each row contains the values 
-      for both measurements being compared for each experimental unit.
-      This is sometimes called “wide format” data.  
-      The SIGN.test function in the BSDA package is used.  
-      The option md=0 indicates that the expected difference in the medians is 0 (null hypothesis).
-      #This function can also perform a one-sample sign test.
-      
-      ### --------------------------------------------------------------
-      ###  Tree beetle example, two-sample sign test, p. 34–35
-      ### --------------------------------------------------------------
-      
+#------------------------------------------------------------------------
+             Tree beetle example, two-sample sign test
+-------------------------------------------------------------------------
       Input =("
 Row  Angiosperm.feeding  A.count  Gymonsperm.feeding   G.count
 1    Corthylina           458     Pityophthorus           200
@@ -1315,451 +1310,385 @@ Row  Angiosperm.feeding  A.count  Gymonsperm.feeding   G.count
 10   H_Chrysomelidae    33400     Aulocoscelinae_Orsod     26
 ")
       
-      Data = read.table(textConnection(Input),header=TRUE)
+Data = read.table(textConnection(Input),header=TRUE)
       
-      library(BSDA)
+library(BSDA)
       
-      SIGN.test(x = Data$ A.count,
-                y = Data$ B.count,
-                md = 0,                 
-                alternative = "two.sided",
-                conf.level = 0.95)
+SIGN.test(x = Data$ A.count,
+          y = Data$ B.count,
+         md = 0,                 
+alternative = "two.sided",
+ conf.level = 0.95)
       
-      Binomial test examples
-      ### --------------------------------------------------------------
-      ###  First Mendel example, exact binomial test, p. 35
-      ### --------------------------------------------------------------
-      
-      binom.test(428, (428+152), 0.75, alternative="two.sided",
+#Binomial test examples
+#---------------------------------------------------------------------
+                   First Mendel example, exact binomial test
+----------------------------------------------------------------------
+binom.test(428, (428+152), 0.75, alternative="two.sided",
                  conf.level=0.95)
       
-      
-      
-      p-value = 0.5022          # Value is different than in the Handbook
-      
-      #     See next example
-      #     #     #
-      
-      
-      
-      
-      
-      ### --------------------------------------------------------------
-      ###  First Mendel example, exact binomial test, p. 35
-      ###     Alternate method with XNomial package
-      ### --------------------------------------------------------------
-      
+#     #     #
+#---------------------------------------------------------------------
+                  First Mendel example, exact binomial test
+                  ##  Alternate method with XNomial package
+----------------------------------------------------------------------
       observed = c(428, 152)
       expected = c(3, 1)
+
+library(XNomial)
+xmulti(observed,
+       expected,
+       detail = 2)             
+
+# reports three types of p-value      
+P value  (LLR)  =  0.5331   # log-likelihood ratio
+P value (Prob)  =  0.5022   # exact probability
+P value (Chisq) =  0.5331   # Chi-square probability
       
-      library(XNomial)
+#     #     #
+
+---------------------- Power analysis for binomial test ---------------------
+if(!require(pwr)){install.packages("pwr")}
+P0 = 0.75
+P1 = 0.78
+H  = ES.h(P0,P1)               # This calculates effect size
+
+library(pwr)
+pwr.p.test(
+  h=H,
+  n=NULL,                  # NULL tells the function to
+  sig.level=0.05,          #     calculate this
+  power=0.90,              # 1 minus Type II probability
+  alternative="two.sided")
+
+#     #     #
+
+
       
-      xmulti(observed,
-             expected,
-             detail = 2)             # 2: reports three types of p-value
-      
-      
-      P value  (LLR)  =  0.5331   # log-likelihood ratio
-      
-      P value (Prob)  =  0.5022   # exact probability
-      
-      P value (Chisq) =  0.5331   # Chi-square probability
-      
-      ### Note last p-value below agrees with Handbook
-      #     #     #
-      
-      
-      
-      Multinomial test example
-      ### --------------------------------------------------------------
-      ###  Second Mendel example, multinomial exact test, p. 35–36
-      ### --------------------------------------------------------------
+#Multinomial test example
+#-----------------------------------------------------------------------
+                 Second Mendel example, multinomial exact test
+------------------------------------------------------------------------
       observed = c(315, 108, 101, 32)
       expected = c(9, 3, 3, 1)
-      library(XNomial)
+
+library(XNomial)
+ xmulti(observed,
+        expected,
+        detail = 2)              
+ # reports three types of p-value      
+P value  (LLR)  =  0.9261    # log-likelihood ratio
+P value (Prob)  =  0.9382    # exact probability
+P value (Chisq) =  0.9272    # Chi-square probability
       
-      xmulti(observed,
-             expected,
-             detail = 2)              # reports three types of p-value
+#     #     # 
+ 
+
+     
+#--------------- Chi-square Test of Goodness-of-Fit  -----------------------
+
+if(!require(dplyr)){install.packages("dplyr")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(grid)){install.packages("grid")}
+if(!require(pwr)){install.packages("pwr")}
       
-      P value  (LLR)  =  0.9261    # log-likelihood ratio
-      P value (Prob)  =  0.9382    # exact probability
-      P value (Chisq) =  0.9272    # Chi-square probability
+#Chi-square goodness-of-fit example
+#---------------------------------------------------------------------
+                Drosophila example, Chi-square goodness-of-fit
+----------------------------------------------------------------------
+observed = c(770, 230)        # observed frequencies
+expected = c(0.75, 0.25)      # expected proportions
       
-      ### Note last p-value below agrees with Handbook,
-      ###   and agrees with SAS Exact Pr>=ChiSq
-      #     #     # 
+chisq.test(x = observed,
+           p = expected)
       
-      
-      #---------------Chi-square Test of Goodness-of-Fit--------------#
-      The following commands will install these packages if they are not already installed:
-        
-        if(!require(dplyr)){install.packages("dplyr")}
-      if(!require(ggplot2)){install.packages("ggplot2")}
-      if(!require(grid)){install.packages("grid")}
-      if(!require(pwr)){install.packages("pwr")}
-      
-      Chi-square goodness-of-fit example
-      ### --------------------------------------------------------------
-      ### Drosophila example, Chi-square goodness-of-fit, p. 46
-      ### --------------------------------------------------------------
-      
-      observed = c(770, 230)        # observed frequencies
-      expected = c(0.75, 0.25)      # expected proportions
-      
-      chisq.test(x = observed,
-                 p = expected)
-      #     #     #
+#     #     #
       
       
-      Examples: extrinsic hypothesis
-      ### --------------------------------------------------------------
-      ### Crossbill example, Chi-square goodness-of-fit, p. 47
-      ### --------------------------------------------------------------
+#Examples: extrinsic hypothesis
+#---------------------------------------------------------------------
+                Crossbill example, Chi-square goodness-of-fit
+----------------------------------------------------------------------
+observed = c(1752, 1895)    # observed frequencies
+expected = c(0.5, 0.5)      # expected proportions
       
-      observed = c(1752, 1895)    # observed frequencies
-      expected = c(0.5, 0.5)      # expected proportions
-      
-      chisq.test(x = observed,
-                 p = expected)
-      #     #     #
-      
-      
-      ### --------------------------------------------------------------
-      ### Rice example, Chi-square goodness-of-fit, p. 47
-      ### --------------------------------------------------------------
-      observed = c(772, 1611, 737)
-      expected = c(0.25, 0.50, 0.25)
-      
-      chisq.test(x = observed,
-                 p = expected)
-      #     #     #
-      
-      ### --------------------------------------------------------------
-      ### Bird foraging example, Chi-square goodness-of-fit, pp. 47–48
-      ### --------------------------------------------------------------
-      observed = c(70, 79, 3, 4)
-      expected = c(0.54, 0.40, 0.05, 0.01)
-      
-      chisq.test(x = observed,
-                 p = expected)
-      #     #     #
-      
-      Example: intrinsic hypothesis  
-      ### --------------------------------------------------------------
-      ### Intrinsic example, Chi-square goodness-of-fit, p. 48
-      ### --------------------------------------------------------------
-      observed       = c(1203,  2919,  1678)
-      expected.prop  = c(0.211, 0.497, 0.293)
-      expected.count = sum(observed)*expected.prop
-      chi2 = sum((observed- expected.count)^2/ expected.count)
-      chi2
-      #     #     #
+chisq.test(x = observed,
+           p = expected)
+
+#     #     #
       
       
-      Simple bar plot with barplot
-      ### --------------------------------------------------------------
-      ### Simple bar plot of proportions, p. 49
-      ###      Uses data in a matrix format
-      ### --------------------------------------------------------------
-      observed = c(70, 79, 3, 4)
-      expected = c(0.54, 0.40, 0.05, 0.01)
+#--------------------------------------------------------------------
+             Rice example, Chi-square goodness-of-fit
+---------------------------------------------------------------------
+observed = c(772, 1611, 737)
+expected = c(0.25, 0.50, 0.25)
       
-      total = sum(observed)
-      observed.prop = observed / total
-      observed.prop
+chisq.test(x = observed,
+           p = expected)
+     
+#     #     #
       
+# -------------------------------------------------------------------
+            Bird foraging example, Chi-square goodness-of-fit
+---------------------------------------------------------------------
+observed = c(70, 79, 3, 4)
+expected = c(0.54, 0.40, 0.05, 0.01)
       
-      #------------------------ Power Analysis
+chisq.test(x = observed,
+           p = expected)
       
-      ----------------------Power analysis for binomial test-------------------------
-        if(!require(pwr)){install.packages("pwr")}
-      P0 = 0.75
-      P1 = 0.78
-      H  = ES.h(P0,P1)               # This calculates effect size
+#     #     #
       
-      library(pwr)
+Example: intrinsic hypothesis  
+# -------------------------------------------------------------------
+       Intrinsic example, Chi-square goodness-of-fit
+---------------------------------------------------------------------
+observed       = c(1203,  2919,  1678)
+expected.prop  = c(0.211, 0.497, 0.293)
+expected.count = sum(observed)*expected.prop
+chi2 = sum((observed- expected.count)^2/ expected.count)
+chi2
       
-      pwr.p.test(
-        h=H,
-        n=NULL,                  # NULL tells the function to
-        sig.level=0.05,          #     calculate this
-        power=0.90,              # 1 minus Type II probability
-        alternative="two.sided")
-      #     #     #
+#     #     #
+
+#------------------ Chi-square goodness-of-fit -------------------------
+Pea color example, Chi-square goodness-of-fit
+------------------------------------------------------------------------
+  observed = c(423, 133)  
+expected = c(0.75, 0.25)
+
+chisq.test(x = observed,
+           p = expected)
+
+#     #     #
       
-      ---------------------Power analysis for unpaired t-test ----------------------
-        #--------------------Power analysis, t-test, student height, pp. 43–44--------
-      #-----------------------------------------------------------------------------
-      M1  = 66.6                      # Mean for sample 1
-      M2  = 64.6                      # Mean for sample 2
-      S1  =  4.8                      # Std dev for sample 1
-      S2  =  3.6                      # Std dev for sample 2
+Simple bar plot with barplot
+#--------------------------------------------------------------------
+              Simple bar plot of proportions
+              # Uses data in a matrix format
+---------------------------------------------------------------------
+observed = c(70, 79, 3, 4)
+expected = c(0.54, 0.40, 0.05, 0.01)
       
-      Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
-      
-      library(pwr)                                  
-      pwr.t.test(
-        n = NULL,                  # Observations in _each_ group
-        d = Cohen.d,           
-        sig.level = 0.05,          # Type I probability
-        power = 0.80,              # 1 minus Type II probability
-        type = "two.sample",       # Change for one- or two-sample
-        alternative = "two.sided"
-      )
-      
-      
-      Two-sample t test power calculation
-      n = 71.61288
-      NOTE: n is number in *each* group 71.61288
-      #     #     #
-      
-      #How to do the test-----------------------------------------------------------
-      Chi-square goodness-of-fit example
-      
-      ### --------------------------------------------------------------
-      ### Pea color example, Chi-square goodness-of-fit, pp. 50–51
-      ### --------------------------------------------------------------
-      observed = c(423, 133)  
-      expected = c(0.75, 0.25)
-      
-      chisq.test(x = observed,
-                 p = expected)
-      #     #     #
+total = sum(observed)
+observed.prop = observed / total
+observed.prop
       
       
-      #Power analysis
-      -----------------Power analysis for chi-square goodness-of-fit----------------
-        ### Power analysis, Chi-square goodness-of-fit, snapdragons, p. 51
-        ### --------------------------------------------------------------
-      library(pwr)
+---------------- Power analysis for chi-square goodness-of-fit ------
+        # Power analysis, Chi-square goodness-of-fit, snapdragons
+## ------------------------------------------------------------------
+library(pwr)
       
-      P0      = c(0.25,  0.50, 0.25)
-      P1      = c(0.225, 0.55, 0.225)
+P0      = c(0.25,  0.50, 0.25)
+P1      = c(0.225, 0.55, 0.225)
       
-      effect.size = ES.w1(P0, P1) 
-      degrees = length(P0) - 1
+effect.size = ES.w1(P0, P1) 
+degrees = length(P0) - 1
       
-      pwr.chisq.test(
-        w=effect.size,
-        N=NULL,            # Total number of observations
-        df=degrees,
-        power=0.80,        # 1 minus Type II probability
-        sig.level=0.05)    # Type I probability
-      
-      
-      N = 963.4689
-      #     #     #
+pwr.chisq.test(
+  w=effect.size,
+  N=NULL,            # Total number of observations
+  df=degrees,
+  power=0.80,        # 1 minus Type II probability
+  sig.level=0.05)    # Type I probability
       
       
-      #---------------G–test of Goodness-of-Fit-------------------------------
-      The following commands will install these packages if they are not already installed:
-        
-        if(!require(DescTools)){install.packages("DescTools")}
-      if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
+N = 963.4689
+
+#     #     #
       
-      Examples: extrinsic hypothesis
-      G-test goodness-of-fit test with DescTools and RVAideMemoire
       
-      ### --------------------------------------------------------------
-      ### Crossbill example, G-test goodness-of-fit, p. 55
-      ### --------------------------------------------------------------
-      observed = c(1752, 1895)    # observed frequencies
-      expected = c(0.5, 0.5)      # expected proportions
+#--------------- G–test of Goodness-of-Fit------------------------
+if(!require(DescTools)){install.packages("DescTools")}
+if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
       
-      library(DescTools)
-      GTest(x=observed,
-            p=expected,
-            correct="none")       # "none" "williams" "yates"
+#Examples: extrinsic hypothesis
+#G-test goodness-of-fit test with DescTools and RVAideMemoire
+# --------------------------------------------------------------
+          Crossbill example, G-test goodness-of-fit
+ --------------------------------------------------------------
+  observed = c(1752, 1895)    # observed frequencies
+  expected = c(0.5, 0.5)      # expected proportions
       
-      library(RVAideMemoire)
+library(DescTools)
+GTest(x=observed,
+     p=expected,
+     correct="none")       # "none" "williams" "yates"
       
+library(RVAideMemoire)
+G.test(x=observed,
+       p=expected)
+      
+#    #    #
+      
+G-test goodness-of-fit test by manual calculation
+# --------------------------------------------------------------
+     Crossbill example, G-test goodness-of-fit
+      #   Manual calculation
+----------------------------------------------------------------
+observed      = c(1752, 1895)     # observed frequencies
+expected.prop = c(0.5, 0.5)       # expected proportions
+      
+degrees = 1                       # degrees of freedom
+expected.count = sum(observed)*expected.prop
+      
+G = 2 * sum(observed * log(observed / expected.count))
+G                          
+      
+      
+pchisq(G,
+       df=degrees,
+      lower.tail=FALSE) 
+      
+#     #     #
+      
+      
+#Examples of G-test goodness-of-fit test with DescTools and RVAideMemoire
+# ----------------------------------------------------------------------
+             Rice example, G-test goodness-of-fit
+ -----------------------------------------------------------------------
+  observed = c(772, 1611, 737)
+  expected = c(0.25, 0.50, 0.25)
+      
+library(DescTools)
+      
+GTest(x=observed,
+      p=expected,
+      correct="none")            # "none" "williams" "yates"
+      
+Log likelihood ratio (G-test) goodness of fit test
+G = 4.1471, X-squared df = 2, p-value = 0.1257
+      
+library(RVAideMemoire)
       G.test(x=observed,
              p=expected)
-      #  #  #
+G-test for given probabilities
+G = 4.1471, df = 2, p-value = 0.1257
       
-      G-test goodness-of-fit test by manual calculation
-      ### --------------------------------------------------------------
-      ### Crossbill example, G-test goodness-of-fit, p. 55
-      ###   Manual calculation
-      ### --------------------------------------------------------------
-      observed      = c(1752, 1895)     # observed frequencies
-      expected.prop = c(0.5, 0.5)       # expected proportions
+#     #     #
       
-      degrees = 1                       # degrees of freedom
-      expected.count = sum(observed)*expected.prop
+#------------------------------------------------------------------
+      Foraging example, G-test goodness-of-fit
+-------------------------------------------------------------------
+  observed = c(70, 79, 3, 4)
+  expected = c(0.54, 0.40, 0.05, 0.01)
       
-      G = 2 * sum(observed * log(observed / expected.count))
-      G                          
-      
-      [1] 5.608512
-      
-      pchisq(G,
-             df=degrees,
-             lower.tail=FALSE) 
-      
-      [1] 0.01787343
-      #     #     #
-      
-      
-      Examples of G-test goodness-of-fit test with DescTools and RVAideMemoire
-      ### --------------------------------------------------------------
-      ### Rice example, G-test goodness-of-fit, p. 55
-      ### --------------------------------------------------------------
-      observed = c(772, 1611, 737)
-      expected = c(0.25, 0.50, 0.25)
-      
-      library(DescTools)
-      
+library(DescTools)   
       GTest(x=observed,
             p=expected,
             correct="none")            # "none" "williams" "yates"
       
+Log likelihood ratio (G-test) goodness of fit test
+G = 13.145, X-squared df = 3, p-value = 0.004334
       
-      
-      Log likelihood ratio (G-test) goodness of fit test
-      G = 4.1471, X-squared df = 2, p-value = 0.1257
-      
-      
-      library(RVAideMemoire)
+library(RVAideMemoire)
       G.test(x=observed,
              p=expected)
       
-      G-test for given probabilities
-      G = 4.1471, df = 2, p-value = 0.1257
+G-test for given probabilities
+G = 13.1448, df = 3, p-value = 0.004334
       
-      #     #     #
-      
-      ### --------------------------------------------------------------
-      ### Foraging example, G-test goodness-of-fit, pp. 55–56
-      ### --------------------------------------------------------------
-      
-      observed = c(70, 79, 3, 4)
-      expected = c(0.54, 0.40, 0.05, 0.01)
-      
-      library(DescTools)   
-      
-      GTest(x=observed,
-            p=expected,
-            correct="none")            # "none" "williams" "yates"
+#     #     #
       
       
-      Log likelihood ratio (G-test) goodness of fit test
-      G = 13.145, X-squared df = 3, p-value = 0.004334
-      
-      library(RVAideMemoire)
-      G.test(x=observed,
-             p=expected)
-      
-      G-test for given probabilities
-      G = 13.1448, df = 3, p-value = 0.004334
-      #     #     #
-      
-      
-      Example: intrinsic hypothesis
-      ### --------------------------------------------------------------
-      ### Intrinsic example, G-test goodness-of-fit, amphipod, p. 56
-      ### --------------------------------------------------------------
-      observed       = c(1203,  2919,  1678)
-      expected.prop  = c(.21073, 0.49665, 0.29262)
+#Example: intrinsic hypothesis
+#---------------------------------------------------------------------
+      Intrinsic example, G-test goodness-of-fit, amphipod
+----------------------------------------------------------------------
+observed       = c(1203,  2919,  1678)
+expected.prop  = c(.21073, 0.49665, 0.29262)
       
       ### Note: These are recalculated for more precision
       ###       In this case, low precision probabilities
       ###         change the results
-      expected.count = sum(observed)*expected.prop
+expected.count = sum(observed)*expected.prop
       
-      G = 2 * sum(observed * log(observed / expected.count))
-      G                         
+G = 2 * sum(observed * log(observed / expected.count))
+G                         
       
-      [1] 1.032653
-      
-      pchisq(G,
-             df=1,
-             lower.tail=FALSE)  
+pchisq(G,
+       df=1,
+       lower.tail=FALSE)  
       
       
-      [1] 0.3095363
-      #     #     #
+#     #     #
       
-      #-------------------------Chi-square Test of Independence-----------------------
-      The Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
-      For this test, the function requires the contingency table to be in the form of matrix.
-      Depending on the form of the data to begin with, 
-      this can require an extra step, either combing vectors into a matrix,
-      or cross-tabulating the counts among factors in a data frame.  
-      None of this is too difficult, 
-      but it requires following the correct example depending on the initial form of the data. 
+#------------------------ Chi-square Test of Independence ---------------------
+The Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
+For this test, the function requires the contingency table to be in the form of matrix.
+
+Depending on the form of the data to begin with,this can require an extra step, either combing vectors into a matrix,
+or cross-tabulating the counts among factors in a data frame.  None of this is too difficult, 
+but it requires following the correct example depending on the initial form of the data. 
       
-      When using read.table and as.matrix to read a table directly as a matrix, 
-      be careful of extra spaces at the end of lines or extraneous characters in the table, as these can cause errors.
+When using read.table and as.matrix to read a table directly as a matrix, 
+be careful of extra spaces at the end of lines or extraneous characters in the table, as these can cause errors.
       
-      Packages used in this chapter
-      The following commands will install these packages if they are not already installed:
+Packages used in this chapter
         
-        if(!require(rcompanion)){install.packages("rcompanion")}
-      if(!require(dplyr)){install.packages("dplyr")}
-      if(!require(ggplot2)){install.packages("ggplot2")}
-      if(!require(grid)){install.packages("grid")}
-      if(!require(pwr)){install.packages("pwr")}
+if(!require(rcompanion)){install.packages("rcompanion")}
+if(!require(dplyr)){install.packages("dplyr")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(grid)){install.packages("grid")}
+if(!require(pwr)){install.packages("pwr")}
       
-      When to use it
-      
-      Example of chi-square test with matrix created with read.table
-      ### --------------------------------------------------------------
-      ### Vaccination example, Chi-square independence, pp. 59–60
+#When to use it
+#Example of chi-square test with matrix created with read.table
+#---------------------------------------------------------------------
+       Vaccination example, Chi-square independence
       ###      Example directly reading a table as a matrix
-      ### --------------------------------------------------------------
+----------------------------------------------------------------------
       Input =("
 Injection.area  No.severe  Severe
 Thigh           4788       30
 Arm             8916       76
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
+Matriz = as.matrix(read.table(textConnection(Input),
                                     header=TRUE,
                                     row.names=1))
-      Matriz  
+Matriz  
+
+# Continuity correction for 2 x 2 table      
+chisq.test(Matriz,
+           correct=TRUE)
+# No continuity correction for 2 x 2 table
+chisq.test(Matriz,
+                 correct=FALSE)      
       
-      chisq.test(Matriz,
-                 correct=TRUE)      # Continuity correction for 2 x 2
-      #      table
-      chisq.test(Matriz,
-                 correct=FALSE)      # No continuity correction for 2 x 2
-      #      table
-      
-      
-      #--Example of chi-square test with matrix created by combining vectors
-      ### --------------------------------------------------------------
-      ### Vaccination example, Chi-square independence, pp. 59–60
+#-Example of chi-square test with matrix created by combining vectors
+#---------------------------------------------------------------------
+       Vaccination example, Chi-square independence
       ###  Example creating a matrix from vectors
-      ### --------------------------------------------------------------
-      R1 = c(4788, 30)
-      R2 = c(8916, 76)
-      rows   = 2
-      Matriz = matrix(c(R1, R2),
-                      nrow=rows,
-                      byrow=TRUE)
+----------------------------------------------------------------------
+R1 = c(4788, 30)
+R2 = c(8916, 76)
+rows   = 2
+Matriz = matrix(c(R1, R2),
+                nrow=rows,
+                byrow=TRUE)
       
-      rownames(Matriz) = c("Thigh", "Arm")          # Naming the rows and
-      colnames(Matriz) = c("No.severe", "Severe")   #  columns is optional.
-      Matriz
+rownames(Matriz) = c("Thigh", "Arm")          # Naming the rows and
+colnames(Matriz) = c("No.severe", "Severe")   #  columns is optional.
+Matriz
+
+# Continuity correction for 2 x 2 table      
+chisq.test(Matriz,
+           correct=TRUE)      
+# No continuity correction for 2 x 2 table
+chisq.test(Matriz,
+           correct=FALSE)      
+=====================================================================
+# Post-hoc tests
+For the example of post-hoc pairwise testing,the pairwiseNominalIndependence function from the package rcompanion 
+to make the task easier.Then we’ll use pairwise.table in the native stats package as an alternative.
       
-      chisq.test(Matriz,
-                 correct=TRUE)      # Continuity correction for 2 x 2
-      #      table
-      chisq.test(Matriz,
-                 correct=FALSE)      # No continuity correction for 2 x 2
-      #      table
-      =====================================================================
-        Post-hoc tests
-      For the following example of post-hoc pairwise testing, we’ll use the pairwiseNominalIndependence
-      function from the package rcompanion to make the task easier.Then we’ll use pairwise.table 
-      in the native stats package as an alternative.
-      
-      Post-hoc pairwise chi-square tests with rcompanion
-      ### --------------------------------------------------------------
-      ### Post-hoc example, Chi-square independence, pp. 60–61
-      ### --------------------------------------------------------------
+#Post-hoc pairwise chi-square tests with rcompanion
+#---------------------------------------------------------------------
+       Post-hoc example, Chi-square independence, pp. 60–61
+----------------------------------------------------------------------
       Input =("
 Supplement     No.cancer  Cancer
 'Selenium'     8177       575
@@ -1768,29 +1697,27 @@ Supplement     No.cancer  Cancer
 'Placebo'      8167       529
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
+Matriz = as.matrix(read.table(textConnection(Input),
+                              header=TRUE,
+                              row.names=1))
+Matriz
       
-      chisq.test(Matriz) 
+chisq.test(Matriz) 
+      
+library(rcompanion)
+pairwiseNominalIndependence(Matriz,
+                            fisher = FALSE,
+                            gtest  = FALSE,
+                            chisq  = TRUE,
+                            method = "fdr")
       
       
-      library(rcompanion)
-      pairwiseNominalIndependence(Matriz,
-                                  fisher = FALSE,
-                                  gtest  = FALSE,
-                                  chisq  = TRUE,
-                                  method = "fdr")
-      
-      
-      Post-hoc pairwise chi-square tests with pairwise.table
-      ### --------------------------------------------------------------
-      ### Post-hoc example, Chi-square independence, pp. 60–61
-      ### As is, this code works on a matrix with two columns,
-      ###   and compares rows
-      ### --------------------------------------------------------------
-      Input =("
+#Post-hoc pairwise chi-square tests with pairwise.table
+#----------------------------------------------------------------------
+       Post-hoc example, Chi-square independence
+# As is, this code works on a matrix with two columns and compares rows
+-----------------------------------------------------------------------
+Input =("
 Supplement     No.cancer  Cancer
 'Selenium'     8177       575
 'Vitamin E'    8117       620
@@ -1798,71 +1725,66 @@ Supplement     No.cancer  Cancer
 'Placebo'      8167       529
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
+Matriz = as.matrix(read.table(textConnection(Input),
                                     header=TRUE,
                                     row.names=1))
-      Matriz
-      chisq.test(Matriz)
+Matriz
+chisq.test(Matriz)
       
-      
-      FUN = function(i,j){    
-        chisq.test(matrix(c(Matriz[i,1], Matriz[i,2],
-                            Matriz[j,1], Matriz[j,2]),
-                          nrow=2,
-                          byrow=TRUE))$ p.value
+FUN = function(i,j){    
+chisq.test(matrix(c(Matriz[i,1], Matriz[i,2],
+                   Matriz[j,1], Matriz[j,2]),
+                  nrow=2,
+           byrow=TRUE))$ p.value
       }
       
-      pairwise.table(FUN,
-                     rownames(Matriz),
-                     p.adjust.method="none")
+pairwise.table(FUN,
+               rownames(Matriz),
+               p.adjust.method="none")
       
-      =======================
-        
-        Examples
-      
-      Chi-square test of independence with continuity correction and without correction
-      ### --------------------------------------------------------------
-      ### Helmet example, Chi-square independence, p. 63
-      ### --------------------------------------------------------------
-      Input =("
+======================
+#Chi-square test of independence with continuity correction and without correction
+#---------------------------------------------------------------------------------
+                    Helmet example, Chi-square independence
+----------------------------------------------------------------------------------
+Input =("
 PSE        Head.injury  Other.injury
 Helemt     372          4715
 No.helmet  267          1391
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
+Matriz = as.matrix(read.table(textConnection(Input),
+                              header=TRUE,
+                              row.names=1))
+Matriz
+# Continuity correction for 2 x 2 table      
+chisq.test(Matriz,
+           correct=TRUE)       
+# No continuity correction for 2 x 2 table      
+chisq.test(Matriz,
+           correct=FALSE)       
       
-      chisq.test(Matriz,
-                 correct=TRUE)       # Continuity correction for 2 x 2
-      #      table
+#     #     #
       
-      chisq.test(Matriz,
-                 correct=FALSE)      # No continuity correction for 2 x 2
-      #      table 
-      #     #     #
-      
-      Chi-square test of independence
-      ### --------------------------------------------------------------
-      ### Gardemann apolipoprotein example, Chi-square independence,
-      ###   p. 63
-      ### --------------------------------------------------------------
-      Input =("
+#Chi-square test of independence
+# --------------------------------------------------------------
+       Gardemann apolipoprotein example, Chi-square independence
+----------------------------------------------------------------
+Input =("
 Genotype  No.disease Coronary.disease
 'ins/ins'   268        807
 'ins/del'   199        759
 'del/del'    42        184
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
+Matriz = as.matrix(read.table(textConnection(Input),
+                   header=TRUE,
+                   row.names=1))
+Matriz
       
-      chisq.test(Matriz)
-      #     #     #
+chisq.test(Matriz)
+
+#     #     #
       
       Simple bar plot with error bars showing confidence intervals
       ### --------------------------------------------------------------
@@ -1877,14 +1799,13 @@ Supplement     No.cancer  Cancer
 'Placebo'      8167       529
 ")
       
-      Prostate = read.table(textConnection(Input),header=TRUE)
+Prostate = read.table(textConnection(Input),header=TRUE)
       
-      ### Add sums and confidence intervals
-      
-      library(dplyr)
-      Prostate =
-        mutate(Prostate,
-               Sum = No.cancer + Cancer)
+### Add sums and confidence intervals
+library(dplyr)
+Prostate =
+      mutate(Prostate,
+      Sum = No.cancer + Cancer)
       Prostate =
         mutate(Prostate,
                Prop = Cancer / Sum,
@@ -1893,10 +1814,9 @@ Supplement     No.cancer  Cancer
                high.ci = apply(Prostate[c("Cancer", "Sum")], 1,
                                function(y) binom.test(y['Cancer'], y['Sum'])$ conf.int[2])
         )
-      Prostate
-      
-      
-      ### Plot (Bar chart plot)
+Prostate
+---------------------------------------------------------------------------------------------------------to be con`t      
+### Plot (Bar chart plot)
       library(ggplot2)
       ggplot(Prostate,
              aes(x=Supplement, y=Prop)) +
