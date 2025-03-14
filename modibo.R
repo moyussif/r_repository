@@ -1816,36 +1816,37 @@ Prostate =
         )
 Prostate
 ---------------------------------------------------------------------------------------------------------to be con`t      
-### Plot (Bar chart plot)
-      library(ggplot2)
-      ggplot(Prostate,
-             aes(x=Supplement, y=Prop)) +
-        geom_bar(stat="identity", fill="gray40",
-                 colour="black", size=0.5,
-                 width=0.7) +
-        geom_errorbar(aes(ymax=high.ci, ymin=low.ci),
-                      width=0.2, size=0.5, color="black") +
-        xlab("Supplement") +
-        ylab("Prostate cancer proportion") +
-        scale_x_discrete(labels=c("Selenium", "Vitamin E",
+#Plot (Bar chart plot)
+library(ggplot2)
+ggplot(Prostate,
+       aes(x=Supplement, y=Prop)) +
+  geom_bar(stat="identity", fill="gray40",
+           colour="black", size=0.5,
+           width=0.7) +
+   geom_errorbar(aes(ymax=high.ci, ymin=low.ci),
+                 width=0.2, size=0.5, color="black") +
+   xlab("Supplement") +
+   ylab("Prostate cancer proportion") +
+   scale_x_discrete(labels=c("Selenium", "Vitamin E",
                                   "Selenium+E","Placebo")) +
-        ## ggtitle("Main title") +
-        theme(axis.title=element_text(size=14, color="black",
-                                      face="bold", vjust=3)) +
-        theme(axis.text = element_text(size=12, color = "gray25",
-                                       face="bold")) +
-        theme(axis.title.y = element_text(vjust= 1.8)) +
-        theme(axis.title.x = element_text(vjust= -0.5))
-      #     #     #  
+
+## ggtitle("Main title") +
+theme(axis.title=element_text(size=14, color="black",
+      face="bold", vjust=3)) +
+theme(axis.text = element_text(size=12, color = "gray25",
+      face="bold")) +
+theme(axis.title.y = element_text(vjust= 1.8)) +
+theme(axis.title.x = element_text(vjust= -0.5))
+      
+
+#     #     #  
+      
+Bar plot with categories and no error bars
       
       
-      Bar plot with categories and no error bars
-      
-      
-      ### --------------------------------------------------------------
-      ### Plot example, herons and egrets, Chi-square independence,
-      ###   p. 64
-      ### --------------------------------------------------------------
+#--------------------------------------------------------------
+     Plot example, herons and egrets, Chi-square independence
+--------------------------------------------------------------
       
       Input =("
 Habitat      Bird   Count
@@ -1859,33 +1860,32 @@ Water        Egret    7
 Structures   Egret    1
 ")
       
-      Birds = read.table(textConnection(Input),header=TRUE)
+Birds = read.table(textConnection(Input),header=TRUE)
       
-      
-      ### Specify the order of factor levels
-      library(dplyr)
-      Birds=
-        mutate(Birds,
-               Habitat = factor(Habitat,levels=unique(Habitat)),
-               Bird = factor(Bird,levels=unique(Bird))
+# Specify the order of factor levels
+library(dplyr)
+Birds=
+  mutate(Birds,
+         Habitat = factor(Habitat,levels=unique(Habitat)),
+         Bird = factor(Bird,levels=unique(Bird))
         )
       
-      ### Add sums and proportions
-      Birds$ Sum[Birds$ Bird == 'Heron'] =
-        sum(Birds$ Count[Birds$ Bird == 'Heron'])
+# Add sums and proportions
+Birds$ Sum[Birds$ Bird == 'Heron'] =
+   sum(Birds$ Count[Birds$ Bird == 'Heron'])
       
-      Birds$ Sum[Birds$ Bird == 'Egret'] =
-        sum(Birds$ Count[Birds$ Bird == 'Egret'])
+Birds$ Sum[Birds$ Bird == 'Egret'] =
+  sum(Birds$ Count[Birds$ Bird == 'Egret'])
       
-      Birds=
-        mutate(Birds,
-               prop = Count / Sum
+Birds=
+  mutate(Birds,
+         prop = Count / Sum
         )
-      Birds 
+Birds 
       
       
-      ### Plot adapted from:
-      ### shinyapps.stat.ubc.ca/r-graph-catalog/
+#Plot adapted from:
+# shinyapps.stat.ubc.ca/r-graph-catalog/
       
       library(ggplot2)
       library(grid)
@@ -1919,22 +1919,21 @@ Structures   Egret    1
               axis.title.y = element_text(vjust= 1.8),
               axis.title.x = element_text(vjust= -0.5)
         )
-      #     #     # 
+      
+#     #     # 
       
       
-      How to do the test
-      Chi-square test of independence with data as a data frame
-      In the following example for the chi-square test of independence, 
-      the data is read in as a data frame, not as a matrix as in previous examples.
-      This allows more flexibility with how data are entered.  
-      For example you could have counts for same genotype and health distributed among several lines,
-      or have a count of 1 for each row, with a separate row for each individual observation.  
-      The xtabs function is used to tabulate the data and convert them to a contingency table.
-      ### --------------------------------------------------------------
-      ### Gardemann apolipoprotein example, Chi-square independence,
-      ###      SAS example, pp. 65–66
+How to do the test
+Chi-square test of independence with data as a data frame
+In the following example for the chi-square test of independence, the data is read in as a data frame, 
+not as a matrix as in previous examples.This allows more flexibility with how data are entered. 
+For example you could have counts for same genotype and health distributed among several lines,
+or have a count of 1 for each row, with a separate row for each individual observation.  
+The xtabs function is used to tabulate the data and convert them to a contingency table.
+# --------------------------------------------------------------
+      Gardemann apolipoprotein example, Chi-square independence,
       ###      Example using cross-tabulation
-      ### --------------------------------------------------------------
+--------------------------------------------------------------
       Input =("
 Genotype  Health       Count
 ins-ins   no_disease   268
@@ -1945,25 +1944,25 @@ del-del   no_disease    42
 del-del   disease      184
 ")
       
-      Data.frame = read.table(textConnection(Input),header=TRUE)
+Data.frame = read.table(textConnection(Input),header=TRUE)
+      
+# Cross-tabulate the data
+Data.xtabs = xtabs(Count ~ Genotype + Health,
+                   data=Data.frame)
+Data.xtabs 
+# includes N and factors      
+summary(Data.xtabs)     
+      
+## Chi-square test of independence
+chisq.test(Data.xtabs)
+      
+#     #     #
       
       
-      ###  Cross-tabulate the data
-      Data.xtabs = xtabs(Count ~ Genotype + Health,
-                         data=Data.frame)
-      Data.xtabs 
-      
-      summary(Data.xtabs)     # includes N and factors
-      
-      ###  Chi-square test of independence
-      chisq.test(Data.xtabs)
-      #     #     #
-      
-      Power analysis
-      Power analysis for chi-square test of independence
-      ### --------------------------------------------------------------
-      ### Power analysis, chi-square independence, pp. 66–67
-      ### --------------------------------------------------------------
+------------ Power analysis for chi-square test of independence ----------------
+#--------------------------------------------------------------
+      Power analysis, chi-square independence, pp. 66–67
+--------------------------------------------------------------
       # This example assumes you are using a Chi-square test of
       #   independence.  The example in the Handbook appears to use
       #   a Chi-square goodness-of-fit test
@@ -1998,45 +1997,44 @@ AA        0.08      0.110
       #     #     #
       
       
-      #------------------------G–test of Independence-------------------
+#------------------------ G–test of Independence -------------------------
       G-test example with functions in DescTools and RVAideMemoire
-      ###--------------------------------------------------------------
-      ### Vaccination example, G-test of independence, pp. 68–69
-      ### --------------------------------------------------------------
+--------------------------------------------------------------------------
+        Vaccination example, G-test of independence
+# --------------------------------------------------------------
       Input =("
  Injection.area  No.severe  Severe      
  Thigh           4788       30
  Arm             8916       76
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
+Matriz = as.matrix(read.table(textConnection(Input),
+                              header=TRUE,
+                              row.names=1))
+Matriz
       
-      library(DescTools)
-      GTest(Matriz,
-            correct="none")            # "none" "williams" "yates"  
+library(DescTools)
+GTest(Matriz,
+      correct="none")            # "none" "williams" "yates"  
       
-      library(RVAideMemoire)
-      G.test(Matriz)
-      #     #     #
+library(RVAideMemoire)
+G.test(Matriz)
+
+#     #     #
       
-      Post-hoc tests
-      For the following example of post-hoc pairwise testing, 
-      we’ll use the pairwise.G.test function from the package RVAideMemoire to make the task easier.  
-      Then we’ll use pairwise.table in the native stats package as an alternative.
-      
-      
-      
-      Post-hoc pairwise G-tests with RVAideMemoire
+Post-hoc tests
+For the following example of post-hoc pairwise testing, 
+we’ll use the pairwise.G.test function from the package RVAideMemoire to make the task easier.  
+Then we’ll use pairwise.table in the native stats package as an alternative.
       
       
-      ### --------------------------------------------------------------
-      ### Post-hoc example, G-test of independence, pp. 69–70
-      ### --------------------------------------------------------------
+Post-hoc pairwise G-tests with RVAideMemoire
       
-      Input =("
+#--------------------------------------------------------------
+      Post-hoc example, G-test of independence
+---------------------------------------------------------------
+      
+   Input =("
  Supplement     No.cancer  Cancer
  'Selenium'     8177       575
  'Vitamin E'    8117       620
@@ -2044,28 +2042,25 @@ AA        0.08      0.110
  'Placebo'      8167       529
 ")
       
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
+Matriz = as.matrix(read.table(textConnection(Input),
+                              header=TRUE,
+                              row.names=1))
+Matriz
       
-      library(RVAideMemoire)
+library(RVAideMemoire)
+G.test(Matriz)
       
-      G.test(Matriz)
-      
-      
-      library(RVAideMemoire)
-      pairwise.G.test(Matriz,
-                      p.method = "none")           # Can adjust p-values;
-      # see ?p.adjust for options
+library(RVAideMemoire)
+pairwise.G.test(Matriz,
+                p.method = "none")           # Can adjust p-values;
       
       
-      -------
-        Post-hoc pairwise G-tests with pairwise.table
-      As is, this function works on a matrix with two columns, and compares rows.
-      ### --------------------------------------------------------------
-      ### Post-hoc example, G-test of independence, pp. 69–70
-      ### --------------------------------------------------------------
+ -------
+Post-hoc pairwise G-tests with pairwise.table
+As is, this function works on a matrix with two columns, and compares rows.
+### --------------------------------------------------------------
+     Post-hoc example, G-test of independence
+    --------------------------------------------------------------
       Input =("
 Supplement      No.cancer  Cancer
  'Selenium'     8177       575
@@ -2073,29 +2068,32 @@ Supplement      No.cancer  Cancer
  'Selenium+E'   8147       555
  'Placebo'      8167       529
 ")
-      Matriz = as.matrix(read.table(textConnection(Input),
-                                    header=TRUE,
-                                    row.names=1))
-      Matriz
-      -------------------------
-        library(DescTools)   
-      GTest(Matriz,
-            correct="none") 
+Matriz = as.matrix(read.table(textConnection(Input),
+                              header=TRUE,
+                              row.names=1))
+Matriz
+-------------------------
+  
+library(DescTools)   
+GTest(Matriz,
+      correct="none") 
       
-      FUN = function(i,j){    
-        GTest(matrix(c(Matriz[i,1], Matriz[i,2],
-                       Matriz[j,1], Matriz[j,2]),
-                     nrow=2,
-                     byrow=TRUE),
-              correct="none")$ p.value   # "none" "williams" "yates"
-      }
+  FUN = function(i,j){    
+   GTest(matrix(c(Matriz[i,1], Matriz[i,2],
+                  Matriz[j,1], Matriz[j,2]),
+                  nrow=2,
+                  byrow=TRUE),
+         correct="none")$ p.value   # "none" "williams" "yates"
+   }
       
-      pairwise.table(FUN,
-                     rownames(Matriz),
-                     p.adjust.method="none")       # Can adjust p-values
-      #     #     #
+   pairwise.table(FUN,
+                 rownames(Matriz),
+                 p.adjust.method="none")       # Can adjust p-values
       
+  
+#     #     #
       
+------------------------------------------------------------------------------------------------- continue here      
       #---------------------Fisher’s Exact Test of Independence------------------
       if(!require(rcompanion)){install.packages("rcompanion")}
       
