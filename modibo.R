@@ -1018,9 +1018,7 @@ chart.Correlation(Data.num,
                   histogram=TRUE,
                   pch=16)
 -------------------------------------------------------------------------------
-  Multiple regression
-
-
+#Multiple regression
 Model selection using the step function
 The step function has options to add terms to a model (direction="forward"), 
 remove terms from a model (direction="backward"), or 
@@ -1064,6 +1062,20 @@ plot(predy ~ Longnose,
      xlab="Actual response value",
      ylab="Predicted response value")
 abline(0,1, col="blue", lwd=2)
+
+#:::::::::::::::::::::: regress and model building :::::::::::::::::::::::::#
+library(car)summary(microbes)
+model <- lm(Occupation ~ No.of.births, data = microbes)
+summary(model)
+plot(microbes$No.of.births, microbes$Onset.of.labour)
+abline(model)
+# Plot residuals against the fitted values
+residualPlots(model)
+# Perform anova on the model
+anova(model)
+
+library(olsrr)
+
 
 #-----------------------------Simple Logistic Regression ----------------------
 if(!require(car)){install.packages("car")}
@@ -3392,19 +3404,7 @@ Using the last model above, fit a similar model for the scenarios below separate
 (2) vary the value of β between the start and end of a period of lockdown as 0.6 and 0.2 respectively.
 (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1 respectively.                        
 
-#:::::::::::::::::::: regress and model building ::::::::::::::::::::#
-library(car)summary(microbes)
-model <- lm(Occupation ~ No.of.births, data = microbes)
-summary(model)
-plot(microbes$No.of.births, microbes$Onset.of.labour)
-abline(model)
-# Plot residuals against the fitted values
-residualPlots(model)
-# Perform anova on the model
-anova(model)
-                        
-library(olsrr)
-                        
+         
 #--------------------- Time Series Analysis ----------------------------------#
                         
 #Typical Questions__when is consumption highest / lowest
