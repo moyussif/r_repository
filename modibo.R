@@ -1077,7 +1077,7 @@ anova(model)
 library(olsrr)
 
 
-#-----------------------------Simple Logistic Regression ----------------------
+#--------------------------- Simple Logistic Regression ----------------------
 if(!require(car)){install.packages("car")}
 if(!require(lmtest){install.packages("lmtest")}
 if(!require(tidyr)){install.packages("tidyr")}
