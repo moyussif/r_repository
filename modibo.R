@@ -877,7 +877,7 @@ abline(0,0, col="blue", lwd=2)
 abline(0,1, col="blue", lwd=2)
   
 
-#-------------------------Correlation and Linear Regression---------------------
+#----------------------- Correlation and Linear Regression ---------------------
 Correlation
 Correlation can be performed with the cor.test function in the native stats package.  
 It can perform Pearson, Kendall, and Spearman correlation procedures.  
@@ -1020,6 +1020,7 @@ abline(int, slope,
 
 #------------------------ Curvilinear Regression -------------------------------
 How to fit models to curvilinear data using three methods:
+  
 1) Polynomial regression;  
 2) B-spline regression with polynomial splines;  
 3) Nonlinear regression with the nls function.  
@@ -1070,27 +1071,28 @@ x_axis <- seq(1, 10, length=10)
 lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
 lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
 
-  
 ================================================================================
-
-#Polynomial regression
+  
+#---------------------- Polynomial regression -----------------------------
 Polynomial regression is really just a special case of multiple regression, 
-which is covered in the Multiple regression chapter.  
-In this example we will fit a few models and then compare the models with the extra sum of squares test, 
-the Akaike information criterion (AIC), and the adjusted R-squared as model fit criteria. 
-
-For a linear model (lm), the adjusted R-squared is included with the output of the summary(model) statement.  
-The AIC is produced with its own function call, AIC(model).  
-The extra sum of squares test is conducted with the anova function applied to two models. 
-
-For AIC, smaller is better.  For adjusted R-squared, larger is better. 
-A non-significant p-value for the extra sum of squares test comparing model a to model b indicates that
-the model with the extra terms does not significantly reduce the error sum of squares over the reduced model.  
-
-Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
-Simple plot of model
-
-------------------------------------------------------------------
+ 
+#Simple plot of model
+library(ggplot2)
+ggplot(imdata,aes(x =age, y = bmi))+
+  geom_point(size = 4,
+             shape = 20,
+             colour = "Black")+
+  stat_smooth(method = lm,
+              se = FALSE,
+              formula = y~poly(x,3),
+              colour = "Green")+
+  stat_smooth(method = lm,
+              se = FALSE,
+              formula = y~poly(x,2),
+              colour = "Red")
+ 
+#    #    #
+===================================
   View(imdata)  
   Data = imdata
   plot(imdata$age,imdata$bmi)
@@ -1130,28 +1132,18 @@ chart.Correlation(Data.num,
                   pch=16)
 -------------------------------------------------------------------------------
 #Multiple regression
-Model selection using the step function
-The step function has options to add terms to a model (direction="forward"), 
-remove terms from a model (direction="backward"), or 
-to use a process that both adds and removes terms (direction="both").  
+Model selection using the step function-(options)
+1-To add terms to a model (direction="forward"),
+2-To remove terms from a model (direction="backward"),
+3-To use a process that both adds and removes terms (direction="both").
+
 It uses AIC (Akaike information criterion) as a selection criterion.  
-You can use the option k = log(n) to use BIC instead. 
-
-
-You can add the test="F" option to see the p-value for adding or removing terms,
-but the test will still follow the AIC statistic.  
-If,however, note that a significant p-value essentially argues for the term being included in the model,
-whether it’s its addition or its removal that’s being considered.
-
-
-A full model and a null are defined, and then the function will follow a procedure to find the model with the lowest AIC.
-The final model is shown at the end of the output, with the Call: indication, and lists the coefficients for that model.
 
 #-------------------------------------------------------------------------------
 ---------------------------- Model Building ------------------------------------  
   
   # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)
