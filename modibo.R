@@ -1008,63 +1008,6 @@ abline(int, slope,
 #    #    #   
 
 
-
-#-------------------------------------------------------------------------------
----------------------------- Model Building ------------------------------------  
- 
-# methods for evaluating subset regression models:
-1-choose one  with the largest Adjusted R squared.
-2-choose one with the smallest MSE.
-3-choose one with the smallest AIC.
-4-choose one with the smallest predicted sum of square (SS)
-5-choose one with the number of the parammetrs used in a model equal to CP value.
-        Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
- 
-#
-library(car)        
-library(olsrr)        
-
-g <- lm(y~.,data = dataset)       # where . is the x variables
-summary(g)
-      
-#--------model building
-forward <- ols_step_forward_p(g, penter = 0.05)
-forward                                               # forward
-forward <- ols_step_forward_aic(g, details = TRUE)
-forward
-
-Backward <- ols_step_backward_p(g, prem = 0.05)
-Backward                                             # Backward
-Backward <- ols_step_backward_aic(g, details = TRUE)
-Backward
-
-Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
-Both                                                 # Stepwise
-Both.aic <- ols_step_both_aic(g, details = TRUE)
-Both.aic
-
-#Options for all possible subset models
-all <- ols_step_all_possible(g)
-all
-as.data.frame(all)
-plot(all)
-
-#option for best subset regression
-best <- ols_step_best_subset(g)
-best
-
-# in conclusion, our final model 
-pred <-lm(y~.,data = dataset)     #  where . is the list of x variables selected for modelling. 
-summary(pred)
-
-par(mfrom = c(2,2))
-plot(pred)
-
-
-dev.off()
-
-
-
 ---------------------------Power analysis for correlation-----------------------
   pwr.r.test(n = NULL,
              r = 0.500,
@@ -1072,7 +1015,7 @@ dev.off()
              power = 0.80,
              alternative = "two.sided")
 
-
+#    #    #
 
 
 #------------------------ Curvilinear Regression -------------------------------
@@ -1082,9 +1025,54 @@ How to fit models to curvilinear data using three methods:
 3) Nonlinear regression with the nls function.  
 
 Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
-===================================================================
 
-===================================================================
+# create sample data 
+sample_data <- data.frame(x=1:10, 
+                          y=c(25, 22, 13, 10, 5, 
+                              9, 12, 16, 34, 44)) 
+View(sample_data)
+
+#------------ fit linear -----------------
+linear_model1 <- lm(y~x, data=sample_data)
+# create a basic scatterplot 
+plot(sample_data$x, sample_data$y)
+# define x-axis values 
+x_axis <- seq(1, 10, length=10)
+lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
+
+
+#---- fit polynomial regression models up to degree 4 -------
+-------------------------------------------------------------
+#----------- Curvilinear ------------------------------------
+
+linear_model2 <- lm(y~poly(x,2,raw=TRUE), data=sample_data)
+# create a basic scatterplot 
+plot(sample_data$x, sample_data$y) 
+# define x-axis values 
+x_axis <- seq(1, 10, length=10) 
+lines(x_axis, predict(linear_model2, data.frame(x=x_axis)), col='red')
+
+# add curve of each model to plot----------------------------
+linear_model3 <- lm(y~poly(x,3,raw=TRUE), data=sample_data)
+# create a basic scatterplot 
+plot(sample_data$x, sample_data$y) 
+# define x-axis values 
+x_axis <- seq(1, 10, length=10) 
+lines(x_axis, predict(linear_model3, data.frame(x=x_axis)), col='purple')
+
+# multiple curve to plot-------------------------------------
+linear_model4 <- lm(y~poly(x,4,raw=TRUE), data=sample_data)
+linear_model5 <- lm(y~poly(x,5,raw=TRUE), data=sample_data)
+# create a basic scatterplot 
+plot(sample_data$x, sample_data$y) 
+# define x-axis values 
+x_axis <- seq(1, 10, length=10) 
+lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
+lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
+
+  
+================================================================================
+
 #Polynomial regression
 Polynomial regression is really just a special case of multiple regression, 
 which is covered in the Multiple regression chapter.  
@@ -1102,10 +1090,17 @@ the model with the extra terms does not significantly reduce the error sum of sq
 Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
 Simple plot of model
 
--------------------------
+------------------------------------------------------------------
   View(imdata)  
   Data = imdata
-  plot(bwgt ~ age,
+  plot(imdata$age,imdata$bmi)
+  
+  model <- lm(bmi~poly(age,1,raw=TRUE), data=imdata)
+  plot(model)
+  
+  lines(x_axis, predict(model, data.frame(age=x_axis)), col='blue')
+ 
+   plot(bwgt ~ age,
        data = imdata,
        pch=16,
        xlab = "Age",
@@ -1151,6 +1146,62 @@ whether it’s its addition or its removal that’s being considered.
 
 A full model and a null are defined, and then the function will follow a procedure to find the model with the lowest AIC.
 The final model is shown at the end of the output, with the Call: indication, and lists the coefficients for that model.
+
+#-------------------------------------------------------------------------------
+---------------------------- Model Building ------------------------------------  
+  
+  # methods for evaluating subset regression models:
+  1-choose one  with the largest Adjusted R squared.
+2-choose one with the smallest MSE.
+3-choose one with the smallest AIC.
+4-choose one with the smallest predicted sum of square (SS)
+5-choose one with the number of the parammetrs used in a model equal to CP value.
+Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
+
+#
+library(car)        
+library(olsrr)        
+
+g <- lm(y~.,data = dataset)       # where . is the x variables
+summary(g)
+
+#--------model building
+forward <- ols_step_forward_p(g, penter = 0.05)
+forward                                               # forward
+forward <- ols_step_forward_aic(g, details = TRUE)
+forward
+
+Backward <- ols_step_backward_p(g, prem = 0.05)
+Backward                                             # Backward
+Backward <- ols_step_backward_aic(g, details = TRUE)
+Backward
+
+Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
+Both                                                 # Stepwise
+Both.aic <- ols_step_both_aic(g, details = TRUE)
+Both.aic
+
+#Options for all possible subset models
+all <- ols_step_all_possible(g)
+all
+as.data.frame(all)
+plot(all)
+
+#option for best subset regression
+best <- ols_step_best_subset(g)
+best
+
+# in conclusion, our final model 
+pred <-lm(y~.,data = dataset)     #  where . is the list of x variables selected for modelling. 
+summary(pred)
+
+par(mfrom = c(2,2))
+plot(pred)
+
+
+dev.off()
+
+
 
 #-------------------------------Stepwise procedure------------------------------
 
@@ -3414,7 +3465,7 @@ peak <- max(infections)
 match(peak, infections)
 ## [1] 112
 ===============================================================================
-#------------------- SEIR model with intervention methods ---------------------
+#------------------- SEIRM model with intervention methods ---------------------
 
 The SEIR model is an interesting example of how an epidemic develops without any changes in the population’s behaviour.
 You can build more sophisticated models by taking the SEIR model as a starting point and adding extra features.
@@ -3570,7 +3621,7 @@ Area <- function(Length, Breadth){
   return(Area)
 }
 #therefore,
-Area (4,7)
+Area (3,7)
 ----------
 e.g-2  
 
@@ -3578,7 +3629,7 @@ BMI <- function(weight,height){
   BMI <- weight/height*2
   return(BMI)
 }  
-BMI(69,56)  
+BMI(62,58)  
   
    # R program to illustrate
   # Graph plotting in
