@@ -917,9 +917,71 @@ cor.test( ~ Species + Latitude,
              power = 0.80,
              alternative = "two.sided")
 
+#   #   #
 
-#------------------------------ Linear regression ------------------------------
-  Linear regression can be performed with the lm function in the native stats package.
+
+
+================================================================================
+
+#----------------------------- Regression analysis -----------------------------
+
+#       Regression analysis study the relationship between variables:
+
+1-By identifying (Linear, Curvilinear, or Quadratic).
+2-By estimating parameters of the relationships(intercept(B0) and slope(B1)).
+3-By validating the relationship (The  assumptions for regression).
+
+#The process of finding the line equation (Best fit the data values)------------regression line(linear)
+#Linear equation-------------------------------------------------------------- y= B0 + B1x
+#B0(y intercept)--------what is y when x = 0 ?
+#B1(slope line)---------how much is y changes, for each unit increase in x, 
+Note,
+1,The equation gives pedicted value y-hat(y) at a given x.
+2,Each value will not fall exactly on the line of best fit: the difference------residual/error. y(observed)-y-hat(predicted)
+3,Least ordinary square(OLS)------------------is used to determine the slope and the intercept.
+Thus, it tries to minimise the difference between the observed and the fitted values.
+# B0 and B1 are the Least Square Estimates (LSE)
+
+# B0 = y - B1x  ---------------- where x(mean),y(mean). -------------------     B1 = Sy
+                                                                                    ----
+# R squared = 0 - 1,---------R squared = SSE,        Rsquared = 1 - SSR.             Sx
+                                         ----                       ----
+#                                        SSR                        SST                 
+
+
+R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
+thus it tells us the amount of variables explain in the reponse(y) after fitting the model.
+
+#R squared = explain variation of model-y
+            ----------------------------
+#              Total variation of model                                         df =n-2
+  
+
+#---------------------- Checking assumptions of the model ------------------------------------
+Assumptions
+#----------y is a random variable and normally distributed with mean(u) and variance(Q)squared.
+#----------The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
+
+hist(residuals(model),
+     col="darkgray")
+plot(fitted(model),
+     residuals(model))
+----------
+  A plot of residuals vs. predicted values.
+The residuals should be unbiased and homoscedastic.
+
+# additional model checking plots with: plot(model)
+# alternative: library(FSA); residPlot(model)
+
+#    #    #  
+  
+  
+#Note,
+R squared = good for simple regression.
+Adjusted R squared =for multiple regression (model building)
+
+#Note 
+Linear regression can be performed with the lm function in the native stats package.
 A robust regression can be performed with the lmrob function in the robustbase package.
 
 model = lm(Species ~ Latitude,
@@ -942,18 +1004,66 @@ plot(Species ~ Latitude,
 abline(int, slope,
        lty=1, lwd=2, col="blue")     #  style and color of line 
 
-#---------------------Checking assumptions of the model------------------------
 
-hist(residuals(model),
-     col="darkgray")
-plot(fitted(model),
-     residuals(model))
-----------
-  A plot of residuals vs. predicted values.
-The residuals should be unbiased and homoscedastic.
+#    #    #   
 
-### additional model checking plots with: plot(model)
-### alternative: library(FSA); residPlot(model)
+
+
+#-------------------------------------------------------------------------------
+---------------------------- Model Building ------------------------------------  
+ 
+# methods for evaluating subset regression models:
+1-choose one  with the largest Adjusted R squared.
+2-choose one with the smallest MSE.
+3-choose one with the smallest AIC.
+4-choose one with the smallest predicted sum of square (SS)
+5-choose one with the number of the parammetrs used in a model equal to CP value.
+        Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
+ 
+#
+library(car)        
+library(olsrr)        
+
+g <- lm(y~.,data = dataset)       # where . is the x variables
+summary(g)
+      
+#--------model building
+forward <- ols_step_forward_p(g, penter = 0.05)
+forward                                               # forward
+forward <- ols_step_forward_aic(g, details = TRUE)
+forward
+
+Backward <- ols_step_backward_p(g, prem = 0.05)
+Backward                                             # Backward
+Backward <- ols_step_backward_aic(g, details = TRUE)
+Backward
+
+Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
+Both                                                 # Stepwise
+Both.aic <- ols_step_both_aic(g, details = TRUE)
+Both.aic
+
+#Options for all possible subset models
+all <- ols_step_all_possible(g)
+all
+as.data.frame(all)
+plot(all)
+
+#option for best subset regression
+best <- ols_step_best_subset(g)
+best
+
+# in conclusion, our final model 
+pred <-lm(y~.,data = dataset)     #  where . is the list of x variables selected for modelling. 
+summary(pred)
+
+par(mfrom = c(2,2))
+plot(pred)
+
+
+dev.off()
+
+
 
 ---------------------------Power analysis for correlation-----------------------
   pwr.r.test(n = NULL,
@@ -962,6 +1072,9 @@ The residuals should be unbiased and homoscedastic.
              power = 0.80,
              alternative = "two.sided")
 
+
+
+
 #------------------------ Curvilinear Regression -------------------------------
 How to fit models to curvilinear data using three methods:
 1) Polynomial regression;  
@@ -969,7 +1082,9 @@ How to fit models to curvilinear data using three methods:
 3) Nonlinear regression with the nls function.  
 
 Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
+===================================================================
 
+===================================================================
 #Polynomial regression
 Polynomial regression is really just a special case of multiple regression, 
 which is covered in the Multiple regression chapter.  
@@ -987,20 +1102,21 @@ the model with the extra terms does not significantly reduce the error sum of sq
 Which is to say, a non-significant p-value suggests the model with the additional terms is not better than the reduced model.
 Simple plot of model
 
---------------------------------------------------------------------------------
-  plot(Clutch ~ Length,
-       data = Data,
+-------------------------
+  View(imdata)  
+  Data = imdata
+  plot(bwgt ~ age,
+       data = imdata,
        pch=16,
-       xlab = "Carapace length",
-       ylab = "Clutch") 
-i = seq(min(Data$Length), max(Data$Length), len=100)       #  x-values for line
-predy = predict(model, data.frame(Length=i))               #  fitted values
+       xlab = "Age",
+       ylab = "Babywt") 
+i = seq(min(imdata$age), max(imdata$age), len=100)       #  x-values for line
+predy = predict(model, data.frame(age=i))               #  fitted values
 lines(i, predy,                                            #  spline curve
       lty=1, lwd=2, col="blue")                            #  style and color
 
 
-
-#-----------------------------Multiple Regression------------------------------ 
+#---------------------------- Multiple Regression ------------------------------ 
 library(psych)
 corr.test(Data.num,
           use = "pairwise",
@@ -1063,18 +1179,6 @@ plot(predy ~ Longnose,
      ylab="Predicted response value")
 abline(0,1, col="blue", lwd=2)
 
-#:::::::::::::::::::::: regress and model building :::::::::::::::::::::::::#
-library(car)summary(microbes)
-model <- lm(Occupation ~ No.of.births, data = microbes)
-summary(model)
-plot(microbes$No.of.births, microbes$Onset.of.labour)
-abline(model)
-# Plot residuals against the fitted values
-residualPlots(model)
-# Perform anova on the model
-anova(model)
-
-library(olsrr)
 
 
 #--------------------------- Simple Logistic Regression ----------------------
@@ -1101,7 +1205,27 @@ logi.hist.plot(Data$Continuous,
                type="hist",
                col="gray",
                xlabel="Height")
-      
+
+#   #   #
+
+
+#------------------------ Poisson  regression --------------------------------
+Assumptions ---- x
+         # should not be negative
+         # Should be discrete
+         # should involve time
+
+if(!require(caret)){install.packages("caret")}
+
+pmod <- glm(y ~ x, data = dataset, family = Poisson)
+summary(pmod)
+
+#    #    #
+
+
+
+
+
 #------------------------ TEST OF NOMINAL VARIABLE ----------------------------#
   
 -------------------- Exact Test of Goodness-of-Fit ----------------------------
@@ -3431,3 +3555,56 @@ library(sf)
 library(pwr)
 sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
 sample1
+
+
+
+
+
+=========================== MACHINE LEARNING ============================
+ 
+  
+#------------------------- BUILDING FUNCTIONS ---------------------------  
+e.g-1
+Area <- function(Length, Breadth){
+  Area <- Length * Breadth
+  return(Area)
+}
+#therefore,
+Area (4,7)
+----------
+e.g-2  
+
+BMI <- function(weight,height){
+  BMI <- weight/height*2
+  return(BMI)
+}  
+BMI(69,56)  
+  
+   # R program to illustrate
+  # Graph plotting in
+  # Polynomial regression
+  
+  # Importing required library
+  library(tidyverse)
+library(caret)
+theme_set(theme_classic())
+
+# Load the data
+data("Boston", package = "MASS")
+# Split the data into training and test set
+set.seed(123)
+training.samples <- Boston$medv %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data <- Boston[training.samples, ]
+test.data <- Boston[-training.samples, ]
+
+# Build the model
+model <- lm(medv ~ poly(lstat, 5, raw = TRUE), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(RMSE = RMSE(predictions, test.data$medv),
+           R2 = R2(predictions, test.data$medv))
+
+ggplot(train.data, aes(lstat, medv) ) + geom_point() + 
+  stat_smooth(method = lm, formula = y ~ poly(x, 5, raw = TRUE))
