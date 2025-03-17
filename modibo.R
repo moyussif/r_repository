@@ -78,7 +78,8 @@ View(imdata)
 View(HTdata)
 library(skimr)
 skim_without_charts(imdata) 
-#:::::::::::::::::::::::::::: Data manipulations:::::::::::::::::::::::::::::::#
+
+#:::::::::::::::: Data manipulations with Dplyr :::::::::::::::::::::::::::::::#
 library(tidyverse)
 library(dplyr)
 data2 <- imdata %>%
@@ -106,6 +107,7 @@ rename(data_frm,Delivr_age = delivage, Bmi = bmi)
 summarise(data_frm,mean_hb = mean(hb))  
 summarise(data_frm,median_hb = median(hb))
 
+
 #:::::::::::::::::::::::::::: reshape with tidyr :::::::::::::::::::::::::::::#
 library(tidyr) 
 HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
@@ -123,7 +125,8 @@ separate_data
 unite_data <- separate_data %>%  
   unite(fullName, firstName, secondName, sep = " ") 
 unite_data
-# use pivot()function------------------------------------------
+#--------------------- use pivot()function --------------------
+#Pivot_longer
 ldata <- pivot_longer(
   data = HTdata,
   cols = c(first_trimester, second_trimester, third_trimester),
@@ -131,14 +134,17 @@ ldata <- pivot_longer(
   values_to = "value"
 )
 View(ldata)
-#----------------------
+
+#pivot_wider
 wdata <- pivot_wider(
   data = ldata,
   names_from = "trimester1",
   values_from = "value",
 )
 View(wdata)
-#:::::::::::::::::::::: Visualization with ggplot2 ::::::::::::::::::::::::::#
+
+
+#::::::::::::::::::::::: Visualization with ggplot2 :::::::::::::::::::::::::::#
 library(ggplot2)
 library(RColorBrewer)
 library(readxl)
@@ -167,7 +173,7 @@ immu3 <- ggplot(data = imdata,
   geom_jitter()
 immu3
 
-#::::::::::::::::::::::::::::::: Barchart :::::::::::::::::::::::::::::::::::#
+#------------------------------ Barchart: =================
 ht <-ggplot(data = imdata,
             mapping = aes(x = expose))+
   geom_bar()
@@ -183,7 +189,7 @@ ht2 <-ggplot(data = imdata,
   geom_bar()
 ht2
 
-#::::::::::::::::::::::::::::::: Histogram ::::::::::::::::::::::::::::::::::#
+#------------------------------ Histogram: =================
 ht3 <-ggplot(data = imdata,
              mapping = aes(x = systol1))+
   geom_histogram()
@@ -206,14 +212,15 @@ ht <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
 ht
-#-----------------Viridis------------------------------
+#-------------------Viridis--------------------------
 hh <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
 hh + scale_fill_viridis_d()
 hh + scale_fill_viridis_d(direction = -1)
 hh
-#::::::::::::::::::::::::::::::: Boxplot:::::::::::::::::::::::::::::::::::::#
+
+#----------------------------- Boxplot:================
 immu <- ggplot(data = imdata,
                mapping = aes(x = systol1, y = diastol1))+
   geom_boxplot()
@@ -258,7 +265,7 @@ immgrd <- ggplot(data = imdata,
   facet_grid(CaseControl~expose)
 immgrd
 
-#:::::::::::::::::::::::::::::: Label & Annotation :::::::::::::::::::::::::#
+#---------------------- Label & Annotation
 immuLAB <- ggplot(data = imdata)+
   geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
   labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
@@ -273,7 +280,8 @@ immuLAB <- ggplot(data = imdata)+
             fontface ="bold", size =4.0,angle = 30)+
   theme_classic()
 immuLAB
-#------------------------Viridis---------------------
+
+#---------------------- Viridis -------------------
 immuLAB <- ggplot(data = imdata)+
   geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
   labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
@@ -289,10 +297,12 @@ immuLAB <- ggplot(data = imdata)+
             fontface ="bold", size =4.0,angle = 30)+
   theme_classic()+scale_colour_viridis_d(option = "City\nCenter")
 immuLAB
+
 # Save plot 
 ggsave("immuLAB.png")
 
 
+-------------------------------------------------------------------------------
 #:::::::::::::::::::: charts with LessR (Pie/Bar) ::::::::::::::::::::::::::::#
 library(lessR)
 imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
@@ -349,6 +359,7 @@ BarChart(expose, data = data,
          values_color = c(rep("white", 4), 1),
          values_size = 0.85)
 
+------------------------------------------------------------------------------
 #::::::::::::::::::::::: Descriptive statistics :::::::::::::::::::::::::::::# 
 library(skimr)
 skim_without_charts(imdata)
@@ -367,7 +378,8 @@ hist(imdata$ bwgt,
 # Will also report count of NA’
 describe(imdata$bwgt,    
          type=2)    
-#------------------ aggregate data
+
+#-------------- aggregate data
 library(janitor)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
@@ -384,13 +396,18 @@ imdata %>%
     placement = "combined") %>% 
   flextable::flextable() %>% 
   flextable::autofit()
+
+#    #    #
+
+
+
 #=========================== CONFIDENCE INTERVALS ==============================
 
 #-----------------Confidence interval of the mean
   t.test(imdata$ bwgt,
        conf.level=0.95)         
   
-# ----------------confidence intervals for groups defined by a variable
+#-----------------confidence intervals for groups defined by a variable
 install.packages("Rmisc")
 library(Rmisc)
 summarySE(data=imdata,               
@@ -416,6 +433,7 @@ MultinomCI(observed, conf.level=0.95, method="goodman")
 
 #     #     # 
 
+
 #----------------- TEST OF ONE / TWO MEASUREMENRT OF VARIABLES ----------------#
 
 #------------------------One sample t-test with obs as VECTORS
@@ -424,7 +442,7 @@ theoretical = 0
 t.test(observed,
        mu = theoretical,
        conf.int = 0.95)
-#------------------------One sample t-test with obs as DATA.FRAME
+#---------------------One sample t-test with obs as DATA.FRAME
 observed    = Data$Angle
 theoretical = 50
 t.test(observed,
@@ -437,7 +455,7 @@ hist(Data$ Angle,
      main="Histogram of values",
      xlab="Angle")
 
---------------------Power analysis for one-sample t-test------------------------
+------------------- Power analysis for one-sample t-test -----------------------
   M1  = 70                        # Theoretical mean
 M2  = 71                        # Mean to detect
 S1  =  2.4                      # Standard deviation
@@ -454,11 +472,18 @@ pwr.t.test(
   type = "one.sample",       # Change for one- or two-sample
   alternative = "two.sided")
 
-#================================ TWO SAMPLE Test ==============================
+
+#    #     #
+
+
+
+#============================== TWO SAMPLE Test ===============================
+
 #---------------------------------Student’s t–test for Two Samples
 Two-sample t-test, independent (unpaired) observations
 bartlett.test(Value ~ Group, data=Data)
-----------------------------------#If p-value >= 0.05, use var.equal=TRUE below.
+---------------------#If p-value >= 0.05, use var.equal=TRUE below.
+
 #paired t.test  
 t.test(Value ~ Group, data=Data,  
        var.equal=TRUE,
@@ -471,47 +496,25 @@ t.test(Value ~ Group, data=Data,
 t.test(age ~ CaseControl, data=imdata, 
        var.equal=FALSE,
        conf.level=0.95)
-----------------------------------------------------
- Plot of histograms
-library(lattice)
-histogram(~ Value | Group,
-          data=Data,
-          layout=c(1,2)
-          col="gray"     #  columns and rows of individual plots
+
+#--------------------------------plots:  
+# Histogram
+hs<-histogram(~ age | CaseControl,
+          col="gray",
+          data = imdata
 )
-#---------------------------Histogram
-histogram(~ age | CaseControl,
-          data=imdata
-)
-#---------------------------Boxplot
+hs
+# Boxplot
   boxplot(age ~ CaseControl,
           data = imdata,
           names=c("Case","Control"),
           ylab="age")
   
-  #--------Power analysis 
--------------------------Power analysis for t-test------------------------------
-  
-  M1  = 100.6                      # Mean for sample 1
-M2  = 103.6                      # Mean for sample 2
-S1  =  5.26                      # Std dev for sample 1
-S2  =  5.26                      # Std dev for sample 2
-
-Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
-
-library(pwr)                                  
-pwr.t.test(
-  n = NULL,                   # Observations in _each_ group
-  d = Cohen.d,           
-  sig.level = 0.05,           # Type I probability
-  power = 0.90,               # 1 minus Type II probability
-  type = "two.sample",        # Change for one- or two-sample
-  alternative = "two.sided")
 
 
----------------------Power analysis for unpaired t-test ----------------------
-  #--------------------Power analysis, t-test, student height, pp. 43–44--------
-#-----------------------------------------------------------------------------
+--------------------- Power analysis for unpaired t-test --------------------
+#-------------------- Power analysis, t-test --------------------------------
+
 M1  = 66.6                      # Mean for sample 1
 M2  = 64.6                      # Mean for sample 2
 S1  =  4.8                      # Std dev for sample 1
@@ -547,9 +550,13 @@ boxplot(Value ~ Group,
         names=c("2 pm","5 pm"),
         ylab="Value")
 
+boxplot(age ~ CaseControl,
+        data = imdata,
+        names=c("Control","Case"),
+        ylab="Value")
 #-----------------------------Wilcoxon Signed-rank Test-------------------------
 wilcox.test(Data$August, Data$November, paired=TRUE)
-  #Simple 1-to-1 plot of values
+#Simple 1-to-1 plot of values
 plot(Data$August, Data$November,
      pch = 16,
      xlab="August",
@@ -572,20 +579,25 @@ if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(pwr)){install.packages("pwr")}
 --------------------------------------------------
 #Specify the order of factor levels for plots and Dunnett comparison
+library(tidyverse)
 library(dplyr)
-Data =
- mutate(Data,
-        Location = factor(Location, levels=unique(Location)))
 
+View(imdata)
+
+exposure <- as.factor(imdata$expose)
+exposure
+expo <- factor(imdata, imdata$exposure, level=c(1,2,3)), label = c("non", "single", "multiple"))
+expo
+ 
 #Produce summary statistics
 library(FSA)  
-Summarize(Aam ~ Location,
-          data=Data,
+summarize(bmi ~ Dt1,
+          data=imdata,
           digits=3)
 
 #Fit the linear model and conduct ANOVA 
-  model = lm(Aam ~ Location,
-             data=Data)
+model = lm(bmi ~ expose,
+            data=imdata)
 
 library(car)
 Anova(model, type="II")                    
@@ -600,13 +612,9 @@ summary(model)
 #Checking assumptions of the model
 hist(residuals(model),
      col="darkgray")
-#---------------------
+#plot of residuals vs. predicted values.
   plot(fitted(model),
        residuals(model))
-
-A plot of residuals vs. predicted values.The residuals should be unbiased and homoscedastic.  
-For an illustration of these properties,see this diagram by Steve Jost at DePaul University: 
-  condor.depaul.edu/sjost/it223/documents/resid-plots.gif.
 
 ### additional model checking plots with: plot(model)
 ### alternative: library(FSA); residPlot(model)
@@ -653,15 +661,14 @@ summary(mc, test=adjusted("single-step"))
 #------------------------------Adjustment options:------------------------------------------------------------- 
 #"none","single-step", "Shaffer","Westfall", "free","holm","hochberg","hommel", "bonferroni", "BH", "BY", "fdr"     
 
-  Multiple comparisons to a control with Dunnett Test 
+#Multiple comparisons to a control with Dunnett Test 
 # The control group can be specified with the control option, or will be the first level of the factor
 library(DescTools)
 DunnettTest(Aam ~ Location,
             data = Data)
 
-Multiple comparisons with least square means___can be calculated for each group.  
-#Here a Tukey adjustment is applied for multiple comparisons among group least square means.
-#The multiple comparisons can be displayed as a compact letter display.
+#Multiple comparisons with least square means___can be calculated for each group.  
+#Here a Tukey adjustment is applied for multiple comparisons among group least square means..
 
 library(lsmeans)
 library(multcompView)
@@ -677,10 +684,8 @@ cld(leastsquare,
   
 #----------------------------- Welch’s anova ------------------------------
 Bartlett’s test and Levene’s test can be used to check the homoscedasticity of groups from a one-way anova.
-A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic.
-One approach with heteroscedastic data in a one way anova is to use the Welch correction with the oneway.test 
-function in the native stats package. 
-A more versatile approach is to use the white.adjust=TRUE option in the Anova function from the car package.
+A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic(same variance).
+One approach with heteroscedastic is to use the Welch correction with the one-way.test 
 
 # Bartlett test for homogeneity of variance
 bartlett.test(Aam ~ Location,
@@ -844,7 +849,6 @@ anova(model)
 summary(model)     
 
 #------------------ Checking assumptions of the model -------------------------
-
 hist(residuals(model),
      col="darkgray")
 
@@ -1268,9 +1272,21 @@ summary(pmod)
 
 
 
+===============================================================================
+#------------------------ TEST OF NOMINAL VARIABLE ----------------------------
+Follow up with post hoc tests (optional for Chi-Square)
+#if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
+using bonferroni correction----/------post hoc chi square of independence.
+#----------------------------------------------------------------------------
 
-#------------------------ TEST OF NOMINAL VARIABLE ----------------------------#
-  
+1----Exact Goodness-of-fit--------------#whether is difference to hypothised value
+2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
+3----Chi-Square test of independence----#Test of association
+4----Fisher exact test------------- N < 100
+5----McNemars test.---------------------#TO compare before and after observations
+6----G test-----------------------------#Can accommodate experimental design
+
+
 -------------------- Exact Test of Goodness-of-Fit ----------------------------
       
 #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.
@@ -1283,10 +1299,12 @@ if(!require(pwr)){install.packages("pwr")}
 if(!require(BSDA)){install.packages("BSDA")}
       
 
-#Binomial test examples
-#-----------------------------------------------------------------------
-                          Exact binomial test
-------------------------------------------------------------------------
+#Binomial test--------------------proportions-----------------------------------------------
+used to determine if the proportion of successes in a binary experiment differs from a hypothesized probability.
+#-------------------------------------------------------------------------------------------
+                              Exact binomial test
+        -------------------------------------------------------------------
+
 #In this example:
 # 2 is the number of successes
 # 10 is the number of trials
@@ -1328,6 +1346,7 @@ barplot (height=y,
 
 #   #   #      
       
+
 #Comparing doubling a one-sided test and using a two-sided test
 #----------------------------------------------------------------------
 Exact binomial test, Compares performing a one-sided test and 
@@ -1411,7 +1430,8 @@ binom.test(successes, total, numerator/denominator,
       
       p-value = 0.006057
       #     #     #
-      
+
+
 #Post-hoc test alternate method with custom function When you need to do multiple similar tests, however, 
 #it is often possible to use the programming capabilities in R to do the tests more efficiently.
 #The following example may be somewhat difficult to follow for a beginner.  
@@ -1463,6 +1483,7 @@ binom.test(140, (106+140), 0.5,
                  conf.level=0.95)
       
 #     #     #
+
       
 #Sign test example
 The following is an example of the two-sample dependent-samples sign test.
@@ -1470,8 +1491,8 @@ The data are arranged as a data frame in which each row contains the values for 
 for each experimental unit.
 This is sometimes called “wide format” data. The SIGN.test function in the BSDA package is used.  
 The option md=0 indicates that the expected difference in the medians is 0 (null hypothesis).
+
 #This function can also perform a one-sample sign test.
-      
 #------------------------------------------------------------------------
              Tree beetle example, two-sample sign test
 -------------------------------------------------------------------------
@@ -1498,6 +1519,7 @@ SIGN.test(x = Data$ A.count,
          md = 0,                 
 alternative = "two.sided",
  conf.level = 0.95)
+
       
 #Binomial test examples
 #---------------------------------------------------------------------
@@ -1543,8 +1565,9 @@ pwr.p.test(
 #     #     #
 
 
-      
-#Multinomial test example
+
+========================================================================      
+#----------------Multinomial test example
 #-----------------------------------------------------------------------
                  Second Mendel example, multinomial exact test
 ------------------------------------------------------------------------
@@ -1563,8 +1586,8 @@ P value (Chisq) =  0.9272    # Chi-square probability
 #     #     # 
  
 
-     
-#--------------- Chi-square Test of Goodness-of-Fit  -----------------------
+==============================================================================     
+#---------------- Chi-square Test of Goodness-of-Fit  ------------------------
 
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(ggplot2)){install.packages("ggplot2")}
@@ -1793,19 +1816,23 @@ pchisq(G,
       
       
 #     #     #
-      
+
+
+
+===============================================================================      
 #------------------------ Chi-square Test of Independence ---------------------
+
 The Chi-square test of independence can be performed with the chisq.test function in the native stats package in R.
 For this test, the function requires the contingency table to be in the form of matrix.
 
-Depending on the form of the data to begin with,this can require an extra step, either combing vectors into a matrix,
-or cross-tabulating the counts among factors in a data frame.  None of this is too difficult, 
+Depending on the form of the data to begin with,this can require an extra step, 
+either combing vectors into a matrix or cross-tabulating the counts among factors in a data frame.  
+None of this is too difficult, 
 but it requires following the correct example depending on the initial form of the data. 
       
-When using read.table and as.matrix to read a table directly as a matrix, 
-be careful of extra spaces at the end of lines or extraneous characters in the table, as these can cause errors.
+When using read.table and as.matrix to read a table directly as a matrix, be careful of extra spaces at the end of lines 
+or extraneous characters in the table, as these can cause errors.
       
-Packages used in this chapter
         
 if(!require(rcompanion)){install.packages("rcompanion")}
 if(!require(dplyr)){install.packages("dplyr")}
@@ -1922,6 +1949,9 @@ pairwise.table(FUN,
                p.adjust.method="none")
       
 ======================
+
+  
+  
 #Chi-square test of independence with continuity correction and without correction
 #---------------------------------------------------------------------------------
                     Helmet example, Chi-square independence
@@ -1945,6 +1975,8 @@ chisq.test(Matriz,
       
 #     #     #
       
+
+
 #Chi-square test of independence
 # --------------------------------------------------------------
        Gardemann apolipoprotein example, Chi-square independence
@@ -2281,9 +2313,10 @@ GTest(Matriz,
       if(!require(rcompanion)){install.packages("rcompanion")}
       
 #__________Post-hoc pairwise Fisher’s exact tests with RVAideMemoire
-      ### --------------------------------------------------------------
-              Post-hoc example, Fisher’s exact test
-      ### --------------------------------------------------------------
+      
+### --------------------------------------------------------------
+           Post-hoc example, Fisher’s exact test
+### --------------------------------------------------------------
       Input =("
 Frequency  Damaged  Undamaged
 Daily       1        24
@@ -2665,15 +2698,23 @@ pchisq(Total.G,
        df=Total.df,
        lower.tail=FALSE)
       
+
 #     #     #  
+
+
+#The Cochran–Mantel–Haenszel test (CMH test)
+==============================================================================
+Is used to analyze stratified categorical data, particularly when you have multiple 2x2 contingency tables 
+across different groups or times, allowing you to assess the association between two variables 
+while controlling for a potential confounding factor      
+------------------------------------------------------------------------------
+#===== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence =======
       
-#===== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence =========
-      
-      if(!require(dplyr)){install.packages("dplyr")}
-      if(!require(DescTools)){install.packages("DescTools")}
-      if(!require(ggplot2)){install.packages("ggplot2")}
-      if(!require(grid)){install.packages("grid")}
-      if(!require(vcd)){install.packages("vcd")
+if(!require(dplyr)){install.packages("dplyr")}
+if(!require(DescTools)){install.packages("DescTools")}
+if(!require(ggplot2)){install.packages("ggplot2")}
+if(!require(grid)){install.packages("grid")}
+if(!require(vcd)){install.packages("vcd")
         
         
 # Cochran–Mantel–Haenszel Test with data read by read.ftable
@@ -2796,9 +2837,11 @@ chisq.test(tab)$residuals
 #   #   #                      
 
 
-====================================================================================================================
 
-#------------------------- modelling infectious diseases -------------------
+
+===============================================================================
+
+#------------------------- modelling infectious diseases ----------------------
 
 library(readxl)
 library(readr)
@@ -2807,7 +2850,8 @@ library(tidyverse)
 library(skimr)
 library(deSolve)
 library(reshape2)
-#Part one: SIR Mode-----------(Example one)  _______----__________________
+
+#Part one: SIR Mode-----------(Example one)---------------------
                         
 sir<-function(time,state,parameters)
 {with(as.list(c(state,parameters)),
@@ -2816,7 +2860,7 @@ sir<-function(time,state,parameters)
        dR<-gamma*I
        return(list(c(dS,dI,dR)))})}
                         
-# state/compartment =(SIR),  +   parameters =(beta, gamma) ____________
+# state/compartment =(SIR),  + parameters =(beta, gamma)-------
                         
 #Provide the initial values and some parameters as below:
 init<-c(S=1-1e-6,I=1e-6,0.0)
@@ -2834,7 +2878,6 @@ out$time<-NULL
 matplot(times,out,type="l",xlab="Time",ylab="Susceptible and Recovered",main = "SIR Model",
         lwd = 1, lty = 1, bty = "l", col = 2:4)
 legend(40,0.7,c("Susceptible","Infected","Recovered"),pch=1,col=2:4)
-                        
                         
                         
 infections <- out$I
@@ -2904,8 +2947,7 @@ initial_values
 ## 999 1 0
 time_values
 ## [1] 0 1 2 3 4 5 6 7 8 9 10
-                        
-#Clearly, everything looks fine ===========================================================
+#-----------------------------                        
 #so now we can use the ode() function of the deSolve package to numericallysolve our model:
                         
 sir_values_1 <- ode(
@@ -3102,8 +3144,8 @@ legend <- colnames(model_forecast)[2:4]
 legend(15000,900000, legend=legend, col=2:4, lty = 1)
                         
                         
-#What are the effects of increasing or decreasing the values of the transmission contact rate (β) and the recovery rate (γ)
-#on the shape of the epi curve?
+#What are the effects of increasing or decreasing the values of the transmission 
+#contact rate (β) and the recovery rate (γ) on the shape of the epi curve?
                           
 #Estimating model’s parameters Sums of squares
 
@@ -3270,6 +3312,9 @@ ggplot(data = model_sirs_long,
   geom_line() +
   xlab("Time (years)")+
   ylab("Prevalence") +scale_color_discrete(name="State")
+
+
+
 
 ==============================================================================
 #--------------------------- Part three: SEIR model --------------------------
@@ -3623,12 +3668,12 @@ BMI <- function(weight,height){
 }  
 BMI(62,58)  
   
-   # R program to illustrate
-  # Graph plotting in
-  # Polynomial regression
-  
-  # Importing required library
-  library(tidyverse)
+   
+# R program to illustrate
+# Graph plotting in
+# Polynomial regression
+# Importing required library
+library(tidyverse)
 library(caret)
 theme_set(theme_classic())
 
