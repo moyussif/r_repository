@@ -595,7 +595,112 @@ BarChart(age_means,
          xlab = "Malaria_exposed",
          ylab = "Women Age")
 
-===============================================================================  
+#ggplot2
+library(ggplot2)
+
+p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+
+  geom_density(alpha = 0.7)
+p
+
+p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+
+  geom_density(alpha = 0.4)
+p1
+
+#   #   #    
+
+=====================  Factorial Anova ========================= 
+library(psych)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+
+describe(imdata)
+
+#plot
+p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+
+  geom_density(alpha = 0.7)
+p
+
+p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+
+  geom_density(alpha = 0.4)
+p1
+
+p2 <- ggboxplot(imdata, "expose", "age",
+                fill = "expose", palette = get_palette("default", 3),
+                add = "jitter")
+p2
+
+#to arrange plot for publication
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "C"), ncol = 3, nrow = 1,
+          common.legend = TRUE, legend = "bottom")
+#residuals
+res_aov <- aov(bmi ~ expose, data = imdata)
+res_aov
+
+#combine plots
+par(mfrow = c(1,2))
+#histogram
+hist(res_aov$residuals)
+#QQ-plot
+library(car)
+QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
+shapiro.test(res_aov$residuals) #normality
+
+#Levene-test------------------------------  is less sensitive to deviation from normality
+#homogeneity of variance one variable
+leveneTest(bmi ~ grvdty, data = imdata)
+#homogeneity of variance multiple variable
+leveneTest(bmi ~ expose*CaseControl*sex*mode*grvdty, data = imdata) 
+
+#Bartlett test----------------------------
+bartlett.test(bmi ~ grvdty, data = imdata)
+bartlett.test(bmi ~ interaction(grvdty,sex,expose), data = imdata)
+#One_way Anova
+one <- aov(bmi ~ grvdty, data = imdata)
+summary(one)
+#Two_way Anova
+two <- aov(bmi ~ expose + grvdty, data = imdata)
+summary(two)
+#three_way Anova
+three <- aov(bmi ~ expose + grvdty + sex, data = imdata)
+summary(three)
+#interaction
+interaction <- aov(bmi ~ expose + grvdty + sex + CaseControl, data = imdata)
+summary(interaction)
+
+#model fit----------------------------------
+install.packages("AICcmodavg")
+library(AICcmodavg)
+model.set <- list(one,two,three,interaction)
+model.names <- c("one", "two","three", "interaction")
+aictab(model.set, modnames = model.names, sort = TRUE)
+bictab(model.set, modnames = model.names, sort = TRUE)
+#effect size--------------------------------
+install.packages("effectsize")
+library(effectsize)
+eta_squared(interaction, partial = TRUE)
+eta_squared(interaction, partial = FALSE)
+omega_squared(interaction, partial = TRUE)
+epsilon_squared(interaction, partial = TRUE)
+
+#post hoc analysis
+tukey.interaction <- TukeyHSD(interaction)
+tukey.interaction
+
+tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
+tukey.plot.test <-TukeyHSD(tukey.plot.aov)
+plot(tukey.plot.test,las = 2)
+
+library(DescTools)
+hsd <- PostHocTest(interaction, which = NULL,
+                   method = c("hsd"),   # hsd, bonferroni, lsd, shceffe, duncan,
+                   conf.level = 0.95, ordered = FALSE)
+hsd
+
+#   #   #
+
+
 
 #------------------------------ One-way Anova ---------------------------------
 #install these packages if they are not already installed:
