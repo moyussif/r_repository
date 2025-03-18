@@ -58,7 +58,6 @@ library(pdftools)
 library(htmlwidgets)
 library(psych)
 library(DescTools)
-install.packages('DescTools')
 #-----
 getwd()
 #------------------------ Import functions -------------------------------------
@@ -563,8 +562,9 @@ plot(Data$August, Data$November,
      ylab="November")
 abline(0,1, col="blue", lwd=2)  
 
-====================================================================
-======================== One-way ANOVA using LessR =================
+
+#=======================ANOVA ANALYSIS----option.1==================
+======================== One-way Anova using LessR =================
 # visualise statistical assumptions
 library(lessR)
 library(readxl)
@@ -606,9 +606,11 @@ p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+
   geom_density(alpha = 0.4)
 p1
 
-#   #   #    
+#   #   # 
 
-=====================  Factorial Anova ========================= 
+
+#================== ANOVA ANALYSIS----option.2 ==================
+=====================  Factorial Anova ========================== 
 library(psych)
 library(ggplot2)
 library(ggpubr)
@@ -670,14 +672,13 @@ interaction <- aov(bmi ~ expose + grvdty + sex + CaseControl, data = imdata)
 summary(interaction)
 
 #model fit----------------------------------
-install.packages("AICcmodavg")
 library(AICcmodavg)
 model.set <- list(one,two,three,interaction)
 model.names <- c("one", "two","three", "interaction")
 aictab(model.set, modnames = model.names, sort = TRUE)
 bictab(model.set, modnames = model.names, sort = TRUE)
+
 #effect size--------------------------------
-install.packages("effectsize")
 library(effectsize)
 eta_squared(interaction, partial = TRUE)
 eta_squared(interaction, partial = FALSE)
@@ -702,7 +703,8 @@ hsd
 
 
 
-#------------------------------ One-way Anova ---------------------------------
+#=======================ANOVA ANALYSIS----option.3 ==================
+------------------------------ One-way Anova ------------------------
 #install these packages if they are not already installed:
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(FSA)){install.packages("FSA")}
