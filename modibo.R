@@ -563,6 +563,39 @@ plot(Data$August, Data$November,
      ylab="November")
 abline(0,1, col="blue", lwd=2)  
 
+====================================================================
+======================== One-way ANOVA using LessR =================
+# visualise statistical assumptions
+library(lessR)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+#normality assumption
+tapply(imdata$age, imdata$expose, shapiro.test)
+library(car)
+leveneTest(age ~ expose, data=imdata)
+#One-way ANOVA
+ANOVA(age ~ expose, data=imdata)
+#effect size(for groups with significant)
+library(effsize)
+cohen.d(age ~ expose, 
+        data=subset(imdata, expose!= "non exposed"),
+        paired=FALSE)        
+cohen.d(age ~ expose, 
+        data=subset(imdata, expose!= "singleexposed"),
+        paired=FALSE)        
+#Bar charts 
+age_means <- tapply(imdata$age, imdata$expose,
+                   mean)
+
+BarChart(age_means)
+
+BarChart(age_means,
+         values="off",
+         xlab = "Malaria_exposed",
+         ylab = "Women Age")
+
+===============================================================================  
 
 #------------------------------ One-way Anova ---------------------------------
 #install these packages if they are not already installed:
@@ -3630,7 +3663,8 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(RColorBrewer)
-                        
+
+
 # arrange data by age
 ######################### Mapping with r ######################################
                         
