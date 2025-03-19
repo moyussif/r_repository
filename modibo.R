@@ -496,6 +496,7 @@ t.test(age ~ CaseControl, data=imdata,
        var.equal=FALSE,
        conf.level=0.95)
 
+
 #--------------------------------plots:  
 # Histogram
 hs<-histogram(~ age | CaseControl,
@@ -649,6 +650,7 @@ library(car)
 QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
 shapiro.test(res_aov$residuals) #normality
 
+#Bartlett’s test and Levene’s test to check the homoscedasticity of groups from a one-way anova.
 #Levene-test------------------------------  is less sensitive to deviation from normality
 #homogeneity of variance one variable
 leveneTest(bmi ~ grvdty, data = imdata)
@@ -693,160 +695,48 @@ tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
 tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 
-library(DescTools)
-hsd <- PostHocTest(interaction, which = NULL,
-                   method = c("hsd"),   # hsd, bonferroni, lsd, shceffe, duncan,
-                   conf.level = 0.95, ordered = FALSE)
-hsd
-
 #   #   #
+-----------------------------------------------------------
+Tukey and LSD mean separation tests (pairwise comparisons)
+TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
+though TukeyHSD does make an adjustment for mildly unequal sample sizes.
+----------------------------------------------------------
 
 
-
-#=======================ANOVA ANALYSIS----option.3 ==================
+#====================== ANOVA ANALYSIS----option.3 ==================
 ------------------------------ One-way Anova ------------------------
-#install these packages if they are not already installed:
-if(!require(dplyr)){install.packages("dplyr")}
-if(!require(FSA)){install.packages("FSA")}
-if(!require(car)){install.packages("car")}
 if(!require(agricolae)){install.packages("agricolae")}
-if(!require(multcomp)){install.packages("multcomp")}
-if(!require(DescTools)){install.packages("DescTools")}
-if(!require(lsmeans)){install.packages("lsmeans")}
-if(!require(multcompView)){install.packages("multcompView")}
-if(!require(Rmisc)){install.packages("Rmisc")}
-if(!require(ggplot2)){install.packages("ggplot2")}
-if(!require(pwr)){install.packages("pwr")}
---------------------------------------------------
-#Specify the order of factor levels for plots and Dunnett comparison
-library(tidyverse)
-library(dplyr)
-
-View(imdata)
-
-exposure <- as.factor(imdata$expose)
-exposure
-expo <- factor(imdata, imdata$exposure, level=c(1,2,3)), label = c("non", "single", "multiple"))
-expo
- 
-#Produce summary statistics
-library(FSA)  
-summarize(bmi ~ Dt1,
-          data=imdata,
-          digits=3)
+---------------------------------------------------------------------
+library(FSA)
+Summarize(age ~ expose,
+          data = imdata)
 
 #Fit the linear model and conduct ANOVA 
-model = lm(bmi ~ expose,
+model = lm(age ~ expose,
             data=imdata)
 
 library(car)
 Anova(model, type="II")                    
 
 # Can use type="III"
-Anova(model, type="III",options(contrasts = c("contr.sum", "contr.poly")) )
+Anova(model, type="III", contrasts = c("contr.sum", "contr.poly")) 
+
 # Produces type I sum of squares
 anova(model)                               
+
 # Produces r-square, overall p-value, parameter estimates
 summary(model)     
 
 #Checking assumptions of the model
 hist(residuals(model),
      col="darkgray")
+
 #plot of residuals vs. predicted values.
-  plot(fitted(model),
-       residuals(model))
-
-### additional model checking plots with: plot(model)
-### alternative: library(FSA); residPlot(model)
-Tukey and LSD mean separation tests (pairwise comparisons)
-The functions TukeyHSD, HSD.test, and LSD.test are probably not appropriate for cases where there are unbalanced data 
-or unequal variances among levels of the factor, though TukeyHSD does make an adjustment for mildly unbalanced data.
-
-It is my understanding that the multcomp and lsmeans packages are more appropriate for unbalanced data.
-Another alternative is the DTK package that performs mean separation tests on data with unequal sample sizes 
-and no assumption of equal variances.
-
-#Tukey comparisons in agricolae package
-library(agricolae)
-(HSD.test(model, "Location"))                   # outer parentheses print result
-
-#LSD comparisons in agricolae package
-library(agricolae)
-(LSD.test(model, "Location",                    
-          alpha = 0.05,      
-          p.adj="none"))                             # see ?p.adjust for options
-#---------------------------------------------------
-Multiple comparisons in multcomp package Note that “Tukey” here does not mean Tukey-adjusted comparisons. 
-It just sets up a matrix to compare each mean to each other mean.
-
-library(multcomp)
-mc = glht(model,
-          mcp(Location = "Tukey"))
-mcs = summary(mc, test=adjusted("single-step"))
-mcs
-#------------------------------Adjustment options:------------------------------------------------------------- 
-#"none","single-step", "Shaffer","Westfall", "free","holm","hochberg","hommel", "bonferroni", "BH", "BY", "fdr"     
-
-cld(mcs,
-    level=0.05,
-    decreasing=TRUE)
-
-Multiple comparisons to a control in multcomp package.
-#Control is the first level of the factor
-library(multcomp)
-mc = glht(model,
-          mcp(Location = "Dunnett"))
-summary(mc, test=adjusted("single-step"))
-
-#------------------------------Adjustment options:------------------------------------------------------------- 
-#"none","single-step", "Shaffer","Westfall", "free","holm","hochberg","hommel", "bonferroni", "BH", "BY", "fdr"     
-
-#Multiple comparisons to a control with Dunnett Test 
-# The control group can be specified with the control option, or will be the first level of the factor
-library(DescTools)
-DunnettTest(Aam ~ Location,
-            data = Data)
-
-#Multiple comparisons with least square means___can be calculated for each group.  
-#Here a Tukey adjustment is applied for multiple comparisons among group least square means..
-
-library(lsmeans)
-library(multcompView)
-leastsquare = lsmeans(model,
-                      pairwise ~ Location,
-                      adjust = "tukey")
-
-cld(leastsquare,
-    alpha   = 0.05,
-    Letters = letters,
-    adjust="tukey")
--------------------
-  
-#----------------------------- Welch’s anova ------------------------------
-Bartlett’s test and Levene’s test can be used to check the homoscedasticity of groups from a one-way anova.
-A significant result for these tests (p < 0.05) suggests that groups are heteroscedastic(same variance).
-One approach with heteroscedastic is to use the Welch correction with the one-way.test 
-
-# Bartlett test for homogeneity of variance
-bartlett.test(Aam ~ Location,
-              data = Data)
-
-# Levene test for homogeneity of variance
-  library(car)
-leveneTest(Aam ~ Location,
-           data = Data)
-
-# Welch’s anova for unequal variances
-  oneway.test(Aam ~ Location,
-              data=Data,
-              var.equal=FALSE)
-
-# White-adjusted anova for heteroscedasticity
-  model = lm(Aam ~ Location,
-             data=Data)
 library(car)
-Anova(model, Type="II",
-      white.adjust=TRUE)
+QQ <- qqPlot(residuals(model), id = TRUE)
+
+#   #    #
+
 
 ---------------------Power analysis for one-way anova--------------------------
 library(pwr) 
@@ -862,162 +752,40 @@ pwr.anova.test(k = groups,
                sig.level = 0.05,
                power = 0.80)
 
+#    #    #
+
+
 #----------------Kruskal–Wallis Test-------------------------------------------
-if(!require(FSA)){install.packages("FSA")}
-if(!require(DescTools)){install.packages("DescTools")}
-if(!require(rcompanion)){install.packages("rcompanion")}
-if(!require(multcompView)){install.packages("multcompView")}
-if(!require(PMCMRplus)){install.packages("PMCMRplus ")}
-
----------------------------------------------------------
-#Kruskal–Wallis test
-  kruskal.test(Value ~ Group,
-               data = Data)
-
-#1- Medians and descriptive statistics
+if(!require(FSA)){install.packages("FSA")
+#--------------------------------------------------- kruskal.test(Value ~ Group,
+#---------------------------------------------------              data = Data)
+library(psych)
+describe(imdata)
+#-Medians and descriptive statistics
 library(FSA)
 Summarize(age ~ expose,
           data = imdata)
 
-#2- Kruskal–Wallis test
+#-Kruskal–Wallis test
 kruskal.test(age ~ expose,
              data = imdata)
 
-#3- Dunn test for multiple comparisons(Post Hoc)
+#-Dunn test for multiple comparisons(Post Hoc)
 The Dunn test is performed with the dunnTest function in the FSA package.  
 Adjustments to the p-values could be made using the method option to control the familywise error rate or 
 to control the false discovery rate.  
-
-### Order groups by median
-imdata$expose = factor(imdata$expose,
-                     levels=c("non exposed", "singleexposed", "multiple exposed"))
-imdata$expose
-
-### Dunn test
-# “none”, “by”, “holm”, “bonferroni”, “sidak”, “hs”, “hochberg”, “bh”,(Benjamini-Hochberg)  
+# Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
                                                                 
 library(FSA)
-PT = dunnTest(bmi ~ mode,
+PT = dunnTest(bmi ~ expose,
               data=imdata,
               method="bh")           
 
 PT
 
-# Specify the order of factor levels--------- otherwise R will alphabetize them
-Data$Sex = factor(Data$Sex, levels=unique(Data$Sex))
-library(FSA)
-# Examine data frame
-str(Data)
-### Summarize data
-Summarize(bmi ~ mode,
-          data = imdata)
+#   #   #
 
-#---------------------------- Two-way Anova ------------------------------------
-if(!require(FSA)){install.packages("FSA")}
-if(!require(ggplot2)){install.packages("ggplot2")}
-if(!require(car)){install.packages("car")}
-if(!require(multcompView)){install.packages("multcompView")}
-if(!require(lsmeans)){install.packages("lsmeans")}
-if(!require(grid)){install.packages("grid")}
-if(!require(nlme)){install.packages("nlme")}
-if(!require(lme4)){install.packages("lme4")}
-if(!require(lmerTest)){install.packages("lmerTest")} 
-if(!require(rcompanion)){install.packages("rcompanion")}
 
-#Means and summary statistics by group
-library(Rmisc)
-sum = summarySE(Data,
-                measurevar="Activity",
-                groupvars=c("Sex","Genotype"))
-sum
-
---------------Interaction plot using summary statistics------------------------
-  
-library(ggplot2)
-pd = position_dodge(.2)
-ggplot(sum, aes(x=Genotype,
-                y=Activity,
-                color=Sex)) +
-  geom_errorbar(aes(ymin=Activity-se,
-                    ymax=Activity+se),
-                width=.2, linewidth=0.7, position=pd) +
-  geom_point(shape=15, size=4, position=pd) +
-  theme_bw() +
-  theme(
-    axis.title.y = element_text(vjust= 1.8),
-    axis.title.x = element_text(vjust= -0.5),
-    axis.title = element_text(face = "bold")) +
-  scale_color_manual(values = c("black", "blue"))
-
-#-------------------Simple box plot of main effect and interaction--------------
-
-boxplot(Activity ~ Genotype,
-        data = Data,
-        xlab = "Genotype",
-        ylab = "MPI Activity",
-        col  = "white")
-
-#Fit the linear model and conduct ANOVA
-model = lm(Activity ~ Sex + Genotype + Sex:Genotype,
-           data=Data)
-library(car)
-Anova(model, type="II")                    
-
-### If you use type="III", options(contrasts = c("contr.sum", "contr.poly"))
-# Produces type I sum of squares
-anova(model) 
-# Produces r-square, overall p-value, parameter estimates
-summary(model)     
-------------------
-# Checking assumptions of the model
-  hist(residuals(model),
-     col="darkgray")
-
-plot(fitted(model),
-     residuals(model))
-
-#Fit the linear model and conduct ANOVA
-model = lm(Openings ~ Day + Snake,
-           data=Data)
-library(car)
-Anova(model, type="II")           
-# Produces type I sum of squares
-anova(model)                               
-# Produces r-square, overall p-value, parameter estimates
-summary(model)     
-
-#------------------ Checking assumptions of the model -------------------------
-hist(residuals(model),
-     col="darkgray")
-
-plot(fitted(model),
-     residuals(model))
-
-#----------------------------- Paired t–test ----------------------------------
-if(!require(ggplot2)){install.packages("ggplot2")}
-if(!require(coin)){install.packages("coin")}
-if(!require(pwr)){install.packages("pwr")}
-
-#Paired t-test
-t.test(Data$Typical,
-       Data$Odd,
-       paired=TRUE,
-       conf.level=0.95)
-
-#Simple plot of differences
-Difference = Data$Odd - Data$Typical
-plot(Difference,
-     pch = 16,
-     ylab="Difference (Odd – Typical)")
-abline(0,0, col="blue", lwd=2)
-
-#Simple 1-to-1 plot of values
-  plot(Data$Typical, Data$Odd,
-       pch = 16,
-       xlab="Typical feathers",
-       ylab="Odd feathers")
-abline(0,1, col="blue", lwd=2)
-  
 
 #----------------------- Correlation and Linear Regression ---------------------
 Correlation
@@ -1112,9 +880,6 @@ plot(fitted(model),
   A plot of residuals vs. predicted values.
 The residuals should be unbiased and homoscedastic.
 
-# additional model checking plots with: plot(model)
-# alternative: library(FSA); residPlot(model)
-
 #    #    #  
   
   
@@ -1122,9 +887,6 @@ The residuals should be unbiased and homoscedastic.
 R squared = good for simple regression.
 Adjusted R squared =for multiple regression (model building)
 
-#Note 
-Linear regression can be performed with the lm function in the native stats package.
-A robust regression can be performed with the lmrob function in the robustbase package.
 
 model = lm(Species ~ Latitude,
            data = Data)
@@ -1260,7 +1022,7 @@ library(psych)
 corr.test(Data.num,
           use = "pairwise",
           method="pearson",
-          adjust="none",        # Can adjust p-values; see ?p.adjust for options
+          adjust="none",      
           alpha=.05)
 
 pairs(data=Data,
@@ -1293,12 +1055,12 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
 
 #
-library(car)        
+install.packages("olsrr")        
 library(olsrr)        
 
 g <- lm(y~.,data = dataset)       # where . is the x variables
 summary(g)
-
+g <- lm(bmi~age+parity+hb,data = imdata)
 #--------model building
 forward <- ols_step_forward_p(g, penter = 0.05)
 forward                                               # forward
@@ -1326,7 +1088,7 @@ best <- ols_step_best_subset(g)
 best
 
 # in conclusion, our final model 
-pred <-lm(y~.,data = dataset)     #  where . is the list of x variables selected for modelling. 
+pred <-lm(bmi~age+parity+hb,data = imdata)     #  where . is the list of x variables selected for modelling. 
 summary(pred)
 
 par(mfrom = c(2,2))
@@ -1334,35 +1096,6 @@ plot(pred)
 
 
 dev.off()
-
-
-
-#-------------------------------Stepwise procedure------------------------------
-
-model.null = lm(Longnose ~ 1,
-                data=Data)
-model.full = lm(Longnose ~ Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp,
-                data=Data)
-
-step(model.null,
-     scope = list(upper=model.full),
-     direction="both",
-     data=Data)
-
-#Define final model
-model.final = lm(Longnose ~ Acerage + Maxdepth + NO3,
-                   data=Data)
-# Show coefficients, R-squared, and overall p-value
-summary(model.final)      
-
-#Simple plot of predicted values with 1-to-1 line
-Data$predy = predict(model.final)
-plot(predy ~ Longnose,
-     data=Data,
-     pch = 16,
-     xlab="Actual response value",
-     ylab="Predicted response value")
-abline(0,1, col="blue", lwd=2)
 
 
 
