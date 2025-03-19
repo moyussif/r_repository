@@ -870,38 +870,36 @@ if(!require(multcompView)){install.packages("multcompView")}
 if(!require(PMCMRplus)){install.packages("PMCMRplus ")}
 
 ---------------------------------------------------------
-  #Kruskal–Wallis test
+#Kruskal–Wallis test
   kruskal.test(Value ~ Group,
                data = Data)
 
 #1- Medians and descriptive statistics
 library(FSA)
-Summarize(Efficiency ~ Health,
-          data = Data)
+Summarize(age ~ expose,
+          data = imdata)
 
 #2- Kruskal–Wallis test
-kruskal.test(Efficiency ~ Health,
-             data = Data)
+kruskal.test(age ~ expose,
+             data = imdata)
 
-#3- Dunn test for multiple comparisons
-If the Kruskal–Wallis test is significant, a post-hoc analysis can be performed 
-to determine which levels of the independent variable differ from each other level.
-
-The most popular test for this is the Dunn test, which is performed with the dunnTest function in the FSA package.  
+#3- Dunn test for multiple comparisons(Post Hoc)
+The Dunn test is performed with the dunnTest function in the FSA package.  
 Adjustments to the p-values could be made using the method option to control the familywise error rate or 
 to control the false discovery rate.  
 
 ### Order groups by median
-Data$Health = factor(Data$Health,
-                     levels=c("OAD", "Normal", "Asbestosis"))
+imdata$expose = factor(imdata$expose,
+                     levels=c("non exposed", "singleexposed", "multiple exposed"))
+imdata$expose
 
 ### Dunn test
+# “none”, “by”, “holm”, “bonferroni”, “sidak”, “hs”, “hochberg”, “bh”,(Benjamini-Hochberg)  
+                                                                
 library(FSA)
-
-PT = dunnTest(Efficiency ~ Health,
-              data=Data,
-              method="bh")    # Can adjust p-values;
-# See ?p.adjust for options
+PT = dunnTest(bmi ~ mode,
+              data=imdata,
+              method="bh")           
 
 PT
 
@@ -911,8 +909,8 @@ library(FSA)
 # Examine data frame
 str(Data)
 ### Summarize data
-Summarize(Rank ~ Sex,
-          data = Data)
+Summarize(bmi ~ mode,
+          data = imdata)
 
 #---------------------------- Two-way Anova ------------------------------------
 if(!require(FSA)){install.packages("FSA")}
