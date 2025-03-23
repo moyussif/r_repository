@@ -72,6 +72,8 @@ imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
 library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
+#------------------------ EXport function ------------------------------------ 
+write.csv(data, file = data.csv)
 #------------------------- Explore data ----------------------------------------
 View(imdata)
 View(HTdata)
@@ -455,7 +457,7 @@ hist(Data$ Angle,
      xlab="Angle")
 
 ------------------- Power analysis for one-sample t-test -----------------------
-  M1  = 70                        # Theoretical mean
+M1  = 70                        # Theoretical mean
 M2  = 71                        # Mean to detect
 S1  =  2.4                      # Standard deviation
 S2  =  2.4                      # Standard deviation
@@ -1097,46 +1099,129 @@ plot(pred)
 
 dev.off()
 
-
-
-#--------------------------- Simple Logistic Regression ----------------------
-if(!require(car)){install.packages("car")}
-if(!require(lmtest){install.packages("lmtest")}
-if(!require(tidyr)){install.packages("tidyr")}
-if(!require(rcompanion)){install.packages("rcompanion")}
-if(!require(FSA){install.packages("FSA")}
-if(!require(popbio)){install.packages("popbio")}
-      
-plot(Factor.num  ~ Continuous,
-     data = Data,
-     xlab="Continuous",
-     ylab="Factor",
-     pch=19)             
-curve(predict(model,data.frame(Continuous=x),type="response"),
-      lty=1, lwd=2, col="blue",                           
-      add=TRUE)   
-      
-library(popbio)
-logi.hist.plot(Data$Continuous,
-               Data$Factor.log,
-               boxp=FALSE,
-               type="hist",
-               col="gray",
-               xlabel="Height")
-
 #   #   #
 
 
-#------------------------ Poisson  regression --------------------------------
-Assumptions ---- x
-         # should not be negative
-         # Should be discrete
-         # should involve time
+#----------------------------------------------------------------------------
+==============================  LOGISTIC REGRESSION  ========================
+#----------------------------------------------------------------------------
+#A binary variable is a categorical outcome that has two categories or levels. 
+#The logistic model (or logit model) is used to model the probability of a particular 
+#class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
+Note----the function is glm, y is categorical, x can be (categorical or continuous).
+Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
+Probability is 0  - 1
+OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
 
-if(!require(caret)){install.packages("caret")}
+#--------------------------- Simple Logistic Regression 
+library(readxl)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
 
-pmod <- glm(y ~ x, data = dataset, family = Poisson)
-summary(pmod)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+View(imdata)
+str(imdata)
+#Convert categorical variable to factors
+imdata$CaseControl <-as.factor(imdata$CaseControl)
+imdata$parity <-as.factor(imdata$parity)
+str(imdata)
+#Create contingency table of categorical outcome and predictors we want to make sure no 0 cells.
+table(imdata$CaseControl,imdata$parity)
+#regression model
+#------when x is continuous====
+logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
+summary(logistic)
+#log-odds=-1.92264+0.05512*age
+exp(0.05512)
+# oddratio only
+exp(coef(logistic))
+#interpret
+-----a unit increase in age,the odds of having case is increase by factor 1.06. 
+holding other factors constant(e.g multiple logistic regression).
+
+#------when x is categorical====
+logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
+logist1
+summary(logist1)
+#log-odds=-0.7673+0.6719*(parity=1)+2.1535*(parity=2)+1.8659*(parity=3)-15.7988*(parity=4)
+parity0 is used as reference
+
+#odd ratio only
+exp(coef(logist1))
+------parity-1 is 1.96 more likely to have case compared to parity-0
+      parity-2 is 8.62 more likely to have case compared to parity-0
+      parity-3 is 6.46 more likely to have case compared to parity-0
+      parity-4 is 1.37 more likely to have case compared to parity-0
+
+#----------------------- Multiple Logistics regression 
+multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
+summary(multi_logist)
+
+#CI using profiled log-likelihood-------------as part of reporting OR & p value.       
+ confint(multi_logist)
+
+#odd ratio only
+exp(coef(multi_logist))
+
+#odd ratio and 95% CI
+exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+
+
+#Note_______in case we want to reorder /change the reference group, Use relevel
+change_ref <-relevel(imdata$parity, ref = "1")
+logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
+logist2
+
+
+#   #   #
+
+============================== Log-linear model ==============================
+#--------------------------- Poisson  regression -----------------------------
+Assumptions ---- y
+# should not be negative
+# Should be discrete
+# should involve time
+# Mean = Variance------Variance > Mean or > 1 (Over-dispersion)----quasi poisson
+# ---------------------Variance < Mean or < 1 (Under-dispersion)----other models
+library(readxl)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+library(Hmisc)
+#------
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+str(imdata)
+#histogram
+hist(imdata$age,
+     breaks = 10, 
+     xlab = "Age count", 
+     main = "Age Distribution",
+     Prob=TRUE)
+#boxplot
+boxplot(imdata$age,
+        main = "Age Distribution")
+#fit model
+poisson1 <- glm(age ~ hb+bmi+expose, data = imdata, family = poisson())
+summary(poisson1)
+
+#fitting only variables with Significant p value
+fit.onlySignificant <- glm(age ~ bmi, data = imdata, family = poisson())
+summary(fit.onlySignificant)
+
+#--------------------------------
+The reg paramter for bmi is 0.0124      
+#In poisson reg, y is modeled as the log of the conditional mean(l).
+
+#interpret
+The parameter indicates that one unit increase in the bmi is associated with a 0.0124 
+increase in the log mean number of age    ---- Holding other variables constant
+
+
 
 #    #    #
 
