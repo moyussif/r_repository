@@ -2795,9 +2795,9 @@ chisq.test(tab)$residuals
 
 
 
-===============================================================================
+================================================================================
 
-#------------------------- modelling infectious diseases ----------------------
+#------------------------- modelling infectious diseases -----------------------
 
 library(readxl)
 library(readr)
@@ -2807,23 +2807,26 @@ library(skimr)
 library(deSolve)
 library(reshape2)
 
-#Part one: SIR Mode-----------(Example one)---------------------
+#Part one: SIR Mode----------- (Example one) --------------------------
                         
 sir<-function(time,state,parameters)
 {with(as.list(c(state,parameters)),
       {dS<--beta*S*I
        dI<-beta*S*I-gamma*I
        dR<-gamma*I
-       return(list(c(dS,dI,dR)))})}
-                        
-# state/compartment =(SIR),  + parameters =(beta, gamma)-------
-                        
+       return(list(c(dS,dI,dR)))})
+}
+
+# state=(SIR),   parameters=(beta, gamma) 
+ 
+                       
 #Provide the initial values and some parameters as below:
 init<-c(S=1-1e-6,I=1e-6,0.0)
 parameters<-c(beta=1.4247,gamma=0.14286)
 times<-seq(0,70,by=1)
                         
 #Put the results in dataframe    Ordinary differential equation (ode)
+ode<-as.data.frame(ode(y,times,func,parms))
 ode<-as.data.frame(ode(y=init,times=times,func=sir,parms=parameters))
 summary(ode)
                         
@@ -2841,6 +2844,7 @@ peak <- max(infections)
 match(peak, infections) #this will show the day where peak is high
                         
 ................................................................................
+
 
 #--------------Step 1: writing the differential equations with() function below:
                         
@@ -2882,8 +2886,6 @@ ls()
   ## [7] "parameters_values" "peak" "sir"
   ## [10] "sir_2" "time_values" "times"
                         
-[1] “initial_values” “parameters_values” “sir_equations”
-[4] “time_values”
                         
 sir_2
 
@@ -2931,7 +2933,7 @@ with(sir_values_1, {
 # adding a legend:
 legend("right", c("susceptibles", "infectious", "recovered"),
                   col = c("blue", "red", "green"), lty = 1, bty = "n")
------------------
+---------------------------------------------------------------------
 
 #The value of the R0 is
 (999 + 1) * parameters_values["beta"] / parameters_values["gamma"]
@@ -2939,7 +2941,7 @@ legend("right", c("susceptibles", "infectious", "recovered"),
 N <- (999 + 1)
 N * parameters_values["beta"] / parameters_values["gamma"]
 
-# beta ------#8
+# beta 8
                         
 sir_try <- function(beta, gamma, S0, I0, R0, times) {
   require(deSolve) # for the "ode" function
@@ -3004,23 +3006,23 @@ flu
 ## 13 12 11
 ## 14 13 4
 
-##Plot the points of the flu data set and 
-#use the sir_try() function to visually compare the model’s predictionsand the data points:
+#-------- Plot the points of the flu data set and use the sir_try() function to visually compare 
+#                                                   the model’s predictions and the data points:
 with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
 predictions <- sir_try(beta = 0.004, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
 with(predictions, lines(time, I, col = "red"))
+
 #The above model did not fit the observed data well so we need to train the model on the data by 
-#changing beta and gamma parameters.
------------------------------------
-#In this case, we will change only the beta parameter:
+#changing beta and gamma parameters.-------In this case, we will change only the beta parameter:
 with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
 predictions <- sir_try(beta = 0.0025, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
 with(predictions, lines(time, I, col = "red"))
+
 ### The above model is better than the first model but not good yet
 -----------------------------------                          
 #Write a function that takes parameters values as inputs and draws the figure as an output. 
-#Play with that function to see how changing the values of parameters can bring the model’s predictions closer to the data
-points.
+#Play with that function to see how changing the values of parameters can bring the model’s predictions closer to the data points.
+
 model_fit <- function(beta, gamma, data, N = 763, ...) {
   I0 <- data$cases[1] # initial number of infected (from data)
   times <- data$day # time points (from data)
@@ -3050,30 +3052,12 @@ model_fit(beta = 0.0025, gamma = 0.5, flu, pch = 19, col = "red", ylim = c(0, 60
   time=flu$day
   predictions <- sir_try(beta = beta, gamma =gamma, S0 = s0, I0 = I0, R0 = R0, times = time)
   predictions
-## time S I R
-## 1 0 762.00000 1.000000 0.000000
-## 2 1 757.84809 4.059187 1.092719
-## 3 2 741.40936 16.111906 5.478730
-## 4 3 682.07965 58.760314 22.160032
-## 5 4 522.92669 164.772360 75.300946
-## 6 5 296.50106 277.719531 188.779410
-## 7 6 143.33630 285.513298 334.150405
-## 8 7 75.29039 224.790636 462.918979
-## 9 8 46.75452 158.037921 558.207561
-## 10 9 33.73731 105.793282 623.469410
-## 11 10 27.18922 69.184382 666.626394
-         14
-## 12 11 23.63171 44.695620 694.672672
-## 13 12 21.59168 28.679392 712.728932
-## 14 13 20.37877 18.329558 724.291668
-    
+
 #----And we want to compare these model’s predictions with real prevalence data:
            #One simple way to do so is to compute the “sum of squares” as below:
 
 sum((predictions$I - flu$cases)ˆ2)
                         
-## [1] 6980.877
-
 # Which is the squared sum of the lengths of vertical black segments of the figure below:
 # the observed prevalences:
 
@@ -3088,13 +3072,7 @@ the fitted model above
 newtime=seq(0,20)
 model_forecast <- sir_try(beta = beta, gamma =gamma, S0 = s0, I0 = I0, R0 = R0, times = newtime)
 summary(model_forecast)
-## time S I R
-## Min. : 0 Min. : 18.49 Min. : 0.7717 Min. : 0.0
-## 1st Qu.: 5 1st Qu.: 19.18 1st Qu.: 4.0592 1st Qu.:188.8
-## Median :10 Median : 27.19 Median : 18.3296 Median :666.6
-## Mean :10 Mean :204.13 Mean : 70.8674 Mean :488.0
-## 3rd Qu.:15 3rd Qu.:296.50 3rd Qu.:105.7933 3rd Qu.:736.4
-## Max. :20 Max. :762.00 Max. :285.5133 Max. :743.7
+
 matplot(model_forecast, type="l", lty=1, main="SIRS model", xlab="Time",ylab="Number of people")
 legend <- colnames(model_forecast)[2:4]
 legend(15000,900000, legend=legend, col=2:4, lty = 1)
@@ -3109,44 +3087,10 @@ legend(15000,900000, legend=legend, col=2:4, lty = 1)
 predictions <- sir_try(beta = 0.004, gamma = 0.5, S0 = 999, I0 = 1, R0 = 0, times = flu$day)
 predictions
 
-## time S I R
-## 1 0 999.0000000 1.000000 0.000000
-## 2 1 963.7055761 31.798299 4.496125
-## 3 2 461.5687749 441.915745 96.515480
-## 4 3 46.1563480 569.504176 384.339476
-## 5 4 7.0358807 373.498313 619.465807
-## 6 5 2.1489407 230.129339 767.721720
-## 7 6 1.0390927 140.410850 858.550058
-## 8 7 0.6674074 85.444792 913.887801
-## 9 8 0.5098627 51.944975 947.545162
-## 10 9 0.4328913 31.565149 968.001960
-## 11 10 0.3919173 19.176683 980.431400
-## 12 11 0.3689440 11.648910 987.982146
-## 13 12 0.3556517 7.075651 992.568698
-## 14 13 0.3478130 4.297635 995.354552
-
-#And we want to compare these model’s predictions with real prevalence data:
-                          flu
-                        ## day cases
-                        ## 1 0 1
-                        ## 2 1 6
-                        ## 3 2 26
-                        ## 4 3 73
-                        ## 5 4 222
-                        ## 6 5 293
-                        ## 7 6 258
-                        ## 8 7 236
-                        ## 9 8 191
-                        ## 10 9 124
-                        ## 11 10 69
-                        ## 12 11 26
-                        ## 13 12 11
-                        ## 14 13 4
 #One simple way to do so is to compute the “sum of squares” as below:
 sum((predictions$I - flu$cases)ˆ2)
-## [1] 514150.7
 #Which is the squared sum of the lengths of vertical black segments of the figure below
-                        
+                      
 #the observed prevalences:
 with(flu, plot(day, cases, pch = 19, col = "red", ylim = c(0, 600)))
 # the model-predicted prevalences:
@@ -3276,8 +3220,9 @@ ggplot(data = model_sirs_long,
 #--------------------------- Part three: SEIR model --------------------------
 ------------------------------ SEIR model fitting ----------------------------
                         
-#The SEIR model is an extension of SIR model. For SEIR, additional compartment called “exposed” is added to the SIR model. Thus, 
-              #The basic SEIR model has four compartments represented as:
+#The SEIR model is an extension of SIR model. 
+#For SEIR, additional compartment called “exposed” is added to the SIR model. 
+#Thus, The basic SEIR model has four compartments represented as:
                           
 1. S - “Susceptible” – individuals who have not been exposed to the virus
 2. E - “Exposed” – individuals exposed to the virus, but not yet infectious
@@ -3286,41 +3231,37 @@ ggplot(data = model_sirs_long,
 5. Population size N is the sum of the individuals in the 4 compartments.
                         
 #---------Parameters of the SEIR model
-The flow of individuals between compartments is characterised by a number of parameters.
+#  The flow of individuals between compartments is characterised by a number of parameters.
+#  β (beta):is the transmission coefficient.Is the average number of infectious contacts an infectious individual 
+#  in the population makes at each time period. A high value of β means the virus has more opportunity to spread.
 
-β (beta):is the transmission coefficient.Is the average number of infectious contacts an infectious individual 
-in the population makes at each time period. A high value of β means the virus has more opportunity to spread.
+#  σ (sigma): is the rate at which exposed individuals become infectious. Is the reciprocal of the average time 
+#  it takes to become infectious. 
+#  That is, if an individual becomes infectious after 4 days on average, σ will be 1/4 (or 0.25).
 
-σ (sigma): is the rate at which exposed individuals become infectious. Is the reciprocal of the average time 
-it takes to become infectious. 
-That is, if an individual becomes infectious after 4 days on average, σ will be 1/4 (or 0.25).
+#  γ (gamma): is the rate at which infectious individuals recover. As before, think of it as the reciprocal of the
+#  average time it takes to recover. That is, if it takes 10 days on average to recover, γ will be 1/10 (or 0.1).
 
-γ (gamma): is the rate at which infectious individuals recover. As before, think of it as the reciprocal of the
-average time it takes to recover. 
-That is, if it takes 10 days on average to recover, γ will be 1/10 (or 0.1).
+#  μ (mu): is an optional parameter to describe the mortality rate of infectious individuals. The higher μ is,
+#  the more deadly the virus. From these parameters, you can construct a set of differential equations. 
+#  These describe the rate at which each compartment changes size.
 
-μ (mu): is an optional parameter to describe the mortality rate of infectious individuals. The higher μ is,
-the more deadly the virus.
-From these parameters, you can construct a set of differential equations. 
-These describe the rate at which each compartment changes size.
-
-#Setting-up SEIR Equations
-Equation (9) - Susceptible
-The first thing to see from the model is that there is no way S can increase over time. 
-There are no flows back into the compartment. 
-Equation (6) must be negative, as S can only ever decrease.
+Setting-up SEIR Equations----------------------------------------
+#Equation (9) - Susceptible
+#The first thing to see from the model is that there is no way S can increase over time. 
+#There are no flows back into the compartment. Equation (6) must be negative, as S can only ever decrease.
 
 In what ways can an individual leave compartment S? 
-Well, they can become infected by an infectious individual in the population.
+#Well, they can become infected by an infectious individual in the population.
 
-At any stage, the proportion of infectious individuals in the population = I/N.
-And the proportion of susceptible individuals will be S/N.
+#At any stage, the proportion of infectious individuals in the population = I/N.
+#And the proportion of susceptible individuals will be S/N.
 Under the assumption of perfect mixing 
-(that is, individuals are equally likely to come into contact with any other in the population), 
-the probability of any given contact being between an infectious and susceptible individual is (I / N) * (S / N).
-                        
-This is multiplied by the number of contacts in the population. This is found by multiplying the transmission coefficient β, 
-by the population size N. Combining that all together and simplifying gives equation (9): 
+#(that is, individuals are equally likely to come into contact with any other in the population), 
+#the probability of any given contact being between an infectious and susceptible individual is (I / N) * (S / N).
+#This is multiplied by the number of contacts in the population. 
+#This is found by multiplying the transmission coefficient β, by the population size N. 
+#Combining that all together and simplifying gives equation (9): 
   ∂S
 ∂t
 = - (β x S x I) / N . . . . . . . . . . (9)
@@ -3412,15 +3353,7 @@ summary(model)
 
 
 ## S E I R M
-              ## Min. 108263.6 3.616607e-07 0.000000e+00 0.00 0.0000
-              ## 1st Qu. 108263.7 5.957435e-03 1.414971e-02 63894.43 319.4721
-              ## Median 108395.7 8.470071e+00 1.273726e+01 886814.36 4434.0718
-              ## Mean 362798.6 9.745754e+03 1.212158e+04 612272.74 3061.3637
-              ## 3rd Qu. 852375.5 1.734331e+03 2.533956e+03 887299.83 4436.4991
-              ## Max. 999999.0 1.092967e+05 1.265161e+05 887299.86 4436.4993
-              ## N 366.0 3.660000e+02 3.660000e+02 366.00 366.0000
-              ## sd 381257.2 2.475783e+04 2.969234e+04 387333.47 1936.6673
-                        
+           
 Already, you will find some interesting insights.
 1. Out of a million individuals, 108,264 did not become infected.
 2. At the peak of the epidemic, 126,516 individuals were infectious simultaneously.
@@ -3511,14 +3444,7 @@ Now you can view the summary and graphs associated with this model.
 summary(model2)
 
 ## S E I R M
-            ## Min. 156885.7 7.699207e-01 0.00000 0.00 0.0000
-            ## 1st Qu. 160478.2 6.929205e+01 97.71405 63668.75 318.3438
-            ## Median 789214.4 1.246389e+03 1735.66330 194379.16 971.8958
-            ## Mean 589558.9 9.216918e+03 11460.62036 387824.44 1939.1222
-            ## 3rd Qu. 867639.6 1.030043e+04 13780.17591 829898.56 4149.4928
-            ## Max. 999999.0 6.083432e+04 72443.97892 838916.89 4194.5845
-            ## N 366.0 3.660000e+02 366.00000 366.00 366.0000
-            ## sd 350719.3 1.570278e+04 18893.31145 346542.57 1732.7128
+            
 
 This will reveal: You can see:
 1. Out of a million individuals, 156,886 did not become infected.
