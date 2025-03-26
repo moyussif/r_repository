@@ -1,9 +1,160 @@
 
+
+
+
+
+
+------------------- Power analysis for one-sample t-test -----------------------
+  M1  = 70                        # Theoretical mean
+  M2  = 71                        # Mean to detect
+  S1  =  2.4                      # Standard deviation
+  S2  =  2.4                      # Standard deviation
+  
+  Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+  
+  library(pwr)                                  
+  pwr.t.test(
+    n = NULL,                  # Observations
+    d = Cohen.d,           
+    sig.level = 0.05,          # Type I probability
+    power = 0.90,              # 1 minus Type II probability
+    type = "one.sample",       # Change for one- or two-sample
+    alternative = "two.sided")
+
+
+  --------------------- Power analysis for unpaired t-test --------------------
+  #-------------------- Power analysis, t-test --------------------------------
+  
+  M1  = 66.6                      # Mean for sample 1
+  M2  = 64.6                      # Mean for sample 2
+  S1  =  4.8                      # Std dev for sample 1
+  S2  =  3.6                      # Std dev for sample 2
+  
+  Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+  
+  library(pwr)                                  
+  pwr.t.test(
+    n = NULL,                  # Observations in _each_ group
+    d = Cohen.d,           
+    sig.level = 0.05,          # Type I probability
+    power = 0.80,              # 1 minus Type II probability
+    type = "two.sample",       # Change for one- or two-sample
+    alternative = "two.sided"
+  )
+
+
+  ---------------------Power analysis for one-way anova--------------------------
+    library(pwr) 
+  groups = 5
+  means = c(10, 10, 15, 15, 15)
+  sd = 12
+  grand.mean  = mean(means)
+  Cohen.f = sqrt( sum( (1/groups) * (means-grand.mean)^2) ) /sd
+  
+  pwr.anova.test(k = groups,
+                 n = NULL,
+                 f = Cohen.f,
+                 sig.level = 0.05,
+                 power = 0.80)
+
+  
+  
+---------------------------Power analysis for correlation-----------------------
+    pwr.r.test(n = NULL,
+               r = 0.500,
+               sig.level = 0.05,
+               power = 0.80,
+               alternative = "two.sided") 
+  
+  
+---------------------- Power analysis for binomial test ---------------------
+    if(!require(pwr)){install.packages("pwr")}
+  P0 = 0.75
+  P1 = 0.78
+  H  = ES.h(P0,P1)               # This calculates effect size
+  
+  library(pwr)
+  pwr.p.test(
+    h=H,
+    n=NULL,                  # NULL tells the function to
+    sig.level=0.05,          #     calculate this
+    power=0.90,              # 1 minus Type II probability
+    alternative="two.sided")
+  
+  #     #     #  
+  
+  ---------------- Power analysis for chi-square goodness-of-fit ------
+    # Power analysis, Chi-square goodness-of-fit, snapdragons
+    ## ------------------------------------------------------------------
+  library(pwr)
+  
+  P0      = c(0.25,  0.50, 0.25)
+  P1      = c(0.225, 0.55, 0.225)
+  
+  effect.size = ES.w1(P0, P1) 
+  degrees = length(P0) - 1
+  
+  pwr.chisq.test(
+    w=effect.size,
+    N=NULL,            # Total number of observations
+    df=degrees,
+    power=0.80,        # 1 minus Type II probability
+    sig.level=0.05)    # Type I probability 
+  
+  
+  ------------ Power analysis for chi-square test of independence ----------------
+    #--------------------------------------------------------------
+  Power analysis, chi-square independence, pp. 66–67
+  --------------------------------------------------------------
+    # This example assumes you are using a Chi-square test of
+    #   independence.  The example in the Handbook appears to use
+    #   a Chi-square goodness-of-fit test
+    # In the pwr package, for the Chi-square test of independence,
+    #   the table probabilities should sum to 1
+    
+    Input =("
+Genotype  No.cancer Cancer
+GG        0.18      0.165
+GA        0.24      0.225
+AA        0.08      0.110
+")
+  
+  P = as.matrix(read.table(textConnection(Input),
+                           header=TRUE,
+                           row.names=1))
+  P
+  # Sum of values in the P matrix
+  sum(P)        
+  
+  
+  library(pwr)
+  effect.size = ES.w2(P)
+  degrees = (nrow(P)-1)*(ncol(P)-1)  # Calculate degrees of freedom
+  
+  pwr.chisq.test(
+    w=effect.size,
+    N=NULL,          # Total number of observations
+    df=degrees,
+    power=0.80,      # 1 minus Type II probability
+    sig.level=0.05)  # Type I probability  
+  
+  
+  #     #     #
+  
+ 
+  
+  
+  
+  
+  
+  
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# A Practical Guide to Statistical Power and Sample Size Calculations in R
+# A Practical Guide to Statistical Power and Sample Size Calculations in R ==== *1*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 install.packages("pwrss")
+library(pwr)
 library(pwrss)
 
 #t Test (one sample)
@@ -416,13 +567,61 @@ For example, the main predictor can be binary (e.g. treatment/control groups).
                            arcsin.trans = FALSE)           
           
           
-          
-          
+
             
             
             
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# A Practical Guide to Statistical Power and Sample Size Calculations in R  ==== *2*
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Name of Test
+#----Repeated Measures ANOVA
+#----Multi_way ANOVA ( 1 categorical of interest)
+#----Multi_way ANOVA (>1 categorical of interest) 
+#----Non parametric regression(Logistic)
+#----Non parametric regression(Poisson)
+#----Multilevel modelling (CRT)  
+#----Multilevel modelling (MRT) 
+
+?wp.poisson              
+install.packages("WebPower")           
+library(WebPower)            
             
-            
-            
-            
-            
+wp.poisson(exp0 = , exp1 = , alpha = 0.05, power = 0.80, alternative = "two.sided", family = "Bernoulli")
+
+#Derive exp0 (Base rate) and exp1 (Rate ratio) from the exponentials,
+#then plug in the Incidence Base rate and Rate ratio
+exp0 <-exp(13.0/100000)
+exp0
+exp1 <-exp(-0.05/100000)
+exp1
+
+#1---------To calculate power given sample size and effect size:
+POWER <-wp.poisson(n = 4406, exp0 = 2.798, exp1 = 0.8938, alpha = 0.05,
+           power = NULL, family = "Bernoulli", parameter = 0.53)
+POWER
+
+
+#2--------To calculate the required sample size given power and effect size:
+  One.sample <-wp.poisson(n = NULL, exp0 = 1.00013, exp1 = 0.8938, alpha = 0.05,
+             power = 0.80, alternative = ("two.sided"),
+             family = ("Bernoulli"), 
+             parameter = NULL)
+  One.sample
+  
+  
+#3--------To generate sequence of sample sizes given power and effect size:
+  multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
+                    alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
+  multi.samples  
+#4--------To plot the power curve:  
+  plot(multi.samples) 
+  
+
+#    #    # 
+  
+#------------GLMM 
+install.packages("simr")
+install.packages("lme4")
+library(simr)
+library(lme4)
