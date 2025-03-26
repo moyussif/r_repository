@@ -150,7 +150,7 @@ AA        0.08      0.110
   
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# A Practical Guide to Statistical Power and Sample Size Calculations in R ==== *1*
+# A Practical Guide to Statistical Power and Sample Size Calculations in R ==== *0*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 install.packages("pwrss")
@@ -567,10 +567,21 @@ For example, the main predictor can be binary (e.g. treatment/control groups).
                            arcsin.trans = FALSE)           
           
           
+            
+            
 
-            
-            
-            
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# A Practical Guide to Statistical Power and Sample Size Calculations in R  ==== *1*
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++            
+Name of Test 
+#----One Sample Mean T test           
+library(pwr)       
+pwr.t.test(d = , sig.level = , power = , type = c("two.sample", "one.sample","paired"))              
+              
+#d=effect size ----- sig level=0.05 ---- power = 80/90 ---- type = type of test
+#Effect size = (M2 -M1)/SD ----------------- M(Mean),  SD(Standard deviation)             
+              
+                  
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # A Practical Guide to Statistical Power and Sample Size Calculations in R  ==== *2*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
