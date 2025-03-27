@@ -1,10 +1,13 @@
-
-
-
-
-
-
-------------------- Power analysis for one-sample t-test -----------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      # A Practical Guide to Statistical Power and Sample Size in R 
+-------------------------------------------------------------------------------
+# d = effect size ---- sig level=0.05 ---- power = 80/90 ---- type = type of test
+#-----Effect size 0.2=small, 0.5=medium, 0.8=large
+#-----Effect size = (M2 -M1)/SD 
+  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++            
+------------------ Power analysis for one-sample t-test -------------------
+  
   M1  = 70                        # Theoretical mean
   M2  = 71                        # Mean to detect
   S1  =  2.4                      # Standard deviation
@@ -12,63 +15,21 @@
   
   Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
   
+# pwr.t.test(d = , sig.level = , power = , type = "one.sample") ----------- 
+  
   library(pwr)                                  
   pwr.t.test(
-    n = NULL,                  # Observations
+    n = NULL,           
     d = Cohen.d,           
-    sig.level = 0.05,          # Type I probability
-    power = 0.90,              # 1 minus Type II probability
-    type = "one.sample",       # Change for one- or two-sample
+    sig.level = 0.05,     
+    power = 0.90,              
+    type = "one.sample",       
     alternative = "two.sided")
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#----One Sample test for Categorical (Probability against theoretical value)
+-------------------- Power analysis for binomial test ----------------------
 
-
-  --------------------- Power analysis for unpaired t-test --------------------
-  #-------------------- Power analysis, t-test --------------------------------
-  
-  M1  = 66.6                      # Mean for sample 1
-  M2  = 64.6                      # Mean for sample 2
-  S1  =  4.8                      # Std dev for sample 1
-  S2  =  3.6                      # Std dev for sample 2
-  
-  Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
-  
-  library(pwr)                                  
-  pwr.t.test(
-    n = NULL,                  # Observations in _each_ group
-    d = Cohen.d,           
-    sig.level = 0.05,          # Type I probability
-    power = 0.80,              # 1 minus Type II probability
-    type = "two.sample",       # Change for one- or two-sample
-    alternative = "two.sided"
-  )
-
-
-  ---------------------Power analysis for one-way anova--------------------------
-    library(pwr) 
-  groups = 5
-  means = c(10, 10, 15, 15, 15)
-  sd = 12
-  grand.mean  = mean(means)
-  Cohen.f = sqrt( sum( (1/groups) * (means-grand.mean)^2) ) /sd
-  
-  pwr.anova.test(k = groups,
-                 n = NULL,
-                 f = Cohen.f,
-                 sig.level = 0.05,
-                 power = 0.80)
-
-  
-  
----------------------------Power analysis for correlation-----------------------
-    pwr.r.test(n = NULL,
-               r = 0.500,
-               sig.level = 0.05,
-               power = 0.80,
-               alternative = "two.sided") 
-  
-  
----------------------- Power analysis for binomial test ---------------------
-    if(!require(pwr)){install.packages("pwr")}
   P0 = 0.75
   P1 = 0.78
   H  = ES.h(P0,P1)               # This calculates effect size
@@ -76,17 +37,17 @@
   library(pwr)
   pwr.p.test(
     h=H,
-    n=NULL,                  # NULL tells the function to
-    sig.level=0.05,          #     calculate this
-    power=0.90,              # 1 minus Type II probability
+    n=NULL,       
+    sig.level=0.05,         
+    power=0.90,              
     alternative="two.sided")
   
-  #     #     #  
+  #     #     # 
   
-  ---------------- Power analysis for chi-square goodness-of-fit ------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+---------------- Power analysis for chi-square Goodness-Of-Fit -------------
     # Power analysis, Chi-square goodness-of-fit, snapdragons
-    ## ------------------------------------------------------------------
-  library(pwr)
+    library(pwr)
   
   P0      = c(0.25,  0.50, 0.25)
   P1      = c(0.225, 0.55, 0.225)
@@ -101,16 +62,10 @@
     power=0.80,        # 1 minus Type II probability
     sig.level=0.05)    # Type I probability 
   
-  
-  ------------ Power analysis for chi-square test of independence ----------------
-    #--------------------------------------------------------------
-  Power analysis, chi-square independence, pp. 66–67
-  --------------------------------------------------------------
-    # This example assumes you are using a Chi-square test of
-    #   independence.  The example in the Handbook appears to use
-    #   a Chi-square goodness-of-fit test
-    # In the pwr package, for the Chi-square test of independence,
-    #   the table probabilities should sum to 1
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+---------- Power analysis for chi-square test of independence -------------
+    
+# In the pwr package, for the Chi-square test of independence,the table probabilities should sum to 1
     
     Input =("
 Genotype  No.cancer Cancer
@@ -141,17 +96,142 @@ AA        0.08      0.110
   
   #     #     #
   
- 
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                          #Two_Three sample test
+----------------------------------------------------------------------------
+# Effect size ------ 0.2=small,   0.5=medium,     0.8=large
+#Hypothesis
+#------alternative = "greater",       "less",           "two-sided"
+#----------where      greater(H1>H0),  less(H1<H0),      two-sided(difference)
+    
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--------------------- Power analysis for unpaired t-test -------------------
+  M1  = 66.6                      # Mean for sample 1
+  M2  = 64.6                      # Mean for sample 2
+  S1  =  4.8                      # Std dev for sample 1
+  S2  =  3.6                      # Std dev for sample 2
+  
+  Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+  
+  library(pwr)                                  
+  pwr.t.test(
+    n = NULL,                  
+    d = Cohen.d,           
+    sig.level = 0.05,         
+    power = 0.80,              
+    type = "two.sample",       
+    alternative = "two.sided"
+  )
+  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Name of Test-------------- Two Sample Paired T test------------------------ 
+  library(pwr)
+  M1  = 66.6                      # Mean for sample 1
+  M2  = 66.7                      # Mean for sample 2
+  S1  =  4.8                      # Std dev for sample 1
+  S2  =  4.6                      # Std dev for sample 2
+  
+  Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
+  
+  library(pwr)                                  
+  pwr.t.test(
+    n = NULL,                  
+    d = Cohen.d,           
+    sig.level = 0.05,         
+    power = 0.80,              
+    type = "paired",       
+    alternative = "two.sided"
+  )
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+Name of Test -------------- Power analysis for one-way anova --------------
+  library(pwr) 
+  groups = 5
+  means = c(10, 10, 15, 15, 15)
+  sd = 12
+  grand.mean  = mean(means)
+  Cohen.f = sqrt( sum( (1/groups) * (means-grand.mean)^2) ) /sd
+  
+  pwr.anova.test(k = groups,
+                 n = NULL,
+                 f = Cohen.f,
+                 sig.level = 0.05,
+                 power = 0.80) 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------- Power analysis for correlation -------------------
+    pwr.r.test(n = NULL,
+               r = 0.500,
+               sig.level = 0.05,
+               power = 0.80,
+               alternative = "two.sided")
+  
+#    #    #  
+  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  # Multi_way ANOVA ---- Non linear regression ---- Multilevel modelling
+---------------------------------------------------------------------------
+    Name of Test
+  #----Repeated Measures ANOVA
+  #----Multi_way ANOVA ( 1 categorical of interest)
+  #----Multi_way ANOVA (>1 categorical of interest) 
+  #----Non parametric regression(Logistic)
+  #----Non parametric regression(Poisson)
+  #----Multilevel modelling (CRT)  
+  #----Multilevel modelling (MRT) 
+  --------------------------------- clinical trials -------------------------
+  ?wp.poisson              
+  install.packages("WebPower")           
+  library(WebPower)            
+  
+  wp.poisson(exp0 = , exp1 = , alpha = 0.05, power = 0.80, alternative = "two.sided", family = "Bernoulli")
+  
+  #Derive exp0 (Base rate) and exp1 (Rate ratio) from the exponentials,
+  #then plug in the Incidence Base rate and Rate ratio
+  exp0 <-exp(13.0/100000)
+  exp0
+  exp1 <-exp(-0.05/100000)
+  exp1
+  
+  #1---------To calculate power given sample size and effect size:
+  POWER <-wp.poisson(n = 4406, exp0 = 2.798, exp1 = 0.8938, alpha = 0.05,
+                     power = NULL, family = "Bernoulli", parameter = 0.53)
+  POWER
   
   
+  #2--------To calculate the required sample size given power and effect size:
+  One.sample <-wp.poisson(n = NULL, exp0 = 1.00013, exp1 = 0.8938, alpha = 0.05,
+                          power = 0.80, alternative = ("two.sided"),
+                          family = ("Bernoulli"), 
+                          parameter = NULL)
+  One.sample
   
   
+  #3--------To generate sequence of sample sizes given power and effect size:
+  multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
+                              alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
+  multi.samples  
+  #4--------To plot the power curve:  
+  plot(multi.samples) 
   
+  
+  #    #    # 
+  
+  #------------GLMM 
+  install.packages("simr")
+  install.packages("lme4")
+  library(simr)
+  library(lme4)
   
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# A Practical Guide to Statistical Power and Sample Size Calculations in R ==== *0*
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  
+  
+  
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ------- Guide to Statistical Power and Sample Size Calculations ------- using  pwrss
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 install.packages("pwrss")
 library(pwr)
@@ -222,7 +302,8 @@ pwrss.t.2means(mu1 = 30, mu2 = 28, sd1 = 12, sd2 = 8, kappa = 1,
 
 #Paired Samples t Test
 
-#assume a correlation of 0.50 between first and second measurements (by default paired.r = 0.50). What is the minimum required sample size?
+#assume a correlation of 0.50 between first and second measurements (by default paired.r = 0.50). 
+#What is the minimum required sample size?
   
   pwrss.t.2means(mu1 = 30, mu2 = 28, sd1 = 12, sd2 = 8, 
                  paired = TRUE, paired.r = 0.50,
@@ -568,71 +649,3 @@ For example, the main predictor can be binary (e.g. treatment/control groups).
           
           
             
-            
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# A Practical Guide to Statistical Power and Sample Size Calculations in R  ==== *1*
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++            
-Name of Test 
-#----One Sample Mean T test           
-library(pwr)       
-pwr.t.test(d = , sig.level = , power = , type = c("two.sample", "one.sample","paired"))              
-              
-#d=effect size ----- sig level=0.05 ---- power = 80/90 ---- type = type of test
-#Effect size = (M2 -M1)/SD ----------------- M(Mean),  SD(Standard deviation)             
-              
-                  
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# A Practical Guide to Statistical Power and Sample Size Calculations in R  ==== *2*
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Name of Test
-#----Repeated Measures ANOVA
-#----Multi_way ANOVA ( 1 categorical of interest)
-#----Multi_way ANOVA (>1 categorical of interest) 
-#----Non parametric regression(Logistic)
-#----Non parametric regression(Poisson)
-#----Multilevel modelling (CRT)  
-#----Multilevel modelling (MRT) 
-
-?wp.poisson              
-install.packages("WebPower")           
-library(WebPower)            
-            
-wp.poisson(exp0 = , exp1 = , alpha = 0.05, power = 0.80, alternative = "two.sided", family = "Bernoulli")
-
-#Derive exp0 (Base rate) and exp1 (Rate ratio) from the exponentials,
-#then plug in the Incidence Base rate and Rate ratio
-exp0 <-exp(13.0/100000)
-exp0
-exp1 <-exp(-0.05/100000)
-exp1
-
-#1---------To calculate power given sample size and effect size:
-POWER <-wp.poisson(n = 4406, exp0 = 2.798, exp1 = 0.8938, alpha = 0.05,
-           power = NULL, family = "Bernoulli", parameter = 0.53)
-POWER
-
-
-#2--------To calculate the required sample size given power and effect size:
-  One.sample <-wp.poisson(n = NULL, exp0 = 1.00013, exp1 = 0.8938, alpha = 0.05,
-             power = 0.80, alternative = ("two.sided"),
-             family = ("Bernoulli"), 
-             parameter = NULL)
-  One.sample
-  
-  
-#3--------To generate sequence of sample sizes given power and effect size:
-  multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
-                    alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
-  multi.samples  
-#4--------To plot the power curve:  
-  plot(multi.samples) 
-  
-
-#    #    # 
-  
-#------------GLMM 
-install.packages("simr")
-install.packages("lme4")
-library(simr)
-library(lme4)
