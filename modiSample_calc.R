@@ -231,10 +231,58 @@ pwr.f2.test(u = 3,  f2 = 0.15, sig.level = 0.05, power = 0.80)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Multi_way ANOVA ---- Non linear regression ---- Multilevel modelling
 -------------------------------------------------------------------------------- 
-  Name of Test
-  #----Repeated Measures ANOVA
-  #----Multi_way ANOVA ( 1 categorical of interest)
-  #----Multi_way ANOVA (>1 categorical of interest)
+                       install.packages("WebPower")
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-------------- Power analysis for Repeated Measures ANOVA -----------------
+library(WebPower) 
+wp.rmanova(ng = NULL, nm = NULL, f = NULL, nscor = 1, alpha = 0.05, power = 0.80, type = (0,1,2))  
+  
+# ng------number of groups
+# nm------number of measurement
+# nscor----nonsphericity correction coefficient-(assumed to be 1)
+# f-------Effect size 0.1(small), 0.25(medium), 0.4(large)
+# Type 0(between-effect),1(within-effect), 2(interaction effect)
+
+wp.rmanova(ng = 1, nm = 4, f = 0.25, nscor = 1, alpha = 0.05, power = 0.80, type = 1)
+
+
+#   #   #
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---- Power analysis for Multi_way ANOVA ( 1 categorical of interest) ------
+#----when there is more than one category but the interest is on one while
+#    the other category is controlled (blocking,nested,random effect)
+library(WebPower)  
+# ndf -----numerator degree of freedom
+wp.kanova(ndf = NULL, f = NULL, ng = NULL, alpha = 0.05, power = 0.80)
+
+wp.kanova(ndf = 2, f = 0.25, ng = 12, alpha = 0.05, power = 0.80)
+#   sample(157.3764)/ 12  ===== 14 per each 12 groups
+
+
+# #  #
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---- Power analysis for Multi_way ANOVA (>1 categorical of interest) ------
+#----when there is more than one category and each group is of interest. 
+
+example: 
+#----is there different in treatment(A,B,C) across age (Child, Adult, Elder) and
+#    Cancer stage (i,ii,iii,iv,v)
+#Categorical of interest----(TREATMENT, AGE and CANCER Stage)   
+solution:  
+# Numerator df -----> Treat df, Age df, Stage df ---->(3-1)*(3-1)*(5-1) ====2*2*4 ==== 16  
+# Number of groups---->Treat * Age * Stage ----> (3*3*5) ====== 45 
+
+ wp.kanova(ndf = 16, f = 0.10, ng = 45, alpha = 0.05, power = 0.80)
+#   sample (1941)/ 45  ===== 44 per each 45 groups
+
+  
+  
+  
+  
 
 --------------------------------- clinical trials -------------------------
   #----Non parametric regression(Logistic)
