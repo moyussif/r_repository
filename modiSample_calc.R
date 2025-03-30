@@ -1,5 +1,5 @@
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      # A Practical Guide to Statistical Power and Sample Size in R 
+      #  Practical Guide to Statistical Power and Sample Size in R 
 -------------------------------------------------------------------------------
 # d = effect size ---- sig level=0.05 ---- power = 80/90 ---- type = type of test
 #-----Effect size 0.2=small, 0.5=medium, 0.8=large
@@ -26,6 +26,31 @@
     type = "one.sample",       
     alternative = "two.sided")
   
+  
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++            
+----------------- Power analysis for Single proportion test ---------------  
+#effect size = h
+?pwr.p.test     
+
+h= 2*asin(sqrt(0.00495))-2*asin(sqrt(0.00490))    
+h
+pwr.p.test(h = 0.0007, n = NULL, sig.level = 0.05, power = 0.80, alternative = "two.sided") 
+
+#effect size   0.2(small),  0.5(medium), 0.8(large)
+pwr.p.test(h = 0.2, n = NULL, sig.level = 0.05, power = 0.80, alternative = "two.sided")   
+    
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
+----------------- Power analysis for Two proportion test -----------------       
+#effect size = h
+h= 2*asin(sqrt(0.090))-2*asin(sqrt(0.050))    
+h
+pwr.2p.test(h = 0.158, n = NULL, sig.level = 0.05, power = 0.80, alternative = "two.sided") 
+  
+  
+  
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #----One Sample test for Categorical (Probability against theoretical value)
 -------------------- Power analysis for binomial test ----------------------
@@ -46,8 +71,9 @@
   
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 ---------------- Power analysis for chi-square Goodness-Of-Fit -------------
-    # Power analysis, Chi-square goodness-of-fit, snapdragons
-    library(pwr)
+# Power analysis, Chi-square goodness-of-fit, snapdragons
+#effect size   0.1(small),  0.3(medium), 0.5(large)    
+library(pwr)
   
   P0      = c(0.25,  0.50, 0.25)
   P1      = c(0.225, 0.55, 0.225)
@@ -98,7 +124,7 @@ AA        0.08      0.110
   
   
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                          #Two_Three sample test
+                          Two_Three sample test
 ----------------------------------------------------------------------------
 # Effect size ------ 0.2=small,   0.5=medium,     0.8=large
 #Hypothesis
@@ -167,19 +193,57 @@ Name of Test -------------- Power analysis for one-way anova --------------
                alternative = "two.sided")
   
 #    #    #  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                          All non parametric 
+One sample/paired Wilcoxon, Mann-Whitney, Kruskal Wallis ----> must add +15% to the estimated sample size   
+__________________________________________________________________________    
+# example,
+# An estimated sample size with parametric test(72.70583) ------> sample size
+# must be estimated for non-parametric as(72.70583*1.15,0) ------> sample size
+
+
+#    #     #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+--------------- Power analysis for Simple linear regression ---------------  
+# effect size = f2,--------------------------> f2= R = sqrt(R * R)
+# df numerator = u                            R = Correlation coefficient
+# df denominator = v                          R_squared = goodness of fit
+#                                             use adjusted R_squared
+
+#effect size   0.02(small),  0.15(medium), 0.35(large) 
+u = 1
+   
+pwr.f2.test(u = 1,  f2 = 0.15, sig.level = 0.05, power = 0.80)
+#round(52.315)+2 ----------> sample size
+      
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+-------------- Power analysis for Multiple linear regression --------------
+u = 3   
+    
+pwr.f2.test(u = 3,  f2 = 0.15, sig.level = 0.05, power = 0.80)   
+#round(72.70583)+4  ------> sample size    
+    
+
+#    #    #    
+    
   
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Multi_way ANOVA ---- Non linear regression ---- Multilevel modelling
----------------------------------------------------------------------------
-    Name of Test
+-------------------------------------------------------------------------------- 
+  Name of Test
   #----Repeated Measures ANOVA
   #----Multi_way ANOVA ( 1 categorical of interest)
-  #----Multi_way ANOVA (>1 categorical of interest) 
+  #----Multi_way ANOVA (>1 categorical of interest)
+
+--------------------------------- clinical trials -------------------------
   #----Non parametric regression(Logistic)
   #----Non parametric regression(Poisson)
   #----Multilevel modelling (CRT)  
   #----Multilevel modelling (MRT) 
-  --------------------------------- clinical trials -------------------------
+ 
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ----------------- Power analysis for poisson regression ------------------
   ?wp.poisson              
   install.packages("WebPower")           
   library(WebPower)            
