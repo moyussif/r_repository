@@ -228,9 +228,9 @@ pwr.f2.test(u = 3,  f2 = 0.15, sig.level = 0.05, power = 0.80)
 #    #    #    
     
   
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Multi_way ANOVA ---- Non linear regression ---- Multilevel modelling
--------------------------------------------------------------------------------- 
+---------------------------- clinical trials ------------------------------
                        install.packages("WebPower")
 
 
@@ -247,6 +247,13 @@ wp.rmanova(ng = NULL, nm = NULL, f = NULL, nscor = 1, alpha = 0.05, power = 0.80
 
 wp.rmanova(ng = 1, nm = 4, f = 0.25, nscor = 1, alpha = 0.05, power = 0.80, type = 1)
 
+
+#To generate a power curve given a sequence of sample sizes:
+rang_all <- wp.rmanova(n=seq(30,150,20), ng=3, nm=4, f=0.36, nscor=0.7)
+
+rang_all
+
+plot(rang_all)
 
 #   #   #
 
@@ -280,15 +287,33 @@ solution:
 #   sample (1941)/ 45  ===== 44 per each 45 groups
 
   
-  
-  
-  
+#   #   # 
 
---------------------------------- clinical trials -------------------------
-  #----Non parametric regression(Logistic)
-  #----Non parametric regression(Poisson)
-  #----Multilevel modelling (CRT)  
-  #----Multilevel modelling (MRT) 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------- Power analysis for Non parametric regression(Logistic) --------
+?wp.logistic
+wp.logistic(n = NULL, p0 = NULL, P1 = NULL, alpha = 0.05, power = 0.80,
+            alternative = c("two.sided", "less", "greater"),
+            family = c("Bernoulli", "exponential", "lognormal", "normal", "poisson", "uniform"),
+            parameter = NULL)
+  
+  
+wp.logistic(n = NULL, p0 = 0.15, p1 = 0.25, alpha = 0.05, power = 0.80,
+            alternative = "two.sided",
+            family = "normal")  
+  
+#To generate a power curve given a sequence of sample sizes:
+range_size <- wp.logistic(n = seq(250,600,50), p0 = 0.15, p1 = 0.1, alpha = 0.05,
+                   power = NULL, family = "normal", parameter = c(0,1))
+range_size
+
+
+#To plot the power curve:
+plot(range_size)
+
+
+#   #   #
+  
  
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ----------------- Power analysis for poisson regression ------------------
@@ -329,11 +354,17 @@ solution:
   
   #    #    # 
   
-  #------------GLMM 
-  install.packages("simr")
-  install.packages("lme4")
-  library(simr)
-  library(lme4)
+ 
+  #----Multilevel modelling (CRT)  
+  #----Multilevel modelling (MRT)  
+  
+  
+  
+#------------GLMM 
+install.packages("simr")
+install.packages("lme4")
+library(simr)
+library(lme4)
   
 
 
