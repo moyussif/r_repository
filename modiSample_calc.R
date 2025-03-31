@@ -17,14 +17,9 @@
   
 # pwr.t.test(d = , sig.level = , power = , type = "one.sample") ----------- 
   
-  library(pwr)                                  
-  pwr.t.test(
-    n = NULL,           
-    d = Cohen.d,           
-    sig.level = 0.05,     
-    power = 0.90,              
-    type = "one.sample",       
-    alternative = "two.sided")
+library(pwr)                                  
+pwr.t.test(n = NULL, d = Cohen.d, sig.level = 0.05, power = 0.90, type = "one.sample", 
+           alternative = "two.sided")
   
   
 
@@ -60,12 +55,7 @@ pwr.2p.test(h = 0.158, n = NULL, sig.level = 0.05, power = 0.80, alternative = "
   H  = ES.h(P0,P1)               # This calculates effect size
   
   library(pwr)
-  pwr.p.test(
-    h=H,
-    n=NULL,       
-    sig.level=0.05,         
-    power=0.90,              
-    alternative="two.sided")
+  pwr.p.test(h=H, n=NULL, sig.level=0.05, power=0.90, alternative="two.sided")
   
   #     #     # 
   
@@ -75,18 +65,15 @@ pwr.2p.test(h = 0.158, n = NULL, sig.level = 0.05, power = 0.80, alternative = "
 #effect size   0.1(small),  0.3(medium), 0.5(large)    
 library(pwr)
   
-  P0      = c(0.25,  0.50, 0.25)
-  P1      = c(0.225, 0.55, 0.225)
+ P0      = c(0.25,  0.50, 0.25)
+P1      = c(0.225, 0.55, 0.225)
+effect.size = ES.w1(P0, P1) 
+degrees = length(P0) - 1
   
-  effect.size = ES.w1(P0, P1) 
-  degrees = length(P0) - 1
+pwr.chisq.test(w=effect.size, N=NULL, df=degrees, power=0.80, sig.level=0.05)
   
-  pwr.chisq.test(
-    w=effect.size,
-    N=NULL,            # Total number of observations
-    df=degrees,
-    power=0.80,        # 1 minus Type II probability
-    sig.level=0.05)    # Type I probability 
+#   #   #
+  
   
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 ---------- Power analysis for chi-square test of independence -------------
@@ -100,24 +87,18 @@ GA        0.24      0.225
 AA        0.08      0.110
 ")
   
-  P = as.matrix(read.table(textConnection(Input),
-                           header=TRUE,
-                           row.names=1))
-  P
-  # Sum of values in the P matrix
-  sum(P)        
+P = as.matrix(read.table(textConnection(Input),
+                         header=TRUE,
+                         row.names=1))
+P
+# Sum of values in the P matrix
+sum(P)        
   
+library(pwr)
+effect.size = ES.w2(P)
+degrees = (nrow(P)-1)*(ncol(P)-1) 
   
-  library(pwr)
-  effect.size = ES.w2(P)
-  degrees = (nrow(P)-1)*(ncol(P)-1)  # Calculate degrees of freedom
-  
-  pwr.chisq.test(
-    w=effect.size,
-    N=NULL,          # Total number of observations
-    df=degrees,
-    power=0.80,      # 1 minus Type II probability
-    sig.level=0.05)  # Type I probability  
+pwr.chisq.test(w=effect.size, N=NULL, df=degrees, power=0.80, sig.level=0.05)  
   
   
   #     #     #
@@ -140,15 +121,12 @@ AA        0.08      0.110
   
   Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
   
-  library(pwr)                                  
-  pwr.t.test(
-    n = NULL,                  
-    d = Cohen.d,           
-    sig.level = 0.05,         
-    power = 0.80,              
-    type = "two.sample",       
-    alternative = "two.sided"
-  )
+library(pwr)                                  
+pwr.t.test(n = NULL, d = Cohen.d, sig.level = 0.05, power = 0.80, type = "two.sample",       
+           alternative = "two.sided")
+
+#   #    #
+
   
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Name of Test-------------- Two Sample Paired T test------------------------ 
@@ -160,15 +138,13 @@ Name of Test-------------- Two Sample Paired T test------------------------
   
   Cohen.d = (M1 - M2)/sqrt(((S1^2) + (S2^2))/2) 
   
-  library(pwr)                                  
-  pwr.t.test(
-    n = NULL,                  
-    d = Cohen.d,           
-    sig.level = 0.05,         
-    power = 0.80,              
-    type = "paired",       
-    alternative = "two.sided"
-  )
+library(pwr)                                  
+pwr.t.test(n = NULL, d = Cohen.d, sig.level = 0.05, power = 0.80, type = "paired",       
+           alternative = "two.sided")
+
+
+#   #   #
+
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
 Name of Test -------------- Power analysis for one-way anova --------------
@@ -179,18 +155,16 @@ Name of Test -------------- Power analysis for one-way anova --------------
   grand.mean  = mean(means)
   Cohen.f = sqrt( sum( (1/groups) * (means-grand.mean)^2) ) /sd
   
-  pwr.anova.test(k = groups,
-                 n = NULL,
-                 f = Cohen.f,
-                 sig.level = 0.05,
-                 power = 0.80) 
+pwr.anova.test(k = groups, n = NULL, f = Cohen.f, sig.level = 0.05, power = 0.80) 
+
+
+#   #   #
+
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ----------------------- Power analysis for correlation -------------------
-    pwr.r.test(n = NULL,
-               r = 0.500,
-               sig.level = 0.05,
-               power = 0.80,
-               alternative = "two.sided")
+  
+pwr.r.test(n = NULL, r = 0.500, sig.level = 0.05, power = 0.80, alternative = "two.sided")
   
 #    #    #  
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -344,22 +318,51 @@ plot(range_size)
   One.sample
   
   
-  #3--------To generate sequence of sample sizes given power and effect size:
-  multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
-                              alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
-  multi.samples  
-  #4--------To plot the power curve:  
-  plot(multi.samples) 
-  
-  
-  #    #    # 
+#3--------To generate sequence of sample sizes given power and effect size:
+multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
+                            alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
+multi.samples  
+#4--------To plot the power curve:  
+plot(multi.samples) 
   
  
-  #----Multilevel modelling (CRT)  
-  #----Multilevel modelling (MRT)  
+ 
+  #    #    # 
+
   
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+#---------------- Power analysis for Multilevel modelling ------------------
+library(WebPower)-----------------------------------------------------------
+?wp.crt2arm
+                        Multilevel modeling-CRT
+  #CRT ----> are type of multilevel design where the entire cluster is randomly
+  #          assigned to control arm or one/more treatment arms
+-------------------- Cluster Randomized Trial (CRT) ------------------------   
+# f----------Effect size 0.1(small), 0.25(medium), 0.4(large)
+# n ---------sample size.
+# j ---------number of clusters
+# icc -------intra class corellation (degree to which two randomly obs within a cluster are correlated )
+wp.crt2arm(n = NULL, f = NULL, J = NULL, icc = NULL, alpha = 0.05, power = 0.80,alternative = ("two.sided", "one.sided"))
   
-  
+#----CRT sample size(number per cluster)    
+wp.crt2arm(n = NULL, f = 0.25, J = 100, icc = 0.1, alpha = 0.05, power = 0.80, alternative = "two.sided")      
+#----CRT sample size(number of clusters)  
+wp.crt2arm(n = 15, f = 0.25, J = NULL, icc = 0.1, alpha = 0.05, power = 0.80, alternative = "two.sided") 
+--------------------------------------------------
+wp.crt2arm(f = 0.25, n = NULL, J = 10, icc = 0.1, alpha = 0.05, power = 0.8)
+#Generate sequence of sample sizes:
+range.sequence <- wp.crt2arm(f = 0.6, n = seq(20,100,10), J = 10, icc = 0.1, alpha = 0.05, power = NULL)
+range.sequence
+
+plot(range.sequence)
+
+
+
+
+
+
+
+
 #------------GLMM 
 install.packages("simr")
 install.packages("lme4")
