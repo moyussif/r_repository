@@ -309,56 +309,29 @@ library(lessR)
 imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
 
 # Piechart
-PieChart(expose, data = imm2,
-         hole = 0,
-         main = NULL)
+PieChart(expose, data = imm2, hole = 0, main = NULL)
 # Donut chart
 imm3 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-PieChart(expose, data = imm3,
-         fill = "viridis",
-         main = NULL,
-         color = "black",
-         lwd = 1.5,
-         values_color = c(rep("white", 4), 1),
-         values_size = 0.85)
+PieChart(expose, data = imm3, fill = "viridis", main = NULL, color = "black", lwd = 1.5,
+         values_color = c(rep("white", 4), 1), values_size = 0.85)
 # Donut chart
 data1 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-PieChart(expose, data = data1,
-         fill = "blues",
-         hole_fill = "#B7E3E0",
-         main = NULL)
+PieChart(expose, data = data1, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
 
 # Barchart
 imm4 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = imm4,
-         fill = "blues",
-         hole_fill = "#B7E3E0",
-         main = NULL)
+BarChart(expose, data = imm4, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
 
 data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = data,
-         fill = "reds",
-         hole_fill = "#B7E3E0",
-         main = NULL)
+BarChart(expose, data = data, fill = "reds", hole_fill = "#B7E3E0", main = NULL)
 
 data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = data,
-         fill = "viridis",
-         main = NULL,
-         color = "black",
-         lwd = 1.5,
-         values_color = c(rep("white", 4), 1),
-         values_size = 0.85)
+BarChart(expose, data = data, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+         values_color = c(rep("white", 4), 1), values_size = 0.85)
 
 # slant x labels (45 angle)
-BarChart(expose, data = data,
-         fill = "viridis",
-         main = NULL,
-         color = "black",
-         lwd = 1.5,
-         rotate_x=45,
-         values_color = c(rep("white", 4), 1),
-         values_size = 0.85)
+BarChart(expose, data = data, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+         rotate_x=45, values_color = c(rep("white", 4), 1), values_size = 0.85)
 
 ------------------------------------------------------------------------------
 #::::::::::::::::::::::: Descriptive statistics :::::::::::::::::::::::::::::# 
@@ -372,13 +345,9 @@ summary(imdata$bwgt)
 describe(imdata$bwgt)
 
 Histogram
-hist(imdata$ bwgt,   
-     col="gray", 
-     main="Immuno assay data",
-     xlab="Birthwgt")
+hist(imdata$ bwgt, col="gray", main="Immuno assay data", xlab="Birthwgt")
 # Will also report count of NA’
-describe(imdata$bwgt,    
-         type=2)    
+describe(imdata$bwgt, type=2)    
 
 #-------------- aggregate data
 library(janitor)
@@ -401,7 +370,6 @@ imdata %>%
 #    #    #
 
 
-
 #=========================== CONFIDENCE INTERVALS ==============================
 
 #-----------------Confidence interval of the mean
@@ -411,52 +379,33 @@ imdata %>%
 #-----------------confidence intervals for groups defined by a variable
 install.packages("Rmisc")
 library(Rmisc)
-summarySE(data=imdata,               
-          measurevar="age",    
-          groupvars="expose",    
-          conf.interval = 0.95)
+summarySE(data=imdata, measurevar="age", groupvars="expose", conf.interval = 0.95)
 
 #-----------------Confidence interval for proportions___with binom.test function
-binom.test(2, 20, 0.5,
-           alternative="two.sided",
-           conf.level=0.95)
-
-#-----------------Confidence interval for single proportion
-library(DescTools)
-BinomCI(2, 20,
-        conf.level = 0.95,
-        method = "modified wilson")
-
-#-----------------Confidence interval for multinomial proportion
-library(DescTools)
-observed = c(35,74,22,69)
-MultinomCI(observed, conf.level=0.95, method="goodman")
+binom.test(2, 20, 0.5, alternative="two.sided", conf.level=0.95)
 
 #     #     # 
 
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #----------------- TEST OF ONE / TWO MEASUREMENRT OF VARIABLES ----------------#
 
 #------------------------One sample t-test with obs as VECTORS
 observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
-t.test(observed,
-       mu = theoretical,
-       conf.int = 0.95)
+
+t.test(observed, mu = theoretical, conf.int = 0.95)
+
+#  #  #
+
 #---------------------One sample t-test with obs as DATA.FRAME
 observed    = Data$Angle
 theoretical = 50
-t.test(observed,
-       mu = theoretical,
-       conf.int=0.95)
+hist(Data$ Angle, col="gray", main="Histogram of values", xlab="Angle")
 
--------Histogram
-hist(Data$ Angle,   
-     col="gray", 
-     main="Histogram of values",
-     xlab="Angle")
+t.test(observed, mu = theoretical, conf.int=0.95)
 
-
+#  #  #
 
 #============================== TWO SAMPLE Test ===============================
 
@@ -466,57 +415,38 @@ bartlett.test(Value ~ Group, data=Data)
 ---------------------#If p-value >= 0.05, use var.equal=TRUE below.
 
 #paired t.test  
-t.test(Value ~ Group, data=Data,  
-       var.equal=TRUE,
-       conf.level=0.95)
+t.test(Value ~ Group, data=Data, var.equal=TRUE, conf.level=0.95)
 #independent t.test
-t.test(Value ~ Group, data=Data,  
-       var.equal=FALSE,
-       conf.level=0.95)
+t.test(Value ~ Group, data=Data, var.equal=FALSE, conf.level=0.95)
 
-t.test(age ~ CaseControl, data=imdata, 
-       var.equal=FALSE,
-       conf.level=0.95)
-
+t.test(age ~ CaseControl, data=imdata, var.equal=FALSE, conf.level=0.95)
 
 #--------------------------------plots:  
 # Histogram
-hs<-histogram(~ age | CaseControl,
-          col="gray",
-          data = imdata
-)
+hs<-histogram(~ age | CaseControl, col="gray",data = imdata)
 hs
 # Boxplot
-  boxplot(age ~ CaseControl,
-          data = imdata,
-          names=c("Case","Control"),
-          ylab="age")
+boxplot(age ~ CaseControl, data = imdata, names=c("Case","Control"), ylab="age")
   
-
-#     #      #
+#    #    #
   
-
 #-----------------Mann–Whitney and Two-sample Permutation Test------------------
 wilcox.test(Value ~ Group, data=Data, exact = FALSE)
 wilcox.test(Value ~ Group, data=Data)
 #Box plots
-boxplot(Value ~ Group,
-        data = Data,
-        names=c("2 pm","5 pm"),
-        ylab="Value")
+boxplot(Value ~ Group, data = Data, names=c("2 pm","5 pm"), ylab="Value")
 
-boxplot(age ~ CaseControl,
-        data = imdata,
-        names=c("Control","Case"),
-        ylab="Value")
+boxplot(age ~ CaseControl, data = imdata, names=c("Control","Case"), ylab="Value")
+
+#  #  #
+
 #-----------------------------Wilcoxon Signed-rank Test-------------------------
 wilcox.test(Data$August, Data$November, paired=TRUE)
 #Simple 1-to-1 plot of values
-plot(Data$August, Data$November,
-     pch = 16,
-     xlab="August",
-     ylab="November")
+plot(Data$August, Data$November, pch = 16, xlab="August", ylab="November")
 abline(0,1, col="blue", lwd=2)  
+
+#   #   #
 
 
 #=======================ANOVA ANALYSIS----option.1==================
@@ -534,32 +464,20 @@ leveneTest(age ~ expose, data=imdata)
 ANOVA(age ~ expose, data=imdata)
 #effect size(for groups with significant)
 library(effsize)
-cohen.d(age ~ expose, 
-        data=subset(imdata, expose!= "non exposed"),
-        paired=FALSE)        
-cohen.d(age ~ expose, 
-        data=subset(imdata, expose!= "singleexposed"),
-        paired=FALSE)        
+cohen.d(age ~ expose, data=subset(imdata, expose!= "non exposed"), paired=FALSE)        
+cohen.d(age ~ expose, data=subset(imdata, expose!= "singleexposed"),paired=FALSE)        
 #Bar charts 
-age_means <- tapply(imdata$age, imdata$expose,
-                   mean)
+age_means <- tapply(imdata$age, imdata$expose,mean)
 
 BarChart(age_means)
-
-BarChart(age_means,
-         values="off",
-         xlab = "Malaria_exposed",
-         ylab = "Women Age")
+BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
 
 #ggplot2
 library(ggplot2)
 
-p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+
-  geom_density(alpha = 0.7)
+p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+ geom_density(alpha = 0.7)
 p
-
-p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+
-  geom_density(alpha = 0.4)
+p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+ geom_density(alpha = 0.4)
 p1
 
 #   #   # 
@@ -574,19 +492,12 @@ library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 
 describe(imdata)
-
 #plot
-p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+
-  geom_density(alpha = 0.7)
+p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+geom_density(alpha = 0.7)
 p
-
-p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+
-  geom_density(alpha = 0.4)
+p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+geom_density(alpha = 0.4)
 p1
-
-p2 <- ggboxplot(imdata, "expose", "age",
-                fill = "expose", palette = get_palette("default", 3),
-                add = "jitter")
+p2 <- ggboxplot(imdata, "expose", "age", fill = "expose", palette = get_palette("default", 3), add = "jitter")
 p2
 
 #to arrange plot for publication
@@ -663,12 +574,10 @@ though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 if(!require(agricolae)){install.packages("agricolae")}
 ---------------------------------------------------------------------
 library(FSA)
-Summarize(age ~ expose,
-          data = imdata)
+Summarize(age ~ expose, data = imdata)
 
 #Fit the linear model and conduct ANOVA 
-model = lm(age ~ expose,
-            data=imdata)
+model = lm(age ~ expose, data=imdata)
 
 library(car)
 Anova(model, type="II")                    
@@ -683,15 +592,13 @@ anova(model)
 summary(model)     
 
 #Checking assumptions of the model
-hist(residuals(model),
-     col="darkgray")
+hist(residuals(model), col="darkgray")
 
 #plot of residuals vs. predicted values.
 library(car)
 QQ <- qqPlot(residuals(model), id = TRUE)
 
 #   #    #
-
 
 
 #----------------Kruskal–Wallis Test-------------------------------------------
@@ -702,12 +609,10 @@ library(psych)
 describe(imdata)
 #-Medians and descriptive statistics
 library(FSA)
-Summarize(age ~ expose,
-          data = imdata)
+Summarize(age ~ expose, data = imdata)
 
 #-Kruskal–Wallis test
-kruskal.test(age ~ expose,
-             data = imdata)
+kruskal.test(age ~ expose, data = imdata)
 
 #-Dunn test for multiple comparisons(Post Hoc)
 The Dunn test is performed with the dunnTest function in the FSA package.  
@@ -716,14 +621,10 @@ to control the false discovery rate.
 # Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
                                                                 
 library(FSA)
-PT = dunnTest(bmi ~ expose,
-              data=imdata,
-              method="bh")           
-
+PT = dunnTest(bmi ~ expose, data=imdata, method="bh")           
 PT
 
 #   #   #
-
 
 
 #----------------------- Correlation and Linear Regression ---------------------
@@ -735,34 +636,21 @@ It can perform Pearson, Kendall, and Spearman correlation procedures.
 Pearson correlation is a parametric test, and assumes that the data are linearly related 
 and that the residuals are normally distributed.
 
-cor.test( ~ Species + Latitude,
-          data=Data,
-          method = "pearson",
-          conf.level = 0.95)
+cor.test( ~ Species + Latitude, data=Data, method = "pearson", conf.level = 0.95)
 
 #Kendall correlation (Non-parametric)
 Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
 It ranks the data to determine the degree of correlation.
 
-cor.test( ~ Species + Latitude,
-          data=Data,
-          method = "kendall",
-          continuity = FALSE,
-          conf.level = 0.95)
+cor.test( ~ Species + Latitude, data=Data, method = "kendall", continuity = FALSE, conf.level = 0.95)
 
 #Spearman correlation (Non-parametric / ordinals)
 Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
 It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
 
-cor.test( ~ Species + Latitude,
-          data=Data,
-          method = "spearman",
-          continuity = FALSE,
-          conf.level = 0.95)
-
+cor.test( ~ Species + Latitude, data=Data, method = "spearman", continuity = FALSE, conf.level = 0.95)
 
 #   #   #
-
 
 
 ================================================================================
@@ -806,24 +694,18 @@ Assumptions
 #----------y is a random variable and normally distributed with mean(u) and variance(Q)squared.
 #----------The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
 
-hist(residuals(model),
-     col="darkgray")
-plot(fitted(model),
-     residuals(model))
+hist(residuals(model), col="darkgray")
+
+plot(fitted(model), residuals(model))
 ----------
-  A plot of residuals vs. predicted values.
-The residuals should be unbiased and homoscedastic.
+A plot of residuals vs. predicted values. #The residuals should be unbiased and homoscedastic.
 
 #    #    #  
   
-  
 #Note,
-R squared = good for simple regression.
-Adjusted R squared =for multiple regression (model building)
+R squared = good for simple regression. #Adjusted R squared =for multiple regression (model building)
 
-
-model = lm(Species ~ Latitude,
-           data = Data)
+model = lm(Species ~ Latitude, data = Data)
 # shows parameter estimates, p-value for model, r-square
 summary(model)                    
 
@@ -832,19 +714,12 @@ library(car)
 Anova(model, type="II")              
 
 #Plot linear regression
-int =  model$coefficient["(Intercept)"]
-slope =model$coefficient["Latitude"]
-plot(Species ~ Latitude,
-     data = Data,
-     pch=16,
-     xlab = "Latitude",
-     ylab = "Species")
-abline(int, slope,
-       lty=1, lwd=2, col="blue")     #  style and color of line 
-
+int = model$coefficient["(Intercept)"]
+slope = model$coefficient["Latitude"]
+plot(Species ~ Latitude, data = Data, pch=16, xlab = "Latitude", ylab = "Species")
+abline(int, slope, lty=1, lwd=2, col="blue")     #  style and color of line 
 
 #    #    #   
-
 
 #------------------------ Curvilinear Regression -------------------------------
 How to fit models to curvilinear data using three methods:
@@ -857,8 +732,7 @@ Each of these three will find essentially the same best-fit curve with very simi
 
 # create sample data 
 sample_data <- data.frame(x=1:10, 
-                          y=c(25, 22, 13, 10, 5, 
-                              9, 12, 16, 34, 44)) 
+                          y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
 View(sample_data)
 
 #------------ fit linear -----------------
@@ -906,20 +780,12 @@ Polynomial regression is really just a special case of multiple regression,
  
 #Simple plot of model
 library(ggplot2)
-ggplot(imdata,aes(x =age, y = bmi))+
-  geom_point(size = 4,
-             shape = 20,
-             colour = "Black")+
-  stat_smooth(method = lm,
-              se = FALSE,
-              formula = y~poly(x,3),
-              colour = "Green")+
-  stat_smooth(method = lm,
-              se = FALSE,
-              formula = y~poly(x,2),
-              colour = "Red")
+ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Black")+
+  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,3), colour = "Green")+
+  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,2), colour = "Red")
  
 #    #    #
+
 ===================================
   View(imdata)  
   Data = imdata
@@ -929,35 +795,20 @@ ggplot(imdata,aes(x =age, y = bmi))+
   plot(model)
   
   lines(x_axis, predict(model, data.frame(age=x_axis)), col='blue')
- 
-   plot(bwgt ~ age,
-       data = imdata,
-       pch=16,
-       xlab = "Age",
-       ylab = "Babywt") 
-i = seq(min(imdata$age), max(imdata$age), len=100)       #  x-values for line
-predy = predict(model, data.frame(age=i))               #  fitted values
-lines(i, predy,                                            #  spline curve
-      lty=1, lwd=2, col="blue")                            #  style and color
-
+  
+  plot(bwgt ~ age, data = imdata, pch=16, xlab = "Age", ylab = "Babywt") 
+i = seq(min(imdata$age), max(imdata$age), len=100)          #  x-values for line
+predy = predict(model, data.frame(age=i))                   #  fitted values
+lines(i, predy, lty=1, lwd=2, col="blue")                   #  style and color
 
 #---------------------------- Multiple Regression ------------------------------ 
 library(psych)
-corr.test(Data.num,
-          use = "pairwise",
-          method="pearson",
-          adjust="none",      
-          alpha=.05)
+corr.test(Data.num, use = "pairwise", method="pearson", adjust="none", alpha=.05)
 
-pairs(data=Data,
-      ~ Longnose + Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp)
-
+pairs(data=Data, ~ Longnose + Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp)
 
 library(PerformanceAnalytics)
-chart.Correlation(Data.num,
-                  method="pearson",
-                  histogram=TRUE,
-                  pch=16)
+chart.Correlation(Data.num, method="pearson", histogram=TRUE, pch=16)
 -------------------------------------------------------------------------------
 #Multiple regression
 Model selection using the step function-(options)
@@ -1119,14 +970,9 @@ library(Hmisc)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 str(imdata)
 #histogram
-hist(imdata$age,
-     breaks = 10, 
-     xlab = "Age count", 
-     main = "Age Distribution",
-     Prob=TRUE)
+hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
 #boxplot
-boxplot(imdata$age,
-        main = "Age Distribution")
+boxplot(imdata$age, main = "Age Distribution")
 #fit model
 poisson1 <- glm(age ~ hb+bmi+expose, data = imdata, family = poisson())
 summary(poisson1)
@@ -1143,11 +989,7 @@ The reg paramter for bmi is 0.0124
 The parameter indicates that one unit increase in the bmi is associated with a 0.0124 
 increase in the log mean number of age    ---- Holding other variables constant
 
-
-
 #    #    #
-
-
 
 
 ===============================================================================
@@ -1188,17 +1030,11 @@ used to determine if the proportion of successes in a binary experiment differs 
 # 10 is the number of trials
 # 0.5 is the hypothesized probability of success
 # Probability of single event only! Not binomial test!
-
 dbinom(2, 10, 0.5)   
 
-binom.test(2, 10, 0.5,
-           alternative="less",  
-           conf.level=0.95) 
-
+binom.test(2, 10, 0.5, alternative="less", conf.level=0.95) 
       
-binom.test(2, 10, 0.5,
-           alternative="two.sided",
-           conf.level=0.95)
+binom.test(2, 10, 0.5, alternative="two.sided", conf.level=0.95)
 
 #   #   #      
       
@@ -1217,8 +1053,7 @@ prob = 0.5
 x = seq(0, trials)                   # x is a sequence, 1 to trials
 y = dbinom(x, size=trials, p=prob)   # y is the vector of heights
       
-barplot (height=y,
-         names.arg=x,
+barplot (height=y, names.arg=x,
          xlab="Number of uses of right paw",
          ylab="Probability under null hypothesis")
 
@@ -1230,14 +1065,10 @@ barplot (height=y,
 Exact binomial test, Compares performing a one-sided test and 
 doubling the probability, and performing a two-sided test
 -----------------------------------------------------------------------
-binom.test(7, 12, 3/4,
-           alternative="less",
-          conf.level=0.95) 
+binom.test(7, 12, 3/4, alternative="less", conf.level=0.95) 
 
 # Create an object called Test with the test results      
-Test = binom.test(7, 12, 3/4,             
-                  alternative="less",      
-                  conf.level=0.95)      
+Test = binom.test(7, 12, 3/4, alternative="less", conf.level=0.95)      
       
 2 * Test$ p.value 
 # This extracts the p-value from the test result, we called Test and multiplies it by 2
@@ -1257,9 +1088,7 @@ observed = c(72, 38, 20, 18)
 expected = c(9, 3, 3, 1)
       
 library(XNomial)
-xmulti(observed,
-       expected,
-       detail = 2)         
+xmulti(observed, expected, detail = 2)         
 
 # Reports three types of p-value
 P value  (LLR)  =  0.003404  # log-likelihood ratio
@@ -1273,40 +1102,33 @@ P value (Chisq) =  0.001608  # Chi-square probability
       numerator   = 9
       denominator = 16
       
-binom.test(successes, total, numerator/denominator,
-           alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator, alternative="two.sided", conf.level=0.95) 
       
-      p-value = 0.06822 
 ----------------------------------------------------------      
       successes   = 38
       total       = 148
       numerator   = 3
       denominator = 16
       
-binom.test(successes, total, numerator/denominator,
-           alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator, alternative="two.sided", conf.level=0.95) 
       
-      p-value = 0.03504
 ----------------------------------------------------------      
       successes   = 20
       total       = 148
       numerator   = 3
       denominator = 16
       
-      binom.test(successes, total, numerator/denominator,
-                 alternative="two.sided", conf.level=0.95) 
+      binom.test(successes, total, numerator/denominator, alternative="two.sided", conf.level=0.95) 
       
-      p-value = 0.1139
 ----------------------------------------------------------      
       successes   = 18
       total       = 148
       numerator   = 1
       denominator = 16
       
-binom.test(successes, total, numerator/denominator,
-           alternative="two.sided", conf.level=0.95) 
+binom.test(successes, total, numerator/denominator, alternative="two.sided", conf.level=0.95) 
       
-      p-value = 0.006057
+
       #     #     #
 
 
@@ -1342,26 +1164,18 @@ D1
 #-----------------------------------------------------------------------
                 Parasitoid examples, exact binomial test
 ------------------------------------------------------------------------
-binom.test(10, (17+10), 0.5,
-           alternative="two.sided",
-           conf.level=0.95)
+binom.test(10, (17+10), 0.5, alternative="two.sided", conf.level=0.95)
       
-      
-binom.test(36, (7+36), 0.5,
-           alternative="two.sided",
-           conf.level=0.95)
+binom.test(36, (7+36), 0.5, alternative="two.sided", conf.level=0.95)
       
 #     #     #
 
 #-----------------------------------------------------------------------
                Drosophila example, exact binomial test
 ------------------------------------------------------------------------
-binom.test(140, (106+140), 0.5,
-           alternative="two.sided",
-                 conf.level=0.95)
+binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
       
 #     #     #
-
       
 #Sign test example
 The following is an example of the two-sample dependent-samples sign test.
@@ -1392,19 +1206,14 @@ Data = read.table(textConnection(Input),header=TRUE)
       
 library(BSDA)
       
-SIGN.test(x = Data$ A.count,
-          y = Data$ B.count,
-         md = 0,                 
-alternative = "two.sided",
- conf.level = 0.95)
+SIGN.test(x = Data$ A.count, y = Data$ B.count, md = 0, alternative = "two.sided", conf.level = 0.95)
 
       
 #Binomial test examples
 #---------------------------------------------------------------------
                    First Mendel example, exact binomial test
 ----------------------------------------------------------------------
-binom.test(428, (428+152), 0.75, alternative="two.sided",
-                 conf.level=0.95)
+binom.test(428, (428+152), 0.75, alternative="two.sided", conf.level=0.95)
       
 #     #     #
 #---------------------------------------------------------------------
@@ -1415,9 +1224,7 @@ binom.test(428, (428+152), 0.75, alternative="two.sided",
       expected = c(3, 1)
 
 library(XNomial)
-xmulti(observed,
-       expected,
-       detail = 2)             
+xmulti(observed, expected, detail = 2)             
 
 # reports three types of p-value      
 P value  (LLR)  =  0.5331   # log-likelihood ratio
@@ -1436,9 +1243,7 @@ P value (Chisq) =  0.5331   # Chi-square probability
       expected = c(9, 3, 3, 1)
 
 library(XNomial)
- xmulti(observed,
-        expected,
-        detail = 2)              
+ xmulti(observed, expected, detail = 2)              
  # reports three types of p-value      
 P value  (LLR)  =  0.9261    # log-likelihood ratio
 P value (Prob)  =  0.9382    # exact probability
@@ -1462,8 +1267,7 @@ if(!require(pwr)){install.packages("pwr")}
 observed = c(770, 230)        # observed frequencies
 expected = c(0.75, 0.25)      # expected proportions
       
-chisq.test(x = observed,
-           p = expected)
+chisq.test(x = observed, p = expected)
       
 #     #     #
       
@@ -1475,8 +1279,7 @@ chisq.test(x = observed,
 observed = c(1752, 1895)    # observed frequencies
 expected = c(0.5, 0.5)      # expected proportions
       
-chisq.test(x = observed,
-           p = expected)
+chisq.test(x = observed, p = expected)
 
 #     #     #
       
@@ -1487,8 +1290,7 @@ chisq.test(x = observed,
 observed = c(772, 1611, 737)
 expected = c(0.25, 0.50, 0.25)
       
-chisq.test(x = observed,
-           p = expected)
+chisq.test(x = observed, p = expected)
      
 #     #     #
       
@@ -1498,18 +1300,18 @@ chisq.test(x = observed,
 observed = c(70, 79, 3, 4)
 expected = c(0.54, 0.40, 0.05, 0.01)
       
-chisq.test(x = observed,
-           p = expected)
+chisq.test(x = observed, p = expected)
       
 #     #     #
       
-Example: intrinsic hypothesis  
+#Example: intrinsic hypothesis  
 # -------------------------------------------------------------------
        Intrinsic example, Chi-square goodness-of-fit
 ---------------------------------------------------------------------
 observed       = c(1203,  2919,  1678)
 expected.prop  = c(0.211, 0.497, 0.293)
 expected.count = sum(observed)*expected.prop
+
 chi2 = sum((observed- expected.count)^2/ expected.count)
 chi2
       
@@ -1521,20 +1323,19 @@ Pea color example, Chi-square goodness-of-fit
   observed = c(423, 133)  
 expected = c(0.75, 0.25)
 
-chisq.test(x = observed,
-           p = expected)
+chisq.test(x = observed, p = expected)
 
 #     #     #
       
-Simple bar plot with barplot
+#Simple bar plot with barplot
 #--------------------------------------------------------------------
               Simple bar plot of proportions
               # Uses data in a matrix format
 ---------------------------------------------------------------------
 observed = c(70, 79, 3, 4)
 expected = c(0.54, 0.40, 0.05, 0.01)
-      
 total = sum(observed)
+
 observed.prop = observed / total
 observed.prop
       
@@ -1542,10 +1343,7 @@ observed.prop
       
       
 #--------------- G–test of Goodness-of-Fit------------------------
-if(!require(DescTools)){install.packages("DescTools")}
-if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
-      
-#Examples: extrinsic hypothesis
+            Examples: extrinsic hypothesis
 #G-test goodness-of-fit test with DescTools and RVAideMemoire
 # --------------------------------------------------------------
           Crossbill example, G-test goodness-of-fit
@@ -1553,18 +1351,12 @@ if(!require(RVAideMemoire)){install.packages("RVAideMemoire")}
   observed = c(1752, 1895)    # observed frequencies
   expected = c(0.5, 0.5)      # expected proportions
       
-library(DescTools)
-GTest(x=observed,
-     p=expected,
-     correct="none")       # "none" "williams" "yates"
-      
 library(RVAideMemoire)
-G.test(x=observed,
-       p=expected)
+G.test(x=observed, p=expected)
       
 #    #    #
-      
-G-test goodness-of-fit test by manual calculation
+
+
 # --------------------------------------------------------------
      Crossbill example, G-test goodness-of-fit
       #   Manual calculation
@@ -1578,10 +1370,7 @@ expected.count = sum(observed)*expected.prop
 G = 2 * sum(observed * log(observed / expected.count))
 G                          
       
-      
-pchisq(G,
-       df=degrees,
-      lower.tail=FALSE) 
+pchisq(G, df=degrees, lower.tail=FALSE) 
       
 #     #     #
       
@@ -1592,21 +1381,12 @@ pchisq(G,
  -----------------------------------------------------------------------
   observed = c(772, 1611, 737)
   expected = c(0.25, 0.50, 0.25)
-      
-library(DescTools)
-      
-GTest(x=observed,
-      p=expected,
-      correct="none")            # "none" "williams" "yates"
-      
-Log likelihood ratio (G-test) goodness of fit test
-G = 4.1471, X-squared df = 2, p-value = 0.1257
-      
+
+#  G-test for given probabilities
 library(RVAideMemoire)
-      G.test(x=observed,
-             p=expected)
-G-test for given probabilities
-G = 4.1471, df = 2, p-value = 0.1257
+      G.test(x=observed, p=expected)
+
+
       
 #     #     #
       
@@ -1616,20 +1396,9 @@ G = 4.1471, df = 2, p-value = 0.1257
   observed = c(70, 79, 3, 4)
   expected = c(0.54, 0.40, 0.05, 0.01)
       
-library(DescTools)   
-      GTest(x=observed,
-            p=expected,
-            correct="none")            # "none" "williams" "yates"
-      
-Log likelihood ratio (G-test) goodness of fit test
-G = 13.145, X-squared df = 3, p-value = 0.004334
-      
 library(RVAideMemoire)
       G.test(x=observed,
              p=expected)
-      
-G-test for given probabilities
-G = 13.1448, df = 3, p-value = 0.004334
       
 #     #     #
       
@@ -1649,13 +1418,9 @@ expected.count = sum(observed)*expected.prop
 G = 2 * sum(observed * log(observed / expected.count))
 G                         
       
-pchisq(G,
-       df=1,
-       lower.tail=FALSE)  
-      
+pchisq(G, df=1, lower.tail=FALSE)  
       
 #     #     #
-
 
 
 ===============================================================================      
@@ -1672,7 +1437,6 @@ but it requires following the correct example depending on the initial form of t
 When using read.table and as.matrix to read a table directly as a matrix, be careful of extra spaces at the end of lines 
 or extraneous characters in the table, as these can cause errors.
       
-        
 if(!require(rcompanion)){install.packages("rcompanion")}
 if(!require(dplyr)){install.packages("dplyr")}
 if(!require(ggplot2)){install.packages("ggplot2")}
