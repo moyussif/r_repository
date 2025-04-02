@@ -57,7 +57,6 @@ library(deSolve)
 library(pdftools)
 library(htmlwidgets)
 library(psych)
-library(DescTools)
 #-----
 getwd()
 #------------------------ Import functions -------------------------------------
@@ -2401,11 +2400,73 @@ chisq.test(tab)$residuals
 #   #   #                      
 
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#--------------------- Time Series Analysis ----------------------------------#
+===============================================================================  
+#Typical Questions__when is consumption highest / lowest
+#___________________variation with season_________trends________change overtime.
+
+library(tidyverse)
+library(ggplot2)
+library(tseries)
+library(forecast)
+library(readxl)
+library(rio)
+tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+View(tdata)
+#---------------------------------------------1
+tdata$Date = as.Date(tdata$Date)
+View(tdata)
+# Checks for stationarity of data
+plot.ts(tdata$attendance)
+adf.test(tdata$attendance)
+# convert data to stationary
+tdata=diff(log(tdata$attendance))
+plot.ts(tdata)
+adf.test(tdata)
+# to run auto arima
+auto.arima(tdata)
+# create model
+model_tdata=arima(tdata, order = c(0,0,0))
+model_tdata
+#diagnostic check
+
+#-------------------------------------------2
+library(rio)
+library(scales)
+sdata <- import("C:/Users/User/Desktop/repos/CTrends.xlsx")
+View(sdata)
+sdata$Date = as.Date(sdata$Date)
+View(sdata)
+
+ggplot(sdata, aes(x = Date, y = attendance, color = Name)) + geom_line() + 
+  scale_x_date(
+    labels = date_format(format = "%b %Y"),
+    breaks = date_breaks("3 months")
+  )+ theme(axis.text.x = element_text(angle = 45))
 
 
-================================================================================
 
+
+
+
+
+
+# arrange data by age
+######################### Mapping with r ######################################
+
+install.packages("sf")
+library(tidyverse)
+library(mapview)
+library(sf)
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #------------------------- modelling infectious diseases -----------------------
+================================================================================
 
 library(readxl)
 library(readr)
@@ -3107,38 +3168,8 @@ Using the last model above, fit a similar model for the scenarios below separate
 (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1 respectively.                        
 
          
-#--------------------- Time Series Analysis ----------------------------------#
-                        
-#Typical Questions__when is consumption highest / lowest
-#__variation with season
-#__trends
-#__change overtime.
-library(readxl)
-TTdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
-View(TTdata)
-library(tidyverse)
-library(dplyr)
-library(ggplot2)
-library(RColorBrewer)
 
-
-# arrange data by age
-######################### Mapping with r ######################################
-                        
-install.packages("sf")
-library(tidyverse)
-library(mapview)
-library(sf)
-
-
-library(pwr)
-sample1 <- power.t.test(delta = 0.2, sd = 0.5, power = 0.99, type = "two.sample")
-sample1
-
-
-
-
-
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 =========================== MACHINE LEARNING ============================
  
   
@@ -3187,3 +3218,5 @@ data.frame(RMSE = RMSE(predictions, test.data$medv),
 
 ggplot(train.data, aes(lstat, medv) ) + geom_point() + 
   stat_smooth(method = lm, formula = y ~ poly(x, 5, raw = TRUE))
+
+
