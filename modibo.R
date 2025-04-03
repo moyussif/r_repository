@@ -1776,7 +1776,7 @@ chisq.test(Data.xtabs)
       
       
 #------------------------ G–test of Independence --------------------------
-      G-test example with functions in DescTools and RVAideMemoire
+      G-test example with functions in RVAideMemoire
 ---------------------------------------------------------------------------
         Vaccination example, G-test of independence
 # --------------------------------------------------------------
@@ -2083,12 +2083,9 @@ If you set up the table incorrectly, you might end with double this number, and 
       
 #     #     #
       
-      
-#------------- McNemar’s test with data in a data frame --------------
-### ------------------------------------------------------------------
-               Dysfunction example, McNemar test
-               ## Example using cross-tabulation
-  --------------------------------------------------------------------
+____________________________________________________________________      
+#----- McNemar test Dysfunction ---- using cross-tabulation
+--------------------------------------------------------------------
       Input =("
 ED.before  ED.after  Count
  no         no       46
@@ -2108,11 +2105,9 @@ mcnemar.test(Data.xtabs, correct=FALSE)
       
       
 
-#------------ Fisher’s exact test with data as a data frame -----
-      ### -------------------------------------------------------
-             Chipmunk example, Fisher’s exact test, SAS example
-                 # Example using cross-tabulation
-      -----------------------------------------------------------
+#------------ Fisher’s exact test with data as a data frame -------
+ Chipmunk example, Fisher’s exact test #  using cross-tabulation
+-------------------------------------------------------------------
       
       Input =("
 Distance    Sound   Count
@@ -2170,11 +2165,10 @@ Bird    Substrate   Count
       #     #     #                      
       
       
-How to do the test
 #Repeated G–tests of goodness-of-fit example
-      ### -----------------------------------------------------
-      Arm crossing example, Repeated G–tests of goodness-of-fit
-     ----------------------------------------------------------
+#______________________________________________________________
+  Arm crossing example, Repeated G–tests of goodness-of-fit
+---------------------------------------------------------------
       Input =("
 Ethnic.group  R    L
  Yemen        168  174
@@ -2274,7 +2268,6 @@ while controlling for a potential confounding factor
 #===== Cochran–Mantel–Haenszel Test for Repeated Tests of Independence =======
       
 if(!require(dplyr)){install.packages("dplyr")}
-if(!require(DescTools)){install.packages("DescTools")}
 if(!require(ggplot2)){install.packages("ggplot2")}
 if(!require(grid)){install.packages("grid")}
 if(!require(vcd)){install.packages("vcd")
@@ -2445,14 +2438,13 @@ ggplot(sdata, aes(x = Date, y = attendance, color = Name)) + geom_line() +
     breaks = date_breaks("3 months")
   )+ theme(axis.text.x = element_text(angle = 45))
 
+#---------------------------------------------3
 
 
 
 
 
 
-
-# arrange data by age
 ######################### Mapping with r ######################################
 
 install.packages("sf")
