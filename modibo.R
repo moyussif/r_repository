@@ -2423,6 +2423,8 @@ auto.arima(tdata)
 model_tdata=arima(tdata, order = c(0,0,0))
 model_tdata
 #diagnostic check
+---------
+ #create year
 
 #-------------------------------------------2
 library(rio)
@@ -2439,10 +2441,27 @@ ggplot(sdata, aes(x = Date, y = attendance, color = Name)) + geom_line() +
   )+ theme(axis.text.x = element_text(angle = 45))
 
 #---------------------------------------------3
+ttdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+print(ttdata)
+ttdata$Date <- as.Date(ttdata$Date)
+View(ttdata)
 
+monthly <- ts(ttdata$registrants, start = 2015, frequency = 12)
+plot(monthly)
+quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+plot(quarterly)
+tsdata <-data.frame(cbind(ttdata, monthly, quarterly))
+plot(tsdata)
+View(tsdata)
+ds <-tsdata %>% select(!(Date))
+plot(ds$quarterly)
+View(ds)
+------------------------
+ f <-ggplot(ds, aes(x = monthly, y = attendance, color = Name)) + geom_line() + 
+  scale_x_date(labels = date_format("%Y-%m-%d", locale = NULL))+ 
+  theme(axis.text.x = element_text(angle = 45))
 
-
-
+f
 
 
 ######################### Mapping with r ######################################
