@@ -56,7 +56,9 @@ library(mvtnorm)
 library(deSolve)
 library(pdftools)
 library(htmlwidgets)
+library(rcompanion)
 library(psych)
+
 #-----
 getwd()
 #------------------------ Import functions -------------------------------------
@@ -367,8 +369,27 @@ imdata %>%
   flextable::autofit()
 
 #    #    #
+#--------------------------- Data transformation -----------------
+library(psych)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 
+skew(imdata$age, na.rm = TRUE)
+kurtosi(imdata$age, na.rm = TRUE)
+mardia(imdata$age,na.rm = TRUE)
+#Square root Transformation ==== moderately skew (-1 to -0.5 // 0.5 to 1 )
+sq_data <-sqrt(imdata$bmi)
+hist(sq_data)
+#Cube root==== moderately----right skewed can apply to negative and zero values
+cb_data <-sign(imdata$age)*abs(imdata$age)^(1/3)
+hist(cb_data)
+#Log Transformation =====Highly skewed (above 1),Cannot be applied negative/zero values
+lg_data <-log(imdata$systol1)
+hist(lg_data)
+------------
 
+  
+  
 #=========================== CONFIDENCE INTERVALS ==============================
 
 #-----------------Confidence interval of the mean
