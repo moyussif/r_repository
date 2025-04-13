@@ -2479,64 +2479,43 @@ library(ggplot2)
 library(tseries)
 library(forecast)
 library(readxl)
-library(rio)
+
 tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
 View(tdata)
-#---------------------------------------------1
-tdata$Date = as.Date(tdata$Date)
-View(tdata)
-# Checks for stationarity of data
-plot.ts(tdata$attendance)
-adf.test(tdata$attendance)
-# convert data to stationary
-tdata=diff(log(tdata$attendance))
-plot.ts(tdata)
-adf.test(tdata)
-# to run auto arima
-auto.arima(tdata)
-# create model
-model_tdata=arima(tdata, order = c(0,0,0))
-model_tdata
-#diagnostic check
----------
- #create year
-
-#-------------------------------------------2
-library(rio)
-library(scales)
-sdata <- import("C:/Users/User/Desktop/repos/CTrends.xlsx")
-View(sdata)
-sdata$Date = as.Date(sdata$Date)
-View(sdata)
-
-ggplot(sdata, aes(x = Date, y = attendance, color = Name)) + geom_line() + 
-  scale_x_date(
-    labels = date_format(format = "%b %Y"),
-    breaks = date_breaks("3 months")
-  )+ theme(axis.text.x = element_text(angle = 45))
-
-#---------------------------------------------3
-ttdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
-print(ttdata)
-ttdata$Date <- as.Date(ttdata$Date)
-View(ttdata)
-
-monthly <- ts(ttdata$registrants, start = 2015, frequency = 12)
-plot(monthly)
-quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
-plot(quarterly)
-tsdata <-data.frame(cbind(ttdata, monthly, quarterly))
+class(tdata)
+#---------------convert data frame to Time Series ----------------
+#tdata$Date = as.Date(tdata$Date
+#monthly <- ts(ttdata$registrants, start = 2015, frequency = 12)
+#quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+class(tsdata)
 plot(tsdata)
-View(tsdata)
-ds <-tsdata %>% select(!(Date))
-plot(ds$quarterly)
-View(ds)
-------------------------
- f <-ggplot(ds, aes(x = monthly, y = attendance, color = Name)) + geom_line() + 
-  scale_x_date(labels = date_format("%Y-%m-%d", locale = NULL))+ 
-  theme(axis.text.x = element_text(angle = 45))
 
-f
+#check to determine stationarity of data 
+acf(tsdata)      #step1----autocorrelation
+pacf(tsdata)     #step2----partial autocorrelation
+adf.test(tsdata) #step3----augmented Dickey-fuller test
+
+#Convert Non_stationary to Stationary
+tsdata_model=auto.arima(tsdata, ic = "aic", trace = TRUE)
+tsdata_model
+
+#Check for stationary again
+acf(ts(tsdata_model$residuals))
+pacf(ts(tsdata_model$residuals))
+
+#Now perform forecast for stationary data
+mydataforecast=forecast(tsdata_model, level = c(95),h=10*4)
+mydataforecast
+plot(mydataforecast)
+#Evaluate model
+Box.test(tsdata_model$residuals, lag = 5,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 15,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
+#alternate the lag values until the P.values is > 0.05  ---- indicate No further autocorrelation
+
+
+#   #   #
 
 
 ######################### Mapping with r ######################################
