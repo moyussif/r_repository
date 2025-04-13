@@ -369,7 +369,9 @@ imdata %>%
   flextable::autofit()
 
 #    #    #
-#--------------------------- Data transformation -----------------
+
+____________________________________________________________________________
+#----------------------------- Data Transformation -------------------------
 library(psych)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
@@ -377,18 +379,17 @@ imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 skew(imdata$age, na.rm = TRUE)
 kurtosi(imdata$age, na.rm = TRUE)
 mardia(imdata$age,na.rm = TRUE)
+
 #Square root Transformation ==== moderately skew (-1 to -0.5 // 0.5 to 1 )
 sq_data <-sqrt(imdata$bmi)
 hist(sq_data)
 #Cube root==== moderately----right skewed can apply to negative and zero values
 cb_data <-sign(imdata$age)*abs(imdata$age)^(1/3)
 hist(cb_data)
-#Log Transformation =====Highly skewed (above 1),Cannot be applied negative/zero values
+#Log Transformation====highly skewed (above 1),Cannot be applied negative/zero values
 lg_data <-log(imdata$systol1)
 hist(lg_data)
-------------
 
-  
   
 #=========================== CONFIDENCE INTERVALS ==============================
 
@@ -756,12 +757,17 @@ sample_data <- data.frame(x=1:10,
 View(sample_data)
 
 #------------ fit linear -----------------
-linear_model1 <- lm(y~x, data=sample_data)
 # create a basic scatterplot 
 plot(sample_data$x, sample_data$y)
 # define x-axis values 
 x_axis <- seq(1, 10, length=10)
+#fit model
+linear_model1 <- lm(y~x, data=sample_data)
+
 lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
+
+summary(linear_model1)
+
 
 
 #---- fit polynomial regression models up to degree 4 -------
@@ -1009,7 +1015,9 @@ The reg paramter for bmi is 0.0124
 The parameter indicates that one unit increase in the bmi is associated with a 0.0124 
 increase in the log mean number of age    ---- Holding other variables constant
 
+
 #    #    #
+
 
 
 ===============================================================================
@@ -1025,8 +1033,54 @@ using bonferroni correction----/------post hoc chi square of independence.
 4----Fisher exact test------------- N < 100
 5----McNemars test.---------------------#TO compare before and after observations
 6----G test-----------------------------#Can accommodate experimental design
+  
+  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                   Chisquare - ODDRATIO - RISKRATIO
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+library(epitools)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+#chisquare
+table(imdata$CaseControl,imdata$sex)
+chisq.test(imdata$CaseControl,imdata$sex)
 
+odds ratio // Risk ratio
+# method = c("oddsratio", "riskratio", "rateratio"),
+#rev = c("neither", "rows", "columns", "both"),           
+#oddsratio = c("wald", "fisher", "midp", "small"),
+#riskratio = c("wald", "boot", "small"),
+#rateratio = c("wald", "midp"),
+#pvalue = c("fisher.exact", "midp.exact", "chi2"),
+#correction = FALSE, verbose = FALSE)
+---------------------------------------
+oddsratio(imdata$CaseControl,imdata$sex)       #or
+
+OR <-epitab(imdata$CaseControl,imdata$sex,
+       method = "oddsratio",
+       conf.level = 0.95)
+OR
+--------------------------------------
+
+riskratio(imdata$CaseControl,imdata$sex)  #or
+
+RR <-epitab(imdata$CaseControl,imdata$sex,
+       method = "riskratio",
+       conf.level = 0.95)
+
+RR
+--------------------------------------
+library(ggplot2)
+#stacked Barchart
+ht2 <-ggplot(data = imdata,
+               mapping = aes(x = CaseControl, fill = sex))+
+  geom_bar()
+
+ht2
+---------------
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -------------------- Exact Test of Goodness-of-Fit ----------------------------
       
 #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.
@@ -3201,8 +3255,25 @@ Using the last model above, fit a similar model for the scenarios below separate
 
          
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-=========================== MACHINE LEARNING ============================
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+=========================== MACHINE LEARNING ==================================
+  
+update.packages("caTools")
+library(caTools)
+library(readxl)
+library(car)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+  
+split <-sample.split(imdata$age, SplitRatio = 0.7)
+split
+train <-subset(imdata$age, split ="TRUE")
+train <-subsets(imdata$age, split ="TRUE")
+test <-subset(imdata$age, split ="FALSE")
+train 
+test
+  
+  
+  
  
   
 #------------------------- BUILDING FUNCTIONS ---------------------------  
