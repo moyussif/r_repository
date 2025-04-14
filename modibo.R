@@ -2484,11 +2484,11 @@ tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
 View(tdata)
 class(tdata)
 #---------------convert data frame to Time Series ----------------
-#tdata$Date = as.Date(tdata$Date
 #monthly <- ts(ttdata$registrants, start = 2015, frequency = 12)
 #quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
 tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
 class(tsdata)
+view(tsdata)
 plot(tsdata)
 
 #check to determine stationarity of data 
@@ -2518,7 +2518,133 @@ Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 #   #   #
 
 
-######################### Mapping with r ######################################
+#========================== Time series Using ggplot2 ========================
+
+library(ggplot2)
+# line and Points 
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line()+  
+  geom_point() 
+
+# Two line from two variables-------------------------------------------------
+library(ggplot2)
+library(dplyr)
+
+df2 <- economics_long[economics_long$date > as.Date("2000-01-01"), ] %>%
+  filter(variable == "pce" | variable == "unemploy")
+
+ggplot(df2, aes(x = date, y = value, color = variable)) +
+  geom_line() +
+  theme(legend.position = "bottom")
+
+# Facet wrap for multiple lines-----------------------------------------------
+library(ggplot2)
+library(lubridate)
+
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+df$year <- year(df$date)
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  facet_wrap(~year, scales = "free")
+
+#You can set the limit of the axis based on dates with the limit argument of the function.
+#---------------------------------------------------------
+library(ggplot2)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  scale_x_date(limit = c(as.Date("2010-01-01"), as.Date("2015-01-01")))
+
+#You can also specify the breaks with the breaks argument of the function, 
+#specifying the dates to be used as axis breaks.-------------------------------
+library(ggplot2)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  scale_x_date(breaks = c(as.Date("2001-01-01"),
+                          as.Date("2008-01-01"),
+                          as.Date("2012-01-01")))
+
+#An alternative is to specify the breaks with strings of the format ------------
+----"1 day" (a break each day), 
+----"2 months" (a break every two months), 
+----"6 years" (a break every six years), 
+#--------------- 
+library(ggplot2)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  scale_x_date(date_breaks = "5 years")
+
+
+#You can add lines to highlight breakpoints or structural changes with
+#vertical(geom_vline) or horizontal lines(geom_hline)------------------------
+library(ggplot2)
+library(ggpmisc)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  geom_vline(xintercept = as.Date("2007-09-15"),
+             linetype = 2, color = 2, linewidth = 1)
+
+# Peaks----------------------------------------------------------------------
+library(ggplot2)
+library(ggpmisc)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  stat_peaks(geom = "point", span = 15, color = "steelblue3", size = 2) +
+  stat_peaks(geom = "label", span = 15, color = "steelblue3", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
+  stat_peaks(geom = "rug", span = 15, color = "blue", sides = "b")
+
+# Valleys--------------------------------------------------------------------
+library(ggplot2)
+library(ggpmisc)
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+ggplot(df, aes(x = date, y = unemploy)) +
+  geom_line() +
+  stat_valleys(geom = "point", span = 11, color = "red", size = 2) +
+  stat_valleys(geom = "label", span = 11, color = "red", angle = 0,
+               hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
+  stat_valleys(geom = "rug", span = 11, color = "red", sides = "b")
+
+#Highlighting Trends and recession--------------------------------------------
+library(ggplot2)
+library(ggpmisc)
+
+# Data
+df <- economics[economics$date > as.Date("2000-01-01"), ]
+
+# Shade from 2000 to 2004 and from 2010 to 2015
+shade <- data.frame(x1 = c(as.Date("2000-01-01"), as.Date("2010-01-01")),
+                    x2 = c(as.Date("2004-01-01"), as.Date("2015-01-01")),
+                    min = c(-Inf, -Inf), max = c(Inf, Inf))
+
+ggplot() +
+  geom_line(data = df, aes(x = date, y = unemploy)) +
+  geom_rect(data = shade, aes(xmin = x1, xmax = x2, ymin = min, ymax = max),
+            fill = c("green", "red"), alpha = 0.2)
+
+
+
+######################### Mapping with r #####################################
 
 install.packages("sf")
 library(tidyverse)
