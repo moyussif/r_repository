@@ -58,6 +58,8 @@ library(pdftools)
 library(htmlwidgets)
 library(rcompanion)
 library(psych)
+install.packages("caTools")
+library(caTools)
 
 #-----
 getwd()
@@ -2470,23 +2472,39 @@ chisq.test(tab)$residuals
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #--------------------- Time Series Analysis ----------------------------------#
-===============================================================================  
-#Typical Questions__when is consumption highest / lowest
-#___________________variation with season_________trends________change overtime.
-
+===============================================================================
 library(tidyverse)
 library(ggplot2)
 library(tseries)
 library(forecast)
 library(readxl)
+#-------------------------------------------------------------------------------
 
+Converting date to time series
+#STEP1====tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d") 
+#STEP2====hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
+#STEP3====class(hhdata)  
+#-------------------------------------------------------------------------------
+
+Monthly data
+#1-month_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 12)
+#2-monthly <- ts(tdata$attendance, start = 2015, frequency = 12)
+#3-monthly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 12)
+Quarterly data 
+#1-qtr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+#2-quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+#3-qtrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 4)
+Yearly data 
+#1-yr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+#2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
+#3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
+--------------------------------------------------------------------------------
 tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
 View(tdata)
-class(tdata)
-#---------------convert data frame to Time Series ----------------
-#monthly <- ts(ttdata$registrants, start = 2015, frequency = 12)
-#quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
-tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+class(tdata)  
+--------------------------------------------------------------------------------
+#convert data to time series
+tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
 class(tsdata)
 view(tsdata)
 plot(tsdata)
@@ -2505,7 +2523,7 @@ acf(ts(tsdata_model$residuals))
 pacf(ts(tsdata_model$residuals))
 
 #Now perform forecast for stationary data
-mydataforecast=forecast(tsdata_model, level = c(95),h=10*4)
+mydataforecast=forecast(tsdata_model, level = c(95),h=5*4)
 mydataforecast
 plot(mydataforecast)
 #Evaluate model
@@ -2519,139 +2537,129 @@ Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 
 
 #========================== Time series Using ggplot2 ========================
-
-library(ggplot2)
-# line and Points 
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line()+  
-  geom_point() 
-
-# Two line from two variables-------------------------------------------------
-library(ggplot2)
-library(dplyr)
-
-df2 <- economics_long[economics_long$date > as.Date("2000-01-01"), ] %>%
-  filter(variable == "pce" | variable == "unemploy")
-
-ggplot(df2, aes(x = date, y = value, color = variable)) +
-  geom_line() +
-  theme(legend.position = "bottom")
-
-# Facet wrap for multiple lines-----------------------------------------------
-library(ggplot2)
-library(lubridate)
-
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-df$year <- year(df$date)
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  facet_wrap(~year, scales = "free")
-
-#You can set the limit of the axis based on dates with the limit argument of the function.
-#---------------------------------------------------------
-library(ggplot2)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  scale_x_date(limit = c(as.Date("2010-01-01"), as.Date("2015-01-01")))
-
-#You can also specify the breaks with the breaks argument of the function, 
-#specifying the dates to be used as axis breaks.-------------------------------
-library(ggplot2)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  scale_x_date(breaks = c(as.Date("2001-01-01"),
-                          as.Date("2008-01-01"),
-                          as.Date("2012-01-01")))
-
-#An alternative is to specify the breaks with strings of the format ------------
-----"1 day" (a break each day), 
-----"2 months" (a break every two months), 
-----"6 years" (a break every six years), 
-#--------------- 
-library(ggplot2)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  scale_x_date(date_breaks = "5 years")
-
-
-#You can add lines to highlight breakpoints or structural changes with
-#vertical(geom_vline) or horizontal lines(geom_hline)------------------------
+------------------------------------------------------------------------------
+library(readxl)
+library(scales)
 library(ggplot2)
 library(ggpmisc)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
+------------------------------------------------------------------------------
+tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+View(tdata)
+#convert date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")  
 
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  geom_vline(xintercept = as.Date("2007-09-15"),
-             linetype = 2, color = 2, linewidth = 1)
+# line and Points
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()
 
-# Peaks----------------------------------------------------------------------
-library(ggplot2)
-library(ggpmisc)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  stat_peaks(geom = "point", span = 15, color = "steelblue3", size = 2) +
+#peaks
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+  stat_peaks(geom = "point", span = 15, color = "steelblue3", size = 2) +  
   stat_peaks(geom = "label", span = 15, color = "steelblue3", angle = 0,
              hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
   stat_peaks(geom = "rug", span = 15, color = "blue", sides = "b")
 
-# Valleys--------------------------------------------------------------------
-library(ggplot2)
-library(ggpmisc)
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
-
-ggplot(df, aes(x = date, y = unemploy)) +
-  geom_line() +
-  stat_valleys(geom = "point", span = 11, color = "red", size = 2) +
+#Valleys  
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+stat_valleys(geom = "point", span = 11, color = "red", size = 2)+   
   stat_valleys(geom = "label", span = 11, color = "red", angle = 0,
-               hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
+               hjust = -0.1, x.label.fmt = "%Y-%m-%d")+
   stat_valleys(geom = "rug", span = 11, color = "red", sides = "b")
 
-#Highlighting Trends and recession--------------------------------------------
-library(ggplot2)
-library(ggpmisc)
+#break midpoint
+ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_point()+
+  geom_vline(xintercept = as.Date(tdata$Date, format = "%Y/%m/%d"),
+             linetype = 2, color = 2, linewidth = 1)
+  
+# Facet wrap for multiple lines  
+fw <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_wrap(~Date)
+fw
 
-# Data
-df <- economics[economics$date > as.Date("2000-01-01"), ]
+# Facet grid for multiple lines
+fg <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_grid(attendance~Date)
+fg
 
-# Shade from 2000 to 2004 and from 2010 to 2015
-shade <- data.frame(x1 = c(as.Date("2000-01-01"), as.Date("2010-01-01")),
-                    x2 = c(as.Date("2004-01-01"), as.Date("2015-01-01")),
-                    min = c(-Inf, -Inf), max = c(Inf, Inf))
-
-ggplot() +
-  geom_line(data = df, aes(x = date, y = unemploy)) +
-  geom_rect(data = shade, aes(xmin = x1, xmax = x2, ymin = min, ymax = max),
-            fill = c("green", "red"), alpha = 0.2)
+#    #    #
 
 
 
-######################### Mapping with r #####################################
 
-install.packages("sf")
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+=========================== MACHINE LEARNING ==================================
+  
+  update.packages("caTools")
+library(caTools)
+library(readxl)
+library(car)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+
+split <-sample.split(imdata$age, SplitRatio = 0.7)
+split
+train <-subset(imdata$age, split ="TRUE")
+train <-subsets(imdata$age, split ="TRUE")
+test <-subset(imdata$age, split ="FALSE")
+train 
+test
+
+
+
+
+
+#------------------------- BUILDING FUNCTIONS ---------------------------  
+e.g-1
+Area <- function(Length, Breadth){
+  Area <- Length * Breadth
+  return(Area)
+}
+#therefore,
+Area (3,7)
+----------
+  e.g-2  
+
+BMI <- function(weight,height){
+  BMI <- weight/height*2
+  return(BMI)
+}  
+BMI(62,58)  
+
+
+# R program to illustrate
+# Graph plotting in
+# Polynomial regression
+# Importing required library
 library(tidyverse)
-library(mapview)
-library(sf)
+library(caret)
+theme_set(theme_classic())
+
+# Load the data
+data("Boston", package = "MASS")
+# Split the data into training and test set
+set.seed(123)
+training.samples <- Boston$medv %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data <- Boston[training.samples, ]
+test.data <- Boston[-training.samples, ]
+
+# Build the model
+model <- lm(medv ~ poly(lstat, 5, raw = TRUE), data = train.data)
+# Make predictions
+predictions <- model %>% predict(test.data)
+# Model performance
+data.frame(RMSE = RMSE(predictions, test.data$medv),
+           R2 = R2(predictions, test.data$medv))
+
+ggplot(train.data, aes(lstat, medv) ) + geom_point() + 
+  stat_smooth(method = lm, formula = y ~ poly(x, 5, raw = TRUE))
 
 
+#   #   #
 
 
 
@@ -3358,73 +3366,12 @@ Using the last model above, fit a similar model for the scenarios below separate
 (2) vary the value of β between the start and end of a period of lockdown as 0.6 and 0.2 respectively.
 (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1 respectively.                        
 
-         
+#   #   #
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-=========================== MACHINE LEARNING ==================================
-  
-update.packages("caTools")
-library(caTools)
-library(readxl)
-library(car)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-  
-split <-sample.split(imdata$age, SplitRatio = 0.7)
-split
-train <-subset(imdata$age, split ="TRUE")
-train <-subsets(imdata$age, split ="TRUE")
-test <-subset(imdata$age, split ="FALSE")
-train 
-test
-  
-  
-  
- 
-  
-#------------------------- BUILDING FUNCTIONS ---------------------------  
-e.g-1
-Area <- function(Length, Breadth){
-  Area <- Length * Breadth
-  return(Area)
-}
-#therefore,
-Area (3,7)
-----------
-e.g-2  
 
-BMI <- function(weight,height){
-  BMI <- weight/height*2
-  return(BMI)
-}  
-BMI(62,58)  
-  
-   
-# R program to illustrate
-# Graph plotting in
-# Polynomial regression
-# Importing required library
+######################### Mapping with r #####################################
+
+install.packages("sf")
 library(tidyverse)
-library(caret)
-theme_set(theme_classic())
-
-# Load the data
-data("Boston", package = "MASS")
-# Split the data into training and test set
-set.seed(123)
-training.samples <- Boston$medv %>%
-  createDataPartition(p = 0.8, list = FALSE)
-train.data <- Boston[training.samples, ]
-test.data <- Boston[-training.samples, ]
-
-# Build the model
-model <- lm(medv ~ poly(lstat, 5, raw = TRUE), data = train.data)
-# Make predictions
-predictions <- model %>% predict(test.data)
-# Model performance
-data.frame(RMSE = RMSE(predictions, test.data$medv),
-           R2 = R2(predictions, test.data$medv))
-
-ggplot(train.data, aes(lstat, medv) ) + geom_point() + 
-  stat_smooth(method = lm, formula = y ~ poly(x, 5, raw = TRUE))
-
-
+library(mapview)
+library(sf)
