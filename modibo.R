@@ -2501,8 +2501,15 @@ Yearly data
 --------------------------------------------------------------------------------
 tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
 View(tdata)
-class(tdata)  
+class(tdata)
+boxplot(attendance~Date, data = tdata)
 --------------------------------------------------------------------------------
+#To control//make the variance Equal
+log(tdata$attendance)
+plot(log(tdata$attendance))  
+#To control//make the mean Equal
+plot(diff(log(tdata$attendance)))
+  
 #convert data to time series
 tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
 class(tsdata)
@@ -2514,27 +2521,40 @@ acf(tsdata)      #step1----autocorrelation
 pacf(tsdata)     #step2----partial autocorrelation
 adf.test(tsdata) #step3----augmented Dickey-fuller test
 
-#Convert Non_stationary to Stationary
+#Convert Non_stationary to Stationary---------(seasonal arima model)
 tsdata_model=auto.arima(tsdata, ic = "aic", trace = TRUE)
 tsdata_model
-
+tsdisplay(residuals(tsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
 #Check for stationary again
 acf(ts(tsdata_model$residuals))
 pacf(ts(tsdata_model$residuals))
 
-#Now perform forecast for stationary data
+#Now perform forecast for stationary data-----(seasonal arima model)
 mydataforecast=forecast(tsdata_model, level = c(95),h=5*4)
 mydataforecast
 plot(mydataforecast)
-#Evaluate model
+autoplot(mydataforecast)
+
+#Non seasonal ARIMA-------------------------------------------------
+nsdata_model=auto.arima(tsdata, seasonal = FALSE)
+nsdata_model
+tsdisplay(residuals(nsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
+non_seasonal = forecast(nsdata_model)
+plot(non_seasonal)
+
+#Now perform forecast for stationary data-----(seasonal arima model)
+mysecondforecast=forecast(nsdata_model, level = c(95),h=5*4)
+mysecondforecast
+plot(mysecondforecast)
+
+
+#Evaluate model (seasonal model)
 Box.test(tsdata_model$residuals, lag = 5,type = "Ljung-Box")
 Box.test(tsdata_model$residuals, lag = 15,type = "Ljung-Box")
 Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 #alternate the lag values until the P.values is > 0.05  ---- indicate No further autocorrelation
 
-
 #   #   #
-
 
 #========================== Time series Using ggplot2 ========================
 ------------------------------------------------------------------------------
@@ -2587,8 +2607,6 @@ fg <-ggplot(tdata, aes(x = Date, y = attendance)) +
 fg
 
 #    #    #
-
-
 
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
