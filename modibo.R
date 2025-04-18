@@ -1021,9 +1021,78 @@ increase in the log mean number of age    ---- Holding other variables constant
 #    #    #
 
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------------------------------ Survival Analysis -------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#-------------Is a test to investigate (HOW LONG IT TAKES FOR AN EVENT TO OCCUR) 
+  
+# Kaplan-Meier(KM)__________________(Nonparametric method)
+Is decriptives
+# Cox proportional Hazard Model_____(semi parametric method)
+Distributive assumptions
+#-----------------------------------
+library(readr)
+library(readxl)
+library(survival)
+library(survminer)
+#-----------------------------------
+setwd("C:/Users/User/Desktop/repos")
+#-----------------------------------
+Survdata <- read_csv("lung.csv")
+View(Survdata)
+#create censoring variable (right censoring)
+Survdata$censored[Survdata$status == 1] <- 1
+Survdata$censored[Survdata$status == 0 | Survdata$status == 2 ] <- 0 
+View (Survdata)
 
-===============================================================================
-#------------------------ TEST OF NOMINAL VARIABLE ----------------------------
+#inspect time spent
+hist(Survdata$time)
+# inspect distribution just those status=0(Not censored)
+hist(subset(Survdata, status == 0)$time)
+# inspect distribution just those status=1(Censored)
+hist(subset(Survdata, status == 1)$time)
+
+#+++++++++++++++++++++ Kaplan-Meier analysis (model) ++++++++++++++++++++++++++++++++++++++++ (KM)
+km_fit1 <- survfit(Surv(time, censored) ~ 1, data=Survdata ) #------------------STEP 1
+print(km_fit1)
+summary(km_fit1)
+#summarize by pre-specified Time interval ---------> repeat90 days for 30 times 90*(1:30)
+summary(km_fit1, times = c(30, 60, 90*(1:30)))
+
+#plot 
+plot(km_fit1)
+#plot cumulative survival rates (probabilities)
+ggsurvplot(km_fit1, data = Survdata, risk.table = TRUE, conf.int = TRUE, ggtheme = theme_minimal())
+
+#--------------- Km analysis model with categorical covariate ------------------STEP 2
+km_fit2 <- survfit(Surv(time, censored) ~ ph.ecog, data=Survdata )
+print(km_fit2)
+summary(km_fit2)
+summary(km_fit2, times = c(30, 60, 90*(1:30)))
+#plot
+ggsurvplot(km_fit2, data = Survdata, risk.table = TRUE, conf.int = TRUE, pval= TRUE, pval.method=TRUE, 
+           ggtheme = theme_minimal())
+
+#  #  #
+
+#+++++++++++++++++++++++++ cox proportional Hazard (PH) Model +++++++++++++++++++++++++++++++++ (PH)
+#---- Estimate cox Regression Model---------------------------------------------STEP1
+cox_reg1 <- coxph(Surv(time, censored) ~ ph.ecog, data =Survdata)
+summary(cox_reg1)
+
+#---- Estimate cox Regression Model with Categorical and Continues predictors----STEP2
+cox_reg2 <- coxph(Surv(time, censored) ~ ph.ecog + wt.loss + sex + age + ph.karno, data =Survdata)
+summary(cox_reg2)
+
+
+#NB---------------------------------- can change the reference group and perform (Log_overallrisk)
+
+#    #    # 
+  
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
+----------------------------------------------------------------------------------------------------
 Follow up with post hoc tests (optional for Chi-Square)
 #if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
 using bonferroni correction----/------post hoc chi square of independence.
@@ -1082,7 +1151,7 @@ ht2 <-ggplot(data = imdata,
 ht2
 ---------------
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -------------------- Exact Test of Goodness-of-Fit ----------------------------
       
 #The exact test goodness-of-fit can be performed with the binom.test function in the native stats package.
@@ -2470,9 +2539,9 @@ chisq.test(tab)$residuals
 #   #   #                      
 
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #--------------------- Time Series Analysis ----------------------------------#
-===============================================================================
+========================================================================================================
 library(tidyverse)
 library(ggplot2)
 library(tseries)
@@ -2609,10 +2678,10 @@ fg
 #    #    #
 
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 =========================== MACHINE LEARNING ==================================
   
-  update.packages("caTools")
+update.packages("caTools")
 library(caTools)
 library(readxl)
 library(car)
@@ -2630,7 +2699,7 @@ test
 
 
 
-#------------------------- BUILDING FUNCTIONS ---------------------------  
+#--------------------------- BUILDING FUNCTIONS -------------------------------  
 e.g-1
 Area <- function(Length, Breadth){
   Area <- Length * Breadth
