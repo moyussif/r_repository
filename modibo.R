@@ -77,13 +77,25 @@ library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
 #------------------------ EXport function ------------------------------------ 
 write.csv(data, file = data.csv)
+#------------------------ Data Conversion ------------------------------------
+#Categorical data
+sex <- as.factor(data$gender)
+salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
+SES <- as.factor(data$salary)
+#Continuous data
+Age <- as.integer(data$age)
+weight <- as.integer(data$bwgt)
+Income <- as.integer(data$salary)
+#Date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
+hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
 #------------------------- Explore data ----------------------------------------
 View(imdata)
 View(HTdata)
 library(skimr)
 skim_without_charts(imdata) 
 
-#:::::::::::::::: Data manipulations with Dplyr :::::::::::::::::::::::::::::::#
+#::::::::::::::::: Data manipulations with Dplyr :::::::::::::::::::::::::::::::#
 library(tidyverse)
 library(dplyr)
 data2 <- imdata %>%
@@ -149,6 +161,10 @@ View(wdata)
 
 
 #::::::::::::::::::::::: Visualization with ggplot2 :::::::::::::::::::::::::::#
+par()
+#par(mfrow = c(2,2))                               par(mfrow = c(4,4))
+#plot(data$vars)                                   plot(data$vars)
+
 library(ggplot2)
 library(RColorBrewer)
 library(readxl)
@@ -372,8 +388,15 @@ imdata %>%
 
 #    #    #
 
-____________________________________________________________________________
-#----------------------------- Data Transformation -------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                              Data Transformation 
+#--------------------------------------------------------------------------------------------------------
+skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96     #Skewness = Mean - Median
+                  ---------- -        |                   --------- -          #            -------------
+                      SE              |                     SE                 #                Sd
+#_____________________________________|________________________________________# Q1-1.5(IQR) ____________
+ POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # Q3+1.5(IQR)        
+#--------------------------------------------------------------------------------------------------------
 library(psych)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
