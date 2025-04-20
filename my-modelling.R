@@ -1,8 +1,8 @@
 rm(list=ls())
 gc(reset = TRUE)
-  
-#----------------------------- Regression analysis -----------------------------
-
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
++                               Regression Analysis                                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #       Regression analysis study the relationship between variables:
 
 1-By identifying (Linear, Curvilinear, or Quadratic).
@@ -169,9 +169,9 @@ chart.Correlation(Data.num, method="pearson", histogram=TRUE, pch=16)
 
 It uses AIC (Akaike information criterion) as a selection criterion.  
 
-#-------------------------------------------------------------------------------
----------------------------- Model Building ------------------------------------  
-  
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ ------------------------------ Model Building -------------------------------------------- + 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
   # methods for evaluating subset regression models:
   1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
@@ -226,9 +226,9 @@ dev.off()
 #   #   #
 
 
-#----------------------------------------------------------------------------
-==============================  LOGISTIC REGRESSION  ========================
-  #----------------------------------------------------------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                             LOGISTIC REGRESSION                                                 +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #A binary variable is a categorical outcome that has two categories or levels. 
 #The logistic model (or logit model) is used to model the probability of a particular 
 #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
@@ -237,7 +237,7 @@ Report logistic regression outcome with Oddratio by taking exponentiation of Est
 Probability is 0  - 1
 OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
 
-#--------------------------- Simple Logistic Regression 
+#---------------- Simple Logistic Regression 
 library(readxl)
 library(readr)
 library(tidyverse)
@@ -301,9 +301,10 @@ logist2
 
 
 #   #   #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                               Poisson Regression                             #(Log-linear model) 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-============================== Log-linear model ==============================
-  #--------------------------- Poisson  regression -----------------------------
 Assumptions ---- y
 # should not be negative
 # Should be discrete
@@ -345,11 +346,11 @@ increase in the log mean number of age    ---- Holding other variables constant
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ------------------------------------ Survival Analysis -------------------------------------------
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #-------------Is a test to investigate (HOW LONG IT TAKES FOR AN EVENT TO OCCUR) 
++                               Survival Analysis                               #(Time to event) +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#-------------Is a test to investigate (HOW LONG IT TAKES FOR AN EVENT TO OCCUR) 
   
-  # Kaplan-Meier(KM)__________________(Nonparametric method)
+# Kaplan-Meier(KM)__________________(Nonparametric method)
   Is decriptives
 # Cox proportional Hazard Model_____(semi parametric method)
 Distributive assumptions
@@ -376,6 +377,7 @@ hist(subset(Survdata, status == 0)$time)
 hist(subset(Survdata, status == 1)$time)
 
 #+++++++++++++++++++++ Kaplan-Meier analysis (model) ++++++++++++++++++++++++++++++++++++++++ (KM)
++---------------------------------------------------------------------------------------------- +
 km_fit1 <- survfit(Surv(time, censored) ~ 1, data=Survdata ) #------------------STEP 1
 print(km_fit1)
 summary(km_fit1)
@@ -399,6 +401,7 @@ ggsurvplot(km_fit2, data = Survdata, risk.table = TRUE, conf.int = TRUE, pval= T
 #  #  #
 
 #+++++++++++++++++++++++++ cox proportional Hazard (PH) Model +++++++++++++++++++++++++++++++++ (PH)
++------------------------------------------------------------------------------------------------ +
 #---- Estimate cox Regression Model---------------------------------------------STEP1
 cox_reg1 <- coxph(Surv(time, censored) ~ ph.ecog, data =Survdata)
 summary(cox_reg1)
@@ -412,71 +415,10 @@ summary(cox_reg2)
 
 #    #    # 
 
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
-----------------------------------------------------------------------------------------------------
-  Follow up with post hoc tests (optional for Chi-Square)
-#if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
-using bonferroni correction----/------post hoc chi square of independence.
-#----------------------------------------------------------------------------
-
-1----Exact Goodness-of-fit--------------#whether is difference to hypothised value
-  2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
-  3----Chi-Square test of independence----#Test of association
-  4----Fisher exact test------------- N < 100
-5----McNemars test.---------------------#TO compare before and after observations
-  6----G test-----------------------------#Can accommodate experimental design
-  
-  
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Chisquare - ODDRATIO - RISKRATIO
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
-  library(epitools)
-library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-#chisquare
-table(imdata$CaseControl,imdata$sex)
-chisq.test(imdata$CaseControl,imdata$sex)
-
-odds ratio // Risk ratio
-# method = c("oddsratio", "riskratio", "rateratio"),
-#rev = c("neither", "rows", "columns", "both"),           
-#oddsratio = c("wald", "fisher", "midp", "small"),
-#riskratio = c("wald", "boot", "small"),
-#rateratio = c("wald", "midp"),
-#pvalue = c("fisher.exact", "midp.exact", "chi2"),
-#correction = FALSE, verbose = FALSE)
----------------------------------------
-  oddsratio(imdata$CaseControl,imdata$sex)       #or
-
-OR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "oddsratio",
-            conf.level = 0.95)
-OR
---------------------------------------
-  
-  riskratio(imdata$CaseControl,imdata$sex)  #or
-
-RR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "riskratio",
-            conf.level = 0.95)
-
-RR
---------------------------------------
-  library(ggplot2)
-#stacked Barchart
-ht2 <-ggplot(data = imdata,
-             mapping = aes(x = CaseControl, fill = sex))+
-  geom_bar()
-
-ht2
----------------
-  
+ 
   
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                              Time Series Analysis 
++                              Time Series Analysis                                                   +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 library(tidyverse)
 library(ggplot2)
@@ -561,13 +503,13 @@ Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 
 #   #   #
 
-#========================== Time series Using ggplot2 ========================
-------------------------------------------------------------------------------
-  library(readxl)
+=========================== Time series Using ggplot2 ==========================
+#------------------------------------------------------------------------------
+library(readxl)
 library(scales)
 library(ggplot2)
 library(ggpmisc)
-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
   tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
 View(tdata)
 #convert date to time series
@@ -617,18 +559,18 @@ fg
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  PCA
++                                          PCA                                                       +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Descriptives  -------------#Variances ie equality and standard deviations
-  KMO & Barlet test----------#Sample adequacy(>0.07)  &  Non-correlated(0.05)
-  Correlation matrix---------0 - 1#correlation close to 1----highly correlated
+Descriptives  -------------#Variances ie equality and standard deviations
+KMO & Barlet test----------#Sample adequacy(>0.07)  &  Non-correlated(0.05)
+Correlation matrix---------0 - 1#correlation close to 1----highly correlated
 Communality ---------------# Must be close 1 (ind//extracted)
-  Total Variances------------
-  Rotated component----------# Must be > 1
-  Plot-----------------------# Scree plot , Loading plot
+Total Variances------------
+Rotated component----------# Must be > 1
+Plot-----------------------# Scree plot , Loading plot
   
-  --------------------------------------------------------------------------------
-  rm(list=ls())
+--------------------------------------------------------------------------------
+rm(list=ls())
 gc(reset = TRUE)
 #Load library
 library(readr)
@@ -733,7 +675,7 @@ write_xlsx(scores, "scores.xlsx")
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        Modelling infectious diseases 
++                        Modelling infectious diseases                                                   +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
   library(readxl)
