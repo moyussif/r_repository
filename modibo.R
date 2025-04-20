@@ -77,6 +77,8 @@ library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
 #------------------------ EXport function ------------------------------------ 
 write.csv(data, file = data.csv)
+library(writexl)
+write_xlsx(table1, "eigentable.xlsx")
 #------------------------ Data Conversion ------------------------------------
 #Categorical data
 sex <- as.factor(data$gender)
@@ -2698,9 +2700,117 @@ fg <-ggplot(tdata, aes(x = Date, y = attendance)) +
   facet_grid(attendance~Date)
 fg
 
+
 #    #    #
 
 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                   PCA
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+rm(list=ls())
+gc(reset = TRUE)
+  #Load library
+library(readr)
+library(readxl)
+library(rio)
+setwd("C:/Users/User/Desktop/repos")
+#import data
+pcadata <- import("pca_immdat1.csv", na.rm = TRUE)
+View(pcadata)
+pcadata
+#Scale the data--------------------
+scdat <-scale(pcadata[,-1:-5], center = T)
+scdat
+#No of print----
+options(max.print = 10000)
+options(scipen = 100)
+getwd()
+#Visualize Package
+library(factoextra)
+install.packages("pca3d")
+# Built pca analysis------------
+library(FactoMineR)
+fpca <- PCA(scdat, ncp = 8)
+fpca
+fpca$eig #eigen values
+fpca$ind$coord
+fpca$ind$cos2
+fpca$var$contrib #contribution of individual variable
+
+#biplot
+fviz_pca(fpca)
+fviz_pca_biplot(fpca, repel = TRUE)
+fviz_pca_biplot(fpca, repel = TRUE, col.ind = "cos2")
+#individual scatter plot
+fviz_pca_ind(fpca)
+fviz_pca_ind(fpca, repel = TRUE, col.ind = "cos2")
+
+# Adding Ellipses
+fviz_pca_ind(fpca, geom.ind = "point", col.ind = pcadata$SCGen, palette = c("green","pink","purple", "blue", "yellow","red"), 
+             addEllipses = TRUE,legend.title = "individual component" )
+
+
+fviz_pca_ind(fpca, geom.ind = "point", col.ind = pcadata$NICUadmin, palette = c("purple", "blue", "red"), 
+             addEllipses = TRUE,legend.title = "individual component" )
+
+
+#Variable
+fviz_pca_var(fpca)
+fviz_pca_var(fpca, repel = TRUE, col.var = "contrib")
+#scree plot
+fviz_screeplot(fpca)
+fviz_screeplot(fpca, ncp = 8)
+fviz_screeplot(fpca, ncp = 8, geom="line")
+fviz_screeplot(fpca, ncp = 8, geom="bar")
+fviz_screeplot(fpca, ncp = 8, geom="bar", barfill="red")
+fviz_screeplot(fpca, choice="eigenvalue")
+fviz_screeplot(fpca, choice="eigenvalue", ncp= 8)
+#
+fpca$eig
+#to export the data generated with eigenvalues
+table1 <- fpca$eig
+class(table1)
+table1 <- as.data.frame(table1)
+class(table1)
+
+#import data
+library(writexl)
+write_xlsx(table1, "eigentable.xlsx")
+
+#----------------elbow method-----------------
+plot(table1$`cumulative percentage of variance`)
+
+#----------------Rotated components-----------
+library(psych)
+rpca <- principal(scdat, nfactors = 3, rotate = "varimax", scores = TRUE)
+rpca
+rpca$communality
+rpca$loadings
+print(rpca$loadings, digits = 3, cutoff = 0)
+# rotated component matrix Barplot
+barplot(rpca$loadings)
+barplot(rpca$loadings, beside = TRUE)
+barplot(rpca$loadings, beside = TRUE, col = "blue", main = "Rotated Component matrix")
+
+# add R color palette
+library(pals)
+barplot(rpca$loadings, beside = TRUE, col = brewer.accent(18), main = "Rotated Component matrix")  
+barplot(rpca$loadings, beside = TRUE, col = brewer.greens(18), main = "Rotated Component matrix")  
+barplot(rpca$loadings, beside = TRUE, col = alphabet(18), main = "Rotated Component matrix")  
+
+#import scores
+rpca$scores
+scores <- rpca$scores
+class(rpca$scores)
+scores <- as.data.frame(rpca$scores)
+class(scores)
+#
+write_xlsx(scores, "scores.xlsx")
+
+#   #    #  
+  
+  
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 =========================== MACHINE LEARNING ==================================
   
