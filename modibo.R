@@ -2708,9 +2708,18 @@ fg
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                    PCA
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Descriptives  -------------#Variances ie equality and standard deviations
+KMO & Barlet test----------#Sample adequacy(>0.07)  &  Non-correlated(0.05)
+Correlation matrix---------0 - 1#correlation close to 1----highly correlated
+Communality ---------------# Must be close 1 (ind//extracted)
+Total Variances------------
+Rotated component----------# Must be > 1
+Plot-----------------------# Scree plot , Loading plot
+  
+--------------------------------------------------------------------------------
 rm(list=ls())
 gc(reset = TRUE)
-  #Load library
+#Load library
 library(readr)
 library(readxl)
 library(rio)
@@ -2758,6 +2767,7 @@ fviz_pca_ind(fpca, geom.ind = "point", col.ind = pcadata$NICUadmin, palette = c(
 #Variable
 fviz_pca_var(fpca)
 fviz_pca_var(fpca, repel = TRUE, col.var = "contrib")
+
 #scree plot
 fviz_screeplot(fpca)
 fviz_screeplot(fpca, ncp = 8)
@@ -2787,7 +2797,7 @@ rpca <- principal(scdat, nfactors = 3, rotate = "varimax", scores = TRUE)
 rpca
 rpca$communality
 rpca$loadings
-print(rpca$loadings, digits = 3, cutoff = 0)
+print(rpca$loadings, digits = 3, cutoff = 0) #save in the working directorate---->convert image to excel 
 # rotated component matrix Barplot
 barplot(rpca$loadings)
 barplot(rpca$loadings, beside = TRUE)
@@ -2811,9 +2821,9 @@ write_xlsx(scores, "scores.xlsx")
 #   #    #  
   
   
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-=========================== MACHINE LEARNING ==================================
-  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                 MACHINE LEARNING 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 update.packages("caTools")
 library(caTools)
 library(readxl)
