@@ -55,8 +55,8 @@ print(data2)
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                                  Explore data                                                        +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                  Explore data                                                        +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
   #                               Data Transformation 
   #-------------------------------------------------------------------------------------------------------
@@ -92,8 +92,8 @@ t.test(imdata$ bwgt,
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                              Descriptive statistics                                         +
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                              Descriptive statistics                                         +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   library(skimr)
 skim_without_charts(imdata)
 library(psych)
@@ -127,18 +127,48 @@ imdata %>%
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  :::::::::::::::::::        Visualization with ggplot2                       :::::::::::::::::::::::::
-  #----------------------------------------------------------------------------------------------------  
+:::::::::::::::::::        Visualization with ggplot2                       :::::::::::::::::::::::::
+#----------------------------------------------------------------------------------------------------  
 par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
 
 library(ggplot2)
 library(RColorBrewer)
+library(plotrix)
+library(webr)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 View(imdata)
-#plotting points 
+
+#-------------------------------- Pie Chart ------------------------
+slices <- c(18, 35, 47, 64)
+lbls <- c( "None", "Low", "Medium", "High")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct)
+# add percents to labels
+lbls <- paste(lbls,"%",sep="") # ad % to labels
+pie(slices,labels = lbls, col=rainbow(length(lbls)),
+    main="Pie Chart of exposure")
+# 3D Exploded Pie Chart
+library(plotrix)
+slices <- c(18, 35, 47, 64)
+lbls <- c( "None", "Low", "Medium", "High")
+pie3D(slices,labels=lbls,explode=0.1,
+      main="Pie Chart of exposure ")
+
+#------------------------------- Donut chart ----------------------
+library(webr)
+# Pie-Donut chart
+PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status")
+#Explode Pie
+PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 2, explodeDonut=FALSE)
+#Explode Donut for Control
+PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 2, explodeDonut=TRUE)
+#Explode Donut for Case
+PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 1, explodeDonut=TRUE)
+
+#------------------------------ plotting points ------------------- 
 immu <- ggplot(data = imdata,
                mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
   geom_point()+theme_classic()
@@ -155,7 +185,7 @@ immu2 <- ggplot(data = imdata,
   geom_point()
 immu2
 
-#------------------------------ Barchart: -------------
+#------------------------------ Barchart: ------------------------
 ht <-ggplot(data = imdata,
             mapping = aes(x = expose))+
   geom_bar()
@@ -171,7 +201,7 @@ ht2 <-ggplot(data = imdata,
   geom_bar()
 ht2
 
-#------------------------------ Histogram:-------------
+#------------------------------ Histogram:-------------------------
 ht3 <-ggplot(data = imdata,
              mapping = aes(x = systol1))+
   geom_histogram()
@@ -188,7 +218,7 @@ ht <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
 ht
-#-------------------Viridis-(Histogram)-----------------
+#--------------------------Viridis-(Histogram)---------------------
 hh <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
@@ -196,7 +226,7 @@ hh + scale_fill_viridis_d()
 hh + scale_fill_viridis_d(direction = -1)
 hh
 
-#----------------------------- Boxplot:================
+#----------------------------- Boxplot:----------------------------
 immu <- ggplot(data = imdata,
                mapping = aes(x = systol1, y = diastol1))+
   geom_boxplot()
@@ -269,44 +299,11 @@ immuLAB
 # Save plot 
 ggsave("immuLAB.png")
 
-
--------------------------------------------------------------------------------
-  #:::::::::::::::::::: charts with LessR (Pie/Bar) ::::::::::::::::::::::::::::#
-  library(lessR)
-imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-
-# Piechart
-PieChart(expose, data = imm2, hole = 0, main = NULL)
-# Donut chart
-imm3 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-PieChart(expose, data = imm3, fill = "viridis", main = NULL, color = "black", lwd = 1.5,
-         values_color = c(rep("white", 4), 1), values_size = 0.85)
-# Donut chart
-data1 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-PieChart(expose, data = data1, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
-
-# Barchart
-imm4 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = imm4, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
-
-data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = data, fill = "reds", hole_fill = "#B7E3E0", main = NULL)
-
-data <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
-BarChart(expose, data = data, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
-         values_color = c(rep("white", 4), 1), values_size = 0.85)
-
-# slant x labels (45 angle)
-BarChart(expose, data = data, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
-         rotate_x=45, values_color = c(rep("white", 4), 1), values_size = 0.85)
-
-#    #    #
-
-
+#   #   #
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                        TEST OF ONE / TWO SAMPLES                                                 +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
++                        TEST OF ONE / TWO SAMPLES                                                 +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
   #------------------One sample t-test with obs as VECTORS
   observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
@@ -360,9 +357,9 @@ abline(0,1, col="blue", lwd=2)
 #   #   #
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #------------------------- One-way Anova using LessR -------------------option.1
-  #visualise statistical assumptions
-  library(lessR)
+#------------------------- One-way Anova using LessR -------------------option.1
+#visualise statistical assumptions
+library(lessR)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 print(imdata)
@@ -563,12 +560,12 @@ if(!require(FSA)){install.packages("FSA")
   #   #   #
   
   
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    +                            Regression analysis                                                 +
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #       Regression analysis study the relationship between variables:
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Regression analysis                                                 +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #       Regression analysis study the relationship between variables:
     
-    1-By identifying (Linear, Curvilinear, or Quadratic).
+  1-By identifying (Linear, Curvilinear, or Quadratic).
   2-By estimating parameters of the relationships(intercept(B0) and slope(B1)).
   3-By validating the relationship (The  assumptions for regression).
   
@@ -630,10 +627,10 @@ if(!require(FSA)){install.packages("FSA")
   
   #    #    #   
   
-  #------------------------ Curvilinear Regression -------------------------------
-  How to fit models to curvilinear data using three methods:
+#------------------------ Curvilinear Regression -------------------------------
+How to fit models to curvilinear data using three methods:
     
-    1) Polynomial regression;  
+1) Polynomial regression;  
 2) B-spline regression with polynomial splines;  
 3) Nonlinear regression with the nls function.  
 
@@ -790,12 +787,12 @@ dev.off()
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                              LOGISTIC REGRESSION                                               +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                              LOGISTIC REGRESSION                                               +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #A binary variable is a categorical outcome that has two categories or levels. 
   #The logistic model (or logit model) is used to model the probability of a particular 
   #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
-  Note----the function is glm, y is categorical, x can be (categorical or continuous).
+Note----the function is glm, y is categorical, x can be (categorical or continuous).
 Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
 Probability is 0  - 1
 OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
@@ -865,7 +862,7 @@ logist2
 
 #   #   #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Poisson  Regression                               #Log-linear model
+                             Poisson  Regression                               #Log-linear model
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Assumptions ---- y
 # should not be negative
@@ -910,7 +907,7 @@ increase in the log mean number of age    ---- Holding other variables constant
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
+#---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
 ----------------------------------------------------------------------------------------------------
   Follow up with post hoc tests (optional for Chi-Square)
 #if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
@@ -924,11 +921,11 @@ using bonferroni correction----/------post hoc chi square of independence.
   6----G test-----------------------------#Can accommodate experimental design
   
   
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                    Chisquare - ODDRATIO - RISKRATIO                                             +
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                    Chisquare - ODDRATIO - RISKRATIO                                             +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-  library(epitools)
+library(epitools)
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
 #chisquare
