@@ -1,5 +1,5 @@
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      #  Practical Guide to Statistical Power and Sample Size in R 
+        Practical Guide to Statistical Power and Sample Size in R 
 ---------------------------------------------------------------------------
 # d = effect size ---- sig level=0.05 ---- power = 80/90 ---- type = type of test
 #-----Effect size 0.2=small, 0.5=medium, 0.8=large

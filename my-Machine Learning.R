@@ -16,24 +16,73 @@ BMI <- function(weight,height){
   return(BMI)
 }  
 BMI(62,58)  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                     Data flow Dplyr                                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+  library(tidyverse)
+library(dplyr)
+data2 <- imdata %>%
+  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
+  filter(hb > 10)        
+print(data2)
+
+#  #  #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                 HANDLING MISSING DATA                                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+#Missing Data Summary-----------------
+summary(data2)
+# Count missing values in each column
+missing_per_column <- colSums(is.na(data2))
+print(missing_per_column)
+# Remove rows with any missing values 
+cleaned_data <- na.omit(data2)
+print(cleaned_data)
+# Perform mean imputation for the 'salary' column where NA values are present
+mean_salary <- mean(data$Salary, na.rm = TRUE)
+
+# Perform KNN imputation
+library(VIM)  
+# Perform KNN imputation
+data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
+
+# Remove the 'Age' column
+df <- df %>% select(-Age)
+#Remove multiple columns
+df <- df %>% select(-c(Age, Gender))
+
+#  #  #
 
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                MACHINE LEARNING 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                               MACHINE LEARNING                                                        +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 update.packages("caTools")
 library(caTools)
 library(readxl)
 library(car)
+library(dplyr)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
 
-split <-sample.split(imdata$age, SplitRatio = 0.7)
+#Split the data
+split <-sample.split(imdata, SplitRatio = 0.7)
 split
-train <-subset(imdata$age, split ="TRUE")
-train <-subsets(imdata$age, split ="TRUE")
-test <-subset(imdata$age, split ="FALSE")
+train <-subset(rm_data, split =="TRUE")
+test <-subset(rm_data, split =="FALSE")
 train 
 test
+
+#Create the model
+Model <- lm(age~., data = train)
+summary(Model)
+
+#Prediction
+Pred <- predict(Model,test)
+Pred
+
 
 ---------------------------------------------
 # R program to illustrate

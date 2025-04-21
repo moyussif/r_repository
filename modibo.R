@@ -63,70 +63,19 @@ library(caTools)
 
 #-----
 getwd()
-#------------------------ Import functions -------------------------------------
-child_data1 <- read.csv(file = 'children_data.csv')                             # import .csv file
-child_data22 <- read.csv2(file = 'children_data.csv', sep = ",")                # introducing sep = ","
-child_data3 <- read.delim(file = 'children_data.txt')                           # delim file with sep = "\t"
-child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)           # for categorical
+#---------------------------- Import functions ---------------------------------
+child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
 library(readr)
-all_data2 <- read_csv(file = 'children_data.csv')                               # comma delimited files
+all_data2 <- read_csv(file = 'children_data.csv')                               
 library(readxl)
 imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
 library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
-#------------------------ EXport function ------------------------------------ 
-write.csv(data, file = data.csv)
+#--------------------------- EXport function  
 library(writexl)
 write_xlsx(table1, "eigentable.xlsx")
-#------------------------ Data Conversion ------------------------------------
-#Categorical data
-sex <- as.factor(data$gender)
-salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
-SES <- as.factor(data$salary)
-#Continuous data
-Age <- as.integer(data$age)
-weight <- as.integer(data$bwgt)
-Income <- as.integer(data$salary)
-#Date to time series
-tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
-hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
-#------------------------- Explore data ----------------------------------------
-View(imdata)
-View(HTdata)
-library(skimr)
-skim_without_charts(imdata) 
 
-#::::::::::::::::: Data manipulations with Dplyr :::::::::::::::::::::::::::::::#
-library(tidyverse)
-library(dplyr)
-data2 <- imdata %>%
-  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi ) %>% 
-  filter(hb > 10)        
-print(data2)
-# Finding rows with NA value
-with_na <- data2 %>% filter(is.na(hb)) 
-print(with_na)
-# Finding rows with no NA value
-without_na <- data2 %>% filter(!is.na(hb)) 
-print(without_na)
-# arrange data by age 
-data_frm <- data2 %>% filter(!is.na(hb)) %>% 
-  arrange(desc(age)) 
-print(data_frm)           
-# Calculating a variable- / create New variables
-mutate(data_frm, RBC = hb/3)
-mutate(data_frm, HCT = hb*3)
-# print-(only new column)
-transmute(data_frm,hb,HCT = hb*3, RBC = hb/3) 
-##rename 
-rename(data_frm,Delivr_age = delivage, Bmi = bmi)
-#summaries
-summarise(data_frm,mean_hb = mean(hb))  
-summarise(data_frm,median_hb = median(hb))
-
-
-#:::::::::::::::::::::::::::: reshape with tidyr :::::::::::::::::::::::::::::#
+#--------------------------- Reshape data  
 library(tidyr) 
 HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
 print(HTdata)
@@ -143,24 +92,97 @@ separate_data
 unite_data <- separate_data %>%  
   unite(fullName, firstName, secondName, sep = " ") 
 unite_data
-#--------------------- use pivot()function --------------------
-#Pivot_longer
-ldata <- pivot_longer(
-  data = HTdata,
-  cols = c(first_trimester, second_trimester, third_trimester),
-  names_to = "trimester1",
-  values_to = "value"
-)
-View(ldata)
 
-#pivot_wider
-wdata <- pivot_wider(
-  data = ldata,
-  names_from = "trimester1",
-  values_from = "value",
-)
-View(wdata)
+#-------------------------- Data Conversion 
+#Categorical data
+sex <- as.factor(data$gender)
+salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
+SES <- as.factor(data$salary)
+#Continuous data
+Age <- as.integer(data$age)
+weight <- as.integer(data$bwgt)
+Income <- as.integer(data$salary)
+#Date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
+hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
 
+#   #   #
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                     Data flow Dplyr                                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+library(tidyverse)
+library(dplyr)
+data2 <- imdata %>%
+  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
+  filter(hb > 10)        
+print(data2)
+
+#  #  #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                 HANDLING MISSING DATA                                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+#Missing Data Summary-----------------
+summary(data2)
+# Count missing values in each column
+missing_per_column <- colSums(is.na(data2))
+print(missing_per_column)
+# Remove rows with any missing values 
+cleaned_data <- na.omit(data2)
+print(cleaned_data)
+# Perform mean imputation for the 'salary' column where NA values are present
+mean_salary <- mean(data$Salary, na.rm = TRUE)
+
+# Perform KNN imputation
+library(VIM)  
+# Perform KNN imputation
+data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
+
+# Remove the 'Age' column
+df <- df %>% select(-Age)
+#Remove multiple columns
+df <- df %>% select(-c(Age, Gender))
+
+
+#  #  #
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                  Explore data                                                        +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #                               Data Transformation 
+  #-------------------------------------------------------------------------------------------------------
+skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96     #Skewness = Mean - Median
+---------- -        |                   --------- -          #            -------------
+SE              |                     SE                 #                Sd
+#_____________________________________|________________________________________# Q1-1.5(IQR) ___________
+POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # Q3+1.5(IQR)        
+#-------------------------------------------------------------------------------------------------------
+library(psych)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+
+skew(imdata$age, na.rm = TRUE)
+kurtosi(imdata$age, na.rm = TRUE)
+mardia(imdata$age,na.rm = TRUE)
+
+#Square root Transformation ==== moderately skew (-1 to -0.5 // 0.5 to 1 )
+sq_data <-sqrt(imdata$bmi)
+hist(sq_data)
+#Cube root==== moderately----right skewed can apply to negative and zero values
+cb_data <-sign(imdata$age)*abs(imdata$age)^(1/3)
+hist(cb_data)
+#Log Transformation====highly skewed (above 1),Cannot be applied negative/zero values
+lg_data <-log(imdata$systol1)
+hist(lg_data)
+
+#-----------------Confidence interval of the mean
+t.test(imdata$ bwgt,
+       conf.level=0.95)         
+
+#     #     #
 
 #::::::::::::::::::::::: Visualization with ggplot2 :::::::::::::::::::::::::::#
 par()

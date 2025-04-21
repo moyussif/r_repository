@@ -1,5 +1,45 @@
 rm(list=ls())
 gc(reset = TRUE)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                     Data flow Dplyr                                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+library(tidyverse)
+library(dplyr)
+data2 <- imdata %>%
+  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
+  filter(hb > 10)        
+print(data2)
+
+#  #  #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                 HANDLING MISSING DATA                                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+#Missing Data Summary-----------------
+summary(data2)
+# Count missing values in each column
+missing_per_column <- colSums(is.na(data2))
+print(missing_per_column)
+# Remove rows with any missing values 
+cleaned_data <- na.omit(data2)
+print(cleaned_data)
+# Perform mean imputation for the 'salary' column where NA values are present
+mean_salary <- mean(data$Salary, na.rm = TRUE)
+
+# Perform KNN imputation
+library(VIM)  
+# Perform KNN imputation
+data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
+
+# Remove the 'Age' column
+df <- df %>% select(-Age)
+#Remove multiple columns
+df <- df %>% select(-c(Age, Gender))
+
+
+#  #  #
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 +                               Regression Analysis                                                  +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -43,13 +43,45 @@ Income <- as.integer(data$salary)
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
 hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
 
-#-------------------------- Data manipulations with Dplyr 
+#   #   #
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                     Data flow Dplyr                                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 library(tidyverse)
 library(dplyr)
 data2 <- imdata %>%
-  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi ) %>% 
+  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
   filter(hb > 10)        
 print(data2)
+
+#  #  #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                 HANDLING MISSING DATA                                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+print(imdata)
+#Missing Data Summary-----------------
+summary(data2)
+# Count missing values in each column
+missing_per_column <- colSums(is.na(data2))
+print(missing_per_column)
+# Remove rows with any missing values 
+cleaned_data <- na.omit(data2)
+print(cleaned_data)
+# Perform mean imputation for the 'salary' column where NA values are present
+mean_salary <- mean(data$Salary, na.rm = TRUE)
+
+# Perform KNN imputation
+library(VIM)  
+# Perform KNN imputation
+data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
+
+# Remove the 'Age' column
+df <- df %>% select(-Age)
+#Remove multiple columns
+df <- df %>% select(-c(Age, Gender))
+
 
 #  #  #
 
@@ -57,9 +89,8 @@ print(data2)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                  Explore data                                                        +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
-  #                               Data Transformation 
-  #-------------------------------------------------------------------------------------------------------
+#                               Data Transformation 
+#-------------------------------------------------------------------------------------------------------
 skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96     #Skewness = Mean - Median
 ---------- -        |                   --------- -          #            -------------
 SE              |                     SE                 #                Sd
@@ -89,6 +120,7 @@ t.test(imdata$ bwgt,
        conf.level=0.95)         
 
 #     #     #
+
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -127,8 +159,8 @@ imdata %>%
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-:::::::::::::::::::        Visualization with ggplot2                       :::::::::::::::::::::::::
-#----------------------------------------------------------------------------------------------------  
++                             Visualization with ggplot2                                            +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
