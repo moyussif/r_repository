@@ -19,19 +19,24 @@ BMI(62,58)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                     Data flow Dplyr                                                  +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-  library(tidyverse)
+library(tidyverse)
 library(dplyr)
+library(readxl)
+imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+View(imdata)
+
 data2 <- imdata %>%
-  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
-  filter(hb > 10)        
+  select(CaseControl, expose, parity, systol1, diastol1, age, bmi, hb,-id ) %>% 
+  filter(!is.na(c(expose, parity, systol1, diastol1, age, bmi, hb)))        
 print(data2)
 
 #  #  #
+
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                 HANDLING MISSING DATA                                               +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-print(imdata)
+
 #Missing Data Summary-----------------
 summary(data2)
 # Count missing values in each column
