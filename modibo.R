@@ -1,5 +1,7 @@
 rm(list=ls())
 gc(reset = TRUE)
+#-------------------------------------------------------------------------------
+Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
 #--------------------------- All required packages _____________________________
 library(readxl)
 library(readr)

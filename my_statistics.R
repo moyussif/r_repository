@@ -1,5 +1,7 @@
 rm(list=ls())
 gc(reset = TRUE)
+#-------------------------------------------------------------------------------
+Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
 #---------------------------- Import functions ---------------------------------
 child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
 library(readr)

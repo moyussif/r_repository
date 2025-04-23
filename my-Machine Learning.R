@@ -1,5 +1,9 @@
 rm(list=ls())
 gc(reset = TRUE)
+#-------------------------------------------------------------------------------
+Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
+#-------------------------------------------------------------------------------
+
 #----------------- BUILDING FUNCTIONS -------  
 e.g-1
 Area <- function(Length, Breadth){
@@ -64,13 +68,38 @@ df <- df %>% select(-c(Age, Gender))
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                               MACHINE LEARNING                                                        +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-update.packages("caTools")
 library(caTools)
 library(readxl)
 library(car)
 library(dplyr)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-print(imdata)
+doro <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
+#Data structure
+str(doro) 
+#Data preparation
+doro$id <- NULL 
+str(doro)
+#Identify row without missing data
+cleanedoro <- na.omit(doro)
+str(cleanedoro)
+#Convert data into factor
+cleanedoro$class <- factor(ifelse(cleanedoro$sex ==1, "Male", "Female"))
+str(cleanedoro)
+#Build the model
+#Splicing data---------------option1
+training <- cleanedoro[1:29, 1:17]
+testing <- cleanedoro[30:41, 1:17]
+#split the outcome into training and testing set
+training1 <- cleanedoro[1:29, 18]
+testing1 <- cleanedoro[30:41, 18]
+#Apply KNN algorithm to training set and outcome
+library(class)
+?knn
+knn(train, test, cl, k = 1, l = 0, prob = FALSE, use.all = TRUE)
+#
+# get square_root ->sqrt(training$age)
+prediction <- knn(train= training, cl= training1, k= 1, test = testing)
+prediction
+
 
 #Split the data
 split <-sample.split(imdata, SplitRatio = 0.7)
