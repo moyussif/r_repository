@@ -145,91 +145,83 @@ data.frame(RMSE = RMSE(predictions, test.data$age),
  
 #   #   #
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                          Logistic Regression
 -------------------------                   ------------------------------------
+rm(list = ls())    # Reset workspace
+
 library(caTools)
 library(readxl)
 library(car)
 library(dplyr)
 library(class)
 library(caret)
+
+######### 1. LOAD DATASET #############
 doro1 <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
-#Data structure
+nrow(doro1)
+
+######### 2. CLEAN DATASET ##############
+#rows with na values
+sum(apply(is.na(doro1), 1, any))
+
+# Remove rows with NA values
+doro1 <- na.omit(doro1)
+
+#check one more time for na values
+sum(apply(is.na(doro1), 1, any))
+nrow(doro1)
+
+#convert literacy to be a factor
+is.factor(doro1$sex)
+doro1$sex <- as.factor(doro1$sex)
+# recheck
+is.factor(doro1$sex)
+
+########## 3. SPLIT INTO TESTING AND TRAINING SETS ##########
+# Set a seed for reproducibility
+set.seed(123)
+
+# Generate random indices for the training and testing sets
+train_indices <- sample(nrow(doro1), 0.7 * nrow(doro1))  # 70% for training
+test_indices <- setdiff(1:nrow(doro1), train_indices) # 30% testing
+head(train_indices)
+
+# Create training and testing sets using indices
+train_data <- doro1[train_indices, ]
+test_data <- doro1[test_indices, ]
+
+# check size of testing and training datasets
+nrow(train_data)
+nrow(test_data)
 str(doro1)
-#Data preparation-1
-doro1$id <- NULL 
-str(doro1)
-#Data prep----2
-data2 <- doro1 %>%
-  select(sex, age, bmi, hb,-id )
 
-str(data2)
-#Identify row without missing data
-cleanedoro1 <- na.omit(data2)
-str(cleanedoro1)
-#Convert data into factor
-cleanedoro1$sex <-as.factor(cleanedoro1$sex)
-str(cleanedoro1)
+########### 4. TRAIN MODEL TO PREDICT LITERACY ############
+model.sex <- glm(sex ~ edu + age + cat + bmi, data = train_data, family = "binomial")
+summary(model.sex)
 
-#Splicing data---------------option1
-train1 <- cleanedoro1[1:35, 1:4]
-test1 <- cleanedoro1[36:50, 1:4]
-#Build the model
-model2 <-glm(sex ~ hb, data = train1, family = "binomial")
-summary(model2)
+########### 5. PREDICT LITERACY USING MODEL ##############
+model.sex.predict <- predict(model.sex, test_data, type = 'response')
+model.sex.predict
+summary(model.sex.predict)
+#print first few results
+head(model.sex.predict,3)
 
-exp(coef(model2))
-#Predict
-Pred2 <-predict(model2, test1, type = "response")
-summary(Pred2)
-head(Pred2)
-#Checking Performance
-#convert predicted values to True/False
-class_predictions <- ifelse(Pred2 > 0.5, "Yes", "No")
-head(class_predictions)
-#Evaluating model
-library(caret)
-conf_matrix <- confusionMatrix(factor(class_predictions), factor(test_data$sex))
-print(conf_matrix)
-))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+########### 6. CHECK MODEL PERFORMANCE ###############
+#convert predicted values back to True/False
+test_data$predict.sex <- ifelse(model.sex.predict >= .5, "True","False")
 
-#Check for Missing Values
-sum(is.na(data))
-#Handle Categorical Variables
-data$Category <- factor(data$Category)
-#Normalize Numerical Features (If Needed)
-data$Variable <- scale(data$Variable)
-#Splitting the Data
-library(caTools)
-library(caret)
-set.seed(123) # For reproducibility
-split <- sample.split(data$Outcome, SplitRatio = 0.7) # 70% training, 30% testing
-train_data <- subset(data, split == TRUE)
-test_data <- subset(data, split == FALSE)
-#Fit the Logistic Regression Model
-model <- glm(Outcome ~ Predictor1 + Predictor2, data = train_data, family = binomial)
-summary(model)
-#Making Predictions
-predictions <- predict(model, newdata = test_data, type = "response")
-head(predictions)
-#If you need class predictions (like Yes/No):
-class_predictions <- ifelse(predictions > 0.5, "Yes", "No")
-head(class_predictions)
-#Evaluating Model Performance
-library(caret)
-conf_matrix <- confusionMatrix(factor(class_predictions), factor(test_data$Outcome))
-print(conf_matrix)
-#Plotting the ROC Curve
-library(pROC)
-roc_curve <- roc(test_data$Outcome, predictions)
-plot(roc_curve, col = "blue", main = "ROC Curve")
-auc(roc_curve)
+#convert string "true" and "false" values to booleans
+test_data$predict.sex <- as.logical(test_data$predict.sex)
 
+head(test_data$predict.sex,5)
+head(test_data$sex,5)
 
-#  #  #
-
-
+#explore
+table(test_data$predict.sex,test_data$sex)
+#Determine accuracy of model
+accuracy <- mean(test_data$predict.sex == test_data$sex)
+print(accuracy)
 
 
 
