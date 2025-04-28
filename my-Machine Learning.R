@@ -89,6 +89,8 @@ str(doro)
 #Identify row without missing data
 cleanedoro <- na.omit(doro)
 str(cleanedoro)
+
+
 #split data
 training <- cleanedoro[1:29, 1:17]
 testing <- cleanedoro[30:41, 1:17]
@@ -149,7 +151,8 @@ data.frame(RMSE = RMSE(predictions, test.data$age),
                          Logistic Regression
 -------------------------                   ------------------------------------
 rm(list = ls())    # Reset workspace
-
+doro1 <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
+nrow(doro1)
 library(caTools)
 library(readxl)
 library(car)
@@ -158,8 +161,7 @@ library(class)
 library(caret)
 
 ######### 1. LOAD DATASET #############
-doro1 <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
-nrow(doro1)
+
 
 ######### 2. CLEAN DATASET ##############
 #rows with na values
@@ -172,7 +174,7 @@ doro1 <- na.omit(doro1)
 sum(apply(is.na(doro1), 1, any))
 nrow(doro1)
 
-#convert literacy to be a factor
+#convert sex to be a factor
 is.factor(doro1$sex)
 doro1$sex <- as.factor(doro1$sex)
 # recheck
@@ -222,6 +224,39 @@ table(test_data$predict.sex,test_data$sex)
 #Determine accuracy of model
 accuracy <- mean(test_data$predict.sex == test_data$sex)
 print(accuracy)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                             KNN----(K Nearest Neighbour)
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)
+#
+library(readr)
+library(tidyverse)
+ovary1 <- read.csv("C:/Users/User/Desktop/repos/ovarian.csv")
+head(ovary1)
+str(ovary1)
+ova <-ovary1 %>% select(rx,futime,fustat, age, resid.ds,ecog.ps)
+ova
+#Normalize
+normalize <-function(x){
+  return(x-min(x)) / (max(x)-min(x))}
+#
+ova1 <-as.data.frame(lapply(ova[,2:5], normalize))
+ova1
+#Set seed
+set.seed(123)
+#random  selection of  70% of data
+ova_data <- sample(1:nrow(ova1),size = nrow(ova1)*0.7,replace = FALSE)
+
+
+
+
+
+
+
+
 
 
 
