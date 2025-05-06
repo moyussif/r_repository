@@ -250,8 +250,41 @@ set.seed(123)
 #random  selection of  70% of data
 ova_data <- sample(1:nrow(ova1),size = nrow(ova1)*0.7,replace = FALSE)
 
+# 70% train and 30% test
+traindata <-ova[ova_data,]  
+testdata <- ova[-ova_data,]  
 
+#create separate dataframe for rx
+train_df <-ova[ova_data,1]  
+test_df <- ova[-ova_data,1] 
 
+library(class) # it carries KNN function
+
+NROW(train_df) # number of observations
+
+# get square root of the total observations
+sqrt(18) #square root of 18 is 4.24 or 5.0-----model for better K value
+knn.4 <- knn(train=traindata,test=testdata, cl=train_df, k=4)
+knn.3 <- knn(train=traindata,test=testdata, cl=train_df, k=3)
+#accuracy check
+Acc.3 <- 100*sum(test_df==knn.3)/NROW(test_df)
+Acc.4 <- 100*sum(test_df==knn.4)/NROW(test_df)
+Acc.4 # accuracy is 75% better than  K=3 (50%)
+
+# To check prediction against actual value in tabular form
+table(knn.4,test_df)
+knn.4
+
+i=1
+k.optm=1
+for(i in 1:18){
+  knn.mod <-knn(train=traindata,test=testdata, cl=train_df, k=i)
+  k.optm[i] <- 100*sum(test_df==knn.mod)/NROW(test_df)
+  k=i
+  cat(k,'=', k.optm[i],'\n')
+}
+
+plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy level")
 
 
 
