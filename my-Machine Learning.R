@@ -298,8 +298,28 @@ plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy")
 --------------------------------------------------------------------------------
 rm(list=ls())
 gc(reset = TRUE)
+library(readxl)
+library(readr)
+library(tidyverse)
+VMdata <- read_excel("C:/Users/User/Desktop/repos/VMdata.xlsx")
+print(VMdata)
+VMdata.matrix <- data.matrix(VMdata)
+#Removing all null values
+vndata <- na.omit(VMdata.matrix)
+str(vndata)
+#Selecting sample 150 values (OPTION)
+smple <- vndata[sample(nrow(vndata),150),]
+print(smple)
+#Selecting 
+smple.columns <- smple[c(6,13)]
+print(smple.columns)             
 
-
+smple.matrix <- data.matrix(smple.columns)
+#Elbow curve
+wss <- (nrow(smple.matrix)-1)*sum(apply(smple.matrix,2,var))
+for (i in 1:10) wss[i]<-sum(kmeans(smple.matrix,centers = i)$withinss)
+plot(1:15, wss, type ="b", xlab = "Number of clusters", ylab = "Within sum of square")
+print(i)
 
 
 
