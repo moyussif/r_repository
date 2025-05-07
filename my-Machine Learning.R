@@ -145,6 +145,7 @@ predictions <- model %>% predict(test.data)
 data.frame(RMSE = RMSE(predictions, test.data$age),
            R2 = R2(predictions, test.data$age))
  
+
 #   #   #
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,6 +227,8 @@ accuracy <- mean(test_data$predict.sex == test_data$sex)
 print(accuracy)
 
 
+#  #  #
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                              KNN----(K Nearest Neighbour)
 --------------------------------------------------------------------------------
@@ -277,14 +280,24 @@ knn.4
 
 i=1
 k.optm=1
-for(i in 1:18){
+for(i in 1:15){
   knn.mod <-knn(train=traindata,test=testdata, cl=train_df, k=i)
   k.optm[i] <- 100*sum(test_df==knn.mod)/NROW(test_df)
   k=i
   cat(k,'=', k.optm[i],'\n')
 }
 
-plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy level")
+plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy")
+
+
+
+#  #  #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                              K-Means Clustering
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)
 
 
 
