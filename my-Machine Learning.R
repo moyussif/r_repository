@@ -299,7 +299,7 @@ plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                               K-Means Clustering
---------------------------------------------------------------------------------
+--------------------------------------------------------------------------------option 1
 rm(list=ls())
 gc(reset = TRUE)
 library(readxl)
@@ -311,11 +311,11 @@ library(ggfortify)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 VMdata <- read_excel("VMdata.xlsx")
 #Select columns
-datacolumns <- select(VMdata,c(6,9,13,14))
+datacolumns <- select(VMdata,c(1,2,3,4,5,7))
 
 #wss plot function
 
-wssplot <- function(VMdata, nc=15, seed=1234)
+wssplot <- function(VMdata, nc=15, seed=123456)
 {
   wss <- (nrow(VMdata)-1)*sum(apply(VMdata,2,var))
   for (i in 2:nc){
@@ -327,7 +327,7 @@ wssplot <- function(VMdata, nc=15, seed=1234)
 # wss plot to choose maximum number of clusters----spotting the elbow point
 wssplot(datacolumns)
 # K-Means Cluster 
-KM = kmeans(datacolumns,2)
+KM = kmeans(datacolumns,3)
 #Evaluate Cluster Analysis_________ Cluster plot
 autoplot(KM,datacolumns,frame=TRUE)
 
@@ -335,6 +335,50 @@ autoplot(KM,datacolumns,frame=TRUE)
 KM$centers
 
 KM
+#  #  #
 
-----------------------------------------------------------
+********************************************************************************
+--------------------------------------------------------------------------------option 2
+rm(list=ls())
+
+library(readxl)
+library(readr)
+library(factoextra)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+VMdata <- read_excel("VMdata.xlsx")
+print(VMdata)
+#Select columns
+datacolumns <- select(VMdata,c(1,2,3,4,5,7))
+print(datacolumns)
+datacolumns <- na.omit(datacolumns)
+# scale data
+datascaled <- scale(datacolumns)
+#distance
+datadistn <- dist(datascaled)
+#calculate how many clusters you need ----withinss (wss)
+fviz_nbclust(datascaled, kmeans, method = "wss")+
+  labs(subtitle = "Elbow method")
+#                                 No of clusters identified = 5
+--------
+# Kmeans
+km.clust <- kmeans(datascaled, centers = 3, nstart = 100)
+print(km.clust)
+
+#Visualize the clustering algorithm results
+km.clusters <- km.clust$cluster
+rownames(datascaled) <- paste(VMdata$Discharge,1:dim(VMdata)[1],sep = "-")
+#
+fviz_cluster(list(data=datascaled, cluster = km.clusters))
+#table
+table(km.clusters,VMdata$Discharge)
+
+
+#  #  #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 
