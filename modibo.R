@@ -78,8 +78,9 @@ library(writexl)
 write_xlsx(table1, "eigentable.xlsx")
 
 #--------------------------- Reshape data  
-library(tidyr) 
-HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
+library(tidyr)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+HTdata <- read_excel("HTdata.xlsx")
 print(HTdata)
 # use gather()function to make data longer
 long <- HTdata %>%  
@@ -124,7 +125,8 @@ print(data2)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                 HANDLING MISSING DATA                                               +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 #Missing Data Summary-----------------
 summary(data2)
@@ -164,7 +166,8 @@ POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # 
 #-------------------------------------------------------------------------------------------------------
 library(psych)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 skew(imdata$age, na.rm = TRUE)
 kurtosi(imdata$age, na.rm = TRUE)
@@ -194,7 +197,8 @@ par()
 library(ggplot2)
 library(RColorBrewer)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 #plotting points 
 immu <- ggplot(data = imdata,
@@ -351,7 +355,8 @@ ggsave("immuLAB.png")
 -------------------------------------------------------------------------------
 #:::::::::::::::::::: charts with LessR (Pie/Bar) ::::::::::::::::::::::::::::#
 library(lessR)
-imm2 <- rd("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imm2 <- rd("immunoData.xlsx")
 
 # Piechart
 PieChart(expose, data = imm2, hole = 0, main = NULL)
@@ -397,7 +402,8 @@ describe(imdata$bwgt, type=2)
 #-------------- aggregate data
 library(janitor)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 imdata %>%
   tabyl(hb, sex) %>%
@@ -425,7 +431,8 @@ skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96     #
 #--------------------------------------------------------------------------------------------------------
 library(psych)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 skew(imdata$age, na.rm = TRUE)
 kurtosi(imdata$age, na.rm = TRUE)
@@ -526,7 +533,8 @@ abline(0,1, col="blue", lwd=2)
 # visualise statistical assumptions
 library(lessR)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 #normality assumption
 tapply(imdata$age, imdata$expose, shapiro.test)
@@ -561,7 +569,8 @@ library(psych)
 library(ggplot2)
 library(ggpubr)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 describe(imdata)
 #plot
@@ -971,7 +980,8 @@ library(ggplot2)
 library(ggpubr)
 library(dplyr)
 
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 str(imdata)
 #Convert categorical variable to factors
@@ -1044,7 +1054,9 @@ library(ggpubr)
 library(dplyr)
 library(Hmisc)
 #------
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
+
 str(imdata)
 #histogram
 hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
@@ -1161,7 +1173,9 @@ using bonferroni correction----/------post hoc chi square of independence.
 
 library(epitools)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
+
 #chisquare
 table(imdata$CaseControl,imdata$sex)
 chisq.test(imdata$CaseControl,imdata$sex)
@@ -2617,7 +2631,8 @@ Yearly data
 #2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
 #3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
 --------------------------------------------------------------------------------
-tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
 View(tdata)
 class(tdata)
 boxplot(attendance~Date, data = tdata)
@@ -2681,7 +2696,8 @@ library(scales)
 library(ggplot2)
 library(ggpmisc)
 ------------------------------------------------------------------------------
-tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
 View(tdata)
 #convert date to time series
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")  
@@ -2747,7 +2763,7 @@ gc(reset = TRUE)
 library(readr)
 library(readxl)
 library(rio)
-setwd("C:/Users/User/Desktop/repos")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #import data
 pcadata <- import("pca_immdat1.csv", na.rm = TRUE)
 View(pcadata)
@@ -2852,7 +2868,8 @@ update.packages("caTools")
 library(caTools)
 library(readxl)
 library(car)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 split <-sample.split(imdata$age, SplitRatio = 0.7)
 split

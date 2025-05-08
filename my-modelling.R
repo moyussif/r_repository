@@ -16,7 +16,8 @@ print(data2)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                 HANDLING MISSING DATA                                               +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 #Missing Data Summary-----------------
 summary(data2)
@@ -286,8 +287,8 @@ library(tidyverse)
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
-
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 str(imdata)
 #Convert categorical variable to factors
@@ -361,7 +362,8 @@ library(ggpubr)
 library(dplyr)
 library(Hmisc)
 #------
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 str(imdata)
 #histogram
 hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
@@ -402,7 +404,7 @@ library(readxl)
 library(survival)
 library(survminer)
 #-----------------------------------
-setwd("C:/Users/User/Desktop/repos")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #-----------------------------------
 Survdata <- read_csv("lung.csv")
 View(Survdata)
@@ -488,13 +490,14 @@ Yearly data
 #2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
 #3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
 --------------------------------------------------------------------------------
-  tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
 View(tdata)
 class(tdata)
 boxplot(attendance~Date, data = tdata)
 --------------------------------------------------------------------------------
-  #To control//make the variance Equal
-  log(tdata$attendance)
+#To control//make the variance Equal
+log(tdata$attendance)
 plot(log(tdata$attendance))  
 #To control//make the mean Equal
 plot(diff(log(tdata$attendance)))
@@ -552,7 +555,8 @@ library(scales)
 library(ggplot2)
 library(ggpmisc)
 #------------------------------------------------------------------------------
-  tdata <- read_excel("C:/Users/User/Desktop/repos/CTrends.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
 View(tdata)
 #convert date to time series
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")  
@@ -618,8 +622,9 @@ gc(reset = TRUE)
 library(readr)
 library(readxl)
 library(rio)
-setwd("C:/Users/User/Desktop/repos")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #import data
+
 pcadata <- import("pca_immdat1.csv", na.rm = TRUE)
 View(pcadata)
 pcadata
@@ -720,7 +725,7 @@ write_xlsx(scores, "scores.xlsx")
 +                        Modelling infectious diseases                                                   +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-  library(readxl)
+library(readxl)
 library(readr)
 library(rio)
 library(tidyverse)

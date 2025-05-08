@@ -27,7 +27,8 @@ BMI(62,58)
 library(tidyverse)
 library(dplyr)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 
 data2 <- imdata %>%
@@ -80,7 +81,8 @@ library(caTools)
 library(readxl)
 library(car)
 library(dplyr)
-doro <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+doro <- read_excel("unclean-data.xlsx")
 #Data structure
 str(doro) 
 #Data preparation
@@ -121,9 +123,9 @@ DMwR::regr.eval(actual_pred$actuals, actual_pred$predicted)
 library(tidyverse)
 library(caret)
 theme_set(theme_classic())
-
 # Load the data
-doro <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+doro1 <- read_excel("unclean-data.xlsx")
 #Data structure
 str(doro) 
 #Data preparation
@@ -152,7 +154,8 @@ data.frame(RMSE = RMSE(predictions, test.data$age),
                          Logistic Regression
 -------------------------                   ------------------------------------
 rm(list = ls())    # Reset workspace
-doro1 <- read_excel("C:/Users/User/Desktop/repos/unclean-data.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+doro1 <- read_excel("unclean-data.xlsx")
 nrow(doro1)
 library(caTools)
 library(readxl)
@@ -237,7 +240,8 @@ gc(reset = TRUE)
 #
 library(readr)
 library(tidyverse)
-ovary1 <- read.csv("C:/Users/User/Desktop/repos/ovarian.csv")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+ovary1 <- read.csv("ovarian.csv")
 head(ovary1)
 str(ovary1)
 ova <-ovary1 %>% select(rx,futime,fustat, age, resid.ds,ecog.ps)
@@ -301,32 +305,36 @@ gc(reset = TRUE)
 library(readxl)
 library(readr)
 library(tidyverse)
-VMdata <- read_excel("C:/Users/User/Desktop/repos/VMdata.xlsx")
-print(VMdata)
-VMdata.matrix <- data.matrix(VMdata)
-#Removing all null values
-vndata <- na.omit(VMdata.matrix)
-str(vndata)
-#Selecting sample 150 values (OPTION)
-smple <- vndata[sample(nrow(vndata),150),]
-print(smple)
-#Selecting 
-smple.columns <- smple[c(6,13)]
-print(smple.columns)             
+library(stats)
+library(ggfortify)
 
-smple.matrix <- data.matrix(smple.columns)
-#Elbow curve
-wss <- (nrow(smple.matrix)-1)*sum(apply(smple.matrix,2,var))
-for (i in 1:10) wss[i]<-sum(kmeans(smple.matrix,centers = i)$withinss)
-plot(1:15, wss, type ="b", xlab = "Number of clusters", ylab = "Within sum of square")
-print(i)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+VMdata <- read_excel("VMdata.xlsx")
+#Select columns
+datacolumns <- select(VMdata,c(6,9,13,14))
 
+#wss plot function
 
+wssplot <- function(VMdata, nc=15, seed=1234)
+{
+  wss <- (nrow(VMdata)-1)*sum(apply(VMdata,2,var))
+  for (i in 2:nc){
+    set.seed(seed)
+    wss[i] <- sum(kmeans(VMdata, centers=i)$withinss)}
+  plot(1:nc, wss, type="b", xlab="Number of clusters", 
+       ylab="Within groups sum of squares")
+}
+# wss plot to choose maximum number of clusters----spotting the elbow point
+wssplot(datacolumns)
+# K-Means Cluster 
+KM = kmeans(datacolumns,2)
+#Evaluate Cluster Analysis_________ Cluster plot
+autoplot(KM,datacolumns,frame=TRUE)
 
+#Cluster centres
+KM$centers
 
+KM
 
-
-
-
-
+----------------------------------------------------------
 

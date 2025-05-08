@@ -1,5 +1,7 @@
 rm(list=ls())
 gc(reset = TRUE)
+#
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #-------------------------------------------------------------------------------
 Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
 #---------------------------- Import functions ---------------------------------
@@ -16,7 +18,8 @@ write_xlsx(table1, "eigentable.xlsx")
 
 #--------------------------- Reshape data  
 library(tidyr) 
-HTdata <- read_excel("C:/Users/User/Desktop/repos/HTdata.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+HTdata <- read_excel("HTdata.xlsx")
 print(HTdata)
 # use gather()function to make data longer
 long <- HTdata %>%  
@@ -61,7 +64,8 @@ print(data2)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                 HANDLING MISSING DATA                                               +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 #Missing Data Summary-----------------
 summary(data2)
@@ -101,7 +105,8 @@ POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # 
 #-------------------------------------------------------------------------------------------------------
 library(psych)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 skew(imdata$age, na.rm = TRUE)
 kurtosi(imdata$age, na.rm = TRUE)
@@ -144,7 +149,8 @@ describe(imdata$bwgt, type=2)
 #-------------- aggregate data Table for report
 library(janitor)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 imdata %>%
   tabyl(hb, sex) %>%
@@ -172,7 +178,8 @@ library(RColorBrewer)
 library(plotrix)
 library(webr)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 
 #-------------------------------- Pie Chart ------------------------
@@ -395,7 +402,8 @@ abline(0,1, col="blue", lwd=2)
 #visualise statistical assumptions
 library(lessR)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 print(imdata)
 #normality assumption
 tapply(imdata$age, imdata$expose, shapiro.test)
@@ -430,7 +438,8 @@ p1
 library(ggplot2)
 library(ggpubr)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 
 describe(imdata)
 #plot
@@ -838,8 +847,8 @@ library(tidyverse)
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
-
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 View(imdata)
 str(imdata)
 #Convert categorical variable to factors
@@ -912,7 +921,8 @@ library(ggpubr)
 library(dplyr)
 library(Hmisc)
 #------
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 str(imdata)
 #histogram
 hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
@@ -961,7 +971,8 @@ using bonferroni correction----/------post hoc chi square of independence.
   
 library(epitools)
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
 #chisquare
 table(imdata$CaseControl,imdata$sex)
 chisq.test(imdata$CaseControl,imdata$sex)
