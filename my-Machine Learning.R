@@ -447,9 +447,81 @@ print(confusion_matrix)
 --------------------------------------------------------------------------------
 rm(list=ls())
 gc(reset = TRUE)  
-  
-  
-  
+library(readxl)
+library(readr)
+library(tidyverse)
+library(randomForest)
+
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+lugdata <- read_csv("lung.csv")  
+View(lugdata)
+#Divide into Train and Test dataset  
+set.seed(3)
+id <- sample(2,nrow(lugdata),prob = c(0.7,0.3),replace = TRUE)
+lugtrain <-lugdata[id==1,]
+lugtest <- lugdata[id==2,]  
+#  
+lugdata$sex <-as.factor(lugdata$sex)
+lugtrain$sex <-as.factor(lugtrain$sex)
+# RandomForest
+bestmtrc <-tuneRF(lugtrain,lugtrain$sex, stepFactor = 1.2, improve = 0.01, trace = T, plot = T)
+lug_forest <- randomForest(sex~., data = lugtrain)
+lug_forest
+# importance
+importance(lug_forest)
+#visualize
+varImpPlot(lug_forest)
+#Validate Model
+predF <- predict(lug_forest, newdata = lugtest, type = "class")
+predF
+#Evaluation___
+library(caret)
+library(e1071)
+
+confusionMatrix(table(predF,lugtest$sex))
+
+
+#  # #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      Support Vector Machine - (SVM)
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)  
+library(readxl)
+library(readr)
+library(tidyverse)
+library(caret)
+library(e1071)
+installed.packages("kernlab")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+lundata <- read_csv("lun.csv")  
+str(lundata)
+#Divide into Train and Test dataset  
+set.seed(3000)
+intrain <- createDataPartition(y = lundata$status,p= 0.7, list = FALSE)
+lun.train <-lundata[intrain,] 
+lun.test <-lundata[-intrain,]
+#  
+dim(lun.train)
+dim(lun.test)
+#
+anyNA(lundata)
+summary(lundata)
+#
+lun.train[["status"]] = factor(lun.train[["status"]])
+#
+tr.ctrl <-trainControl(method = "repeatedcv", number = 10, repeats = 3)
+#
+svm_Linear <- train(status~., data = lun.train, method = "svmLinear",
+                    trControl=tr.ctrl,
+                    preProcess = c("center", "scale"),
+                    tuneGrid = grid,
+                    tuneLength = 10)
+svm_Linear
+
+
+0
 
 
 
