@@ -282,6 +282,12 @@ Acc.4 # accuracy is 75% better than  K=3 (50%)
 table(knn.4,test_df)
 knn.4
 
+# Model evaluation 
+library(caret)
+library(e1071)
+
+confusionMatrix(table(knn.4,test_df))
+
 i=1
 k.optm=1
 for(i in 1:15){
@@ -292,7 +298,6 @@ for(i in 1:15){
 }
 
 plot(k.optm, type ="b", xlab = "k-value", ylab = "Accuracy")
-
 
 
 #  #  #
@@ -409,7 +414,7 @@ text(lungModel,use.n = TRUE,pretty = TRUE,cex=0.8)
 predd<-predict(lungModel, newdata = lungtrain)
 pred_lung <-predict(lungModel, newdata = lungtest)
 
-#Evaluation
+#Evaluation___________________________________________________________________ 1
 library(caret)
 library(e1071)
 #---------Train
@@ -424,46 +429,56 @@ pred1 <- ifelse(pred_lung>0.5,1,0)
 tab1 <- table(Predicted = pred1, Actual = lungtest$sex)
 tab1
 confusionMatrix(as.factor(pred1),as.factor(lungtest$sex))
------------------------------
-
-
-
-
-
-
 ----------------------
-
 library(gmodels)
-# Create a confusion matrix using CrossTable
+# Create a confusion matrix using CrossTable__________________________________ 2
 confusion_matrix <- CrossTable(pred_lung,lungtest$sex, prop.chisq = FALSE, 
                                prop.t = FALSE, prop.r = FALSE)
 # Print the confusion matrix
 print(confusion_matrix)
+  
+
+  
+#   #   #  
+  
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                         RandomForest algorithm
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)  
+  
+  
+  
 
 
-library(caret)
-pred <- factor(pred_lung)
-actual <- factor(lungtest$sex)  
-pred_lung$
-  
-install.packages("ConfusionTableR") 
-library(ConfusionTableR)  
-ConfusionTableR::binary_visualiseR(train_labels = pred,
-                                   truth_labels= actual,
-                                   class_label1 = "Not Stranded", 
-                                   class_label2 = "Stranded",
-                                   quadrant_col1 = "#28ACB4", 
-                                   quadrant_col2 = "#4397D2", 
-                                   custom_title = "Breast Cancer Confusion Matrix", 
-                                   text_col= "black")  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
