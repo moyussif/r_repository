@@ -67,9 +67,9 @@ df <- df %>% select(-c(Age, Gender))
 #  #  #
 
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                        MACHINE LEARNING                                                        +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            MACHINE LEARNING                                                    +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,7 +228,7 @@ table(test_data$predict.sex,test_data$sex)
 #Determine accuracy of model
 accuracy <- mean(test_data$predict.sex == test_data$sex)
 print(accuracy)
-
+#
 
 #  #  #
 
@@ -327,10 +327,9 @@ wssplot <- function(VMdata, nc=15, seed=123456)
 # wss plot to choose maximum number of clusters----spotting the elbow point
 wssplot(datacolumns)
 # K-Means Cluster 
-KM = kmeans(datacolumns,3)
+KM = kmeans(datacolumns,4)
 #Evaluate Cluster Analysis_________ Cluster plot
 autoplot(KM,datacolumns,frame=TRUE)
-
 #Cluster centres
 KM$centers
 
@@ -340,9 +339,10 @@ KM
 ********************************************************************************
 --------------------------------------------------------------------------------option 2
 rm(list=ls())
-
+gc(reset = TRUE)
 library(readxl)
 library(readr)
+library(tidyverse)
 library(factoextra)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 VMdata <- read_excel("VMdata.xlsx")
@@ -363,6 +363,7 @@ fviz_nbclust(datascaled, kmeans, method = "wss")+
 # Kmeans
 km.clust <- kmeans(datascaled, centers = 3, nstart = 100)
 print(km.clust)
+km.clust$cluster
 
 #Visualize the clustering algorithm results
 km.clusters <- km.clust$cluster
@@ -376,9 +377,93 @@ table(km.clusters,VMdata$Discharge)
 #  #  #
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            DecisionTree algorithm
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)
+library(readxl)
+library(readr)
+library(tidyverse)
+library(rpart)
+
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+lungdata <- read_csv("lung.csv")
+str(lungdata)
+#Divide into Train and Test dataset  
+set.seed(3)
+id <- sample(2,nrow(lungdata),prob = c(0.7,0.3),replace = TRUE)
+lungtrain <-lungdata[id==1,]
+lungtest <- lungdata[id==2,]
+nrow(lungdata)
+nrow(lungtrain)
+nrow(lungtest)
+#Build Decision Tree  
+library(rpart) 
+lungModel <-rpart(sex~., data = lungtrain)  
+lungModel  
+#plot
+plot(lungModel, margin = 0.1)
+#adding text and labels
+text(lungModel,use.n = TRUE,pretty = TRUE,cex=0.8)
+# Prediction
+predd<-predict(lungModel, newdata = lungtrain)
+pred_lung <-predict(lungModel, newdata = lungtest)
+
+#Evaluation
+library(caret)
+library(e1071)
+#---------Train
+predd<-predict(lungModel, newdata = lungtrain)
+pred0 <-ifelse(predd>0.5,1,0)
+tab0 <- table(Predicted = pred0, Actual = lungtrain$sex)
+confusionMatrix(as.factor(pred0),as.factor(lungtrain$sex))
+#---------Test
+pred_lung <-predict(lungModel, newdata = lungtest)
+pred_lung
+pred1 <- ifelse(pred_lung>0.5,1,0)
+tab1 <- table(Predicted = pred1, Actual = lungtest$sex)
+tab1
+confusionMatrix(as.factor(pred1),as.factor(lungtest$sex))
+-----------------------------
 
 
 
 
+
+
+----------------------
+
+library(gmodels)
+# Create a confusion matrix using CrossTable
+confusion_matrix <- CrossTable(pred_lung,lungtest$sex, prop.chisq = FALSE, 
+                               prop.t = FALSE, prop.r = FALSE)
+# Print the confusion matrix
+print(confusion_matrix)
+
+
+library(caret)
+pred <- factor(pred_lung)
+actual <- factor(lungtest$sex)  
+pred_lung$
+  
+install.packages("ConfusionTableR") 
+library(ConfusionTableR)  
+ConfusionTableR::binary_visualiseR(train_labels = pred,
+                                   truth_labels= actual,
+                                   class_label1 = "Not Stranded", 
+                                   class_label2 = "Stranded",
+                                   quadrant_col1 = "#28ACB4", 
+                                   quadrant_col2 = "#4397D2", 
+                                   custom_title = "Breast Cancer Confusion Matrix", 
+                                   text_col= "black")  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
 
