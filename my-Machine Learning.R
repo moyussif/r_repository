@@ -414,7 +414,7 @@ text(lungModel,use.n = TRUE,pretty = TRUE,cex=0.8)
 predd<-predict(lungModel, newdata = lungtrain)
 pred_lung <-predict(lungModel, newdata = lungtest)
 
-#Evaluation___________________________________________________________________ 1
+#____________________________ Model evaluation ______________________________ 1
 library(caret)
 library(e1071)
 #---------Train
@@ -429,9 +429,10 @@ pred1 <- ifelse(pred_lung>0.5,1,0)
 tab1 <- table(Predicted = pred1, Actual = lungtest$sex)
 tab1
 confusionMatrix(as.factor(pred1),as.factor(lungtest$sex))
-----------------------
+
+#___________________________ Model evaluation _______________________________ 2
 library(gmodels)
-# Create a confusion matrix using CrossTable__________________________________ 2
+# Create a confusion matrix using CrossTable
 confusion_matrix <- CrossTable(pred_lung,lungtest$sex, prop.chisq = FALSE, 
                                prop.t = FALSE, prop.r = FALSE)
 # Print the confusion matrix
@@ -467,6 +468,8 @@ lugtrain$sex <-as.factor(lugtrain$sex)
 bestmtrc <-tuneRF(lugtrain,lugtrain$sex, stepFactor = 1.2, improve = 0.01, trace = T, plot = T)
 lug_forest <- randomForest(sex~., data = lugtrain)
 lug_forest
+plot(lug_forest)
+
 # importance
 importance(lug_forest)
 #visualize
@@ -493,63 +496,80 @@ library(readr)
 library(tidyverse)
 library(caret)
 library(e1071)
-installed.packages("kernlab")
+library(caTools)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+lundata <- read_csv("lun.csv")
+# Extract columns of interest
+lundatv =lundata %>% select(status, wt.loss, age)
+View(lundatv)
+lundatv= na.omit(lundatv)
+#
+split = sample.split(lundatv$status,SplitRatio = 0.75)  
+train_lg = subset(lundatv,split ==TRUE)
+test_lg = subset(lundatv,split == FALSE)
+# scaling 
+train_lg[-1] = scale(train_lg[-1]) 
+test_lg[-1] = scale(test_lg[-1])
+#Create Model
+classifier = svm(formula = status ~.,
+                  data = train_lg,
+                  type = "C-classification",
+                  kernel = "linear")
+classifier
+#Predict
+y_pred = predict(classifier, newdata = test_lg[-1])
+y_pred  
+# Evaluate
+cfm = table(test_lg[,1],y_pred)
+plot(classifier,test_lg[,1])
+--------------------------------
+#Error in xtfrm.data.frame(x) : cannot xtfrm data frames
+test_lg <-as.data.frame(test_lg) # solution
+#
+cfm = table(test_lg[,1],y_pred)
+cfm
+#
+diag = diag(cfm)
+rowsums =apply(cfm,1, sum) 
+colsums =apply(cfm,2, sum)
+accuracy = sum(diag)/sum(cfm)
+precision = diag/colsums
+recall = diag/rowsums
+f1 = 2*precision*recall/ (precision+recall)
+data.frame(accuracy,precision,recall,f1)
+###
+
+-------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)  
+library(readxl)
+library(readr)
+library(tidyverse)
+library(caret)
+library(e1071)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 lundata <- read_csv("lun.csv")  
 str(lundata)
 #Divide into Train and Test dataset  
-set.seed(3000)
-intrain <- createDataPartition(y = lundata$status,p= 0.7, list = FALSE)
-lun.train <-lundata[intrain,] 
-lun.test <-lundata[-intrain,]
-#  
-dim(lun.train)
-dim(lun.test)
+set.seed(1)
+x = matrix(rnorm(20*2), ncol=2)
+y=c(rep(-1,10),rep(1,10))
+# First 10 elements of y are -1 and the rest are 1 
+x
+y
+x[y==1,] = x[y==1,] + 1
+#Lets check if classes are linear separable
+plot(x,col= (3-y))
 #
-anyNA(lundata)
-summary(lundata)
+ludat <- data.frame(x=x,y=as.factor(y))
+ludat
 #
-lun.train[["status"]] = factor(lun.train[["status"]])
-#
-tr.ctrl <-trainControl(method = "repeatedcv", number = 10, repeats = 3)
-#
-svm_Linear <- train(status~., data = lun.train, method = "svmLinear",
-                    trControl=tr.ctrl,
-                    preProcess = c("center", "scale"),
-                    tuneGrid = grid,
-                    tuneLength = 10)
-svm_Linear
+svmfit = svm(y~., data = ludat,kernel = "linear", cost = 0.7, scale = FALSE)
+plot(svmfit,ludat)
+#our support vectors
+summary(svmfit)
 
-
-0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#svmPred <-predict(svmfit,newdata = )
 
 
 
