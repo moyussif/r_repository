@@ -500,7 +500,7 @@ library(caTools)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 lundata <- read_csv("lun.csv")
 # Extract columns of interest
-lundatv =lundata %>% select(status, wt.loss, age)
+lundatv =lundata %>% select(status, age)
 View(lundatv)
 lundatv= na.omit(lundatv)
 #
@@ -522,7 +522,6 @@ y_pred
 # Evaluate
 cfm = table(test_lg[,1],y_pred)
 plot(classifier,test_lg[,1])
---------------------------------
 #Error in xtfrm.data.frame(x) : cannot xtfrm data frames
 test_lg <-as.data.frame(test_lg) # solution
 #
@@ -537,6 +536,26 @@ precision = diag/colsums
 recall = diag/rowsums
 f1 = 2*precision*recall/ (precision+recall)
 data.frame(accuracy,precision,recall,f1)
+
+# Visualization
+library(tidyverse)
+library(Rfast)
+set  = train_lg
+X1 = seq(min(set[, 1]) -1, max(set[, 1]) + 1, by = 0.01)
+X2 = seq(min(set[, 2]) -1, max(set[, 2]) + 1, by = 0.01)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('Age', 'EstimatedSalary')
+y_grid = predict(classifier, newdata = grid_set)
+plot(set[, -1],
+     main = 'Naive Bayes (Training Set)',
+     xlab = 'age',
+     ylab = 'Estimated Salary',
+     xlim = range(X1),
+     ylim = range(X2)
+)
+contour(X1, X2, matrix(as.numeric(y_grid),length(X1), length(X2)), add = TRUE)
+points(grid_set, pch = '.', col = ifelse(y_grid==1, 'springgreen3', 'tomato') )
+points(set, pch = 21, bg = ifelse(set[, 1]== 1, 'green4', 'red3'))
 ###
 
 -------------------------------------------------------------------------------
@@ -570,6 +589,85 @@ plot(svmfit,ludat)
 summary(svmfit)
 
 #svmPred <-predict(svmfit,newdata = )
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                               Naive Bayes
+--------------------------------------------------------------------------------
+rm(list=ls())
+gc(reset = TRUE)  
+library(readxl)
+library(readr)
+library(tidyverse)
+library(caTools)
+library(caret)
+require(e1071)
+
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+lunNB <- read_csv("lungs.csv")
+View(lunNB)
+
+# Extract columns of interest
+dataNB =lunNB %>% select(sex, age)
+datNB= na.omit(dataNB)
+#
+split = sample.split(datNB$sex,SplitRatio = 0.75)  
+TrainNB = subset(datNB,split ==TRUE)
+TestNB = subset(datNB,split == FALSE)
+#scale
+TrainNB[-1] = scale(TrainNB[-1]) 
+TestNB[-1] = scale(TestNB[-1])
+#fit model
+ glss <-naiveBayes(x = TrainNB[-1],
+                   y = TrainNB$sex) 
+#predict
+prednb <- predict(glss, newdata = TestNB[-1])
+#confusionMatrx
+cmx <- table(TestNB[,1], prednb)
+
+TestNB = as.data.frame(TestNB) #make a dataframe and rerun cmx
+cmx <- table(TestNB[,1], prednb)
+
+#------------------------------------------------------------------ Training set
+library(tidyverse)
+library(Rfast)
+set  = TrainNB
+X1 = seq(min(set[, 1]) -1, max(set[, 1]) + 1, by = 0.01)
+X2 = seq(min(set[, 2]) -1, max(set[, 2]) + 1, by = 0.01)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('Age', 'EstimatedSalary')
+y_grid = predict(glss, newdata = grid_set)
+plot(set[, -1],
+     main = 'Naive Bayes (Training Set)',
+     xlab = 'age',
+     ylab = 'Estimated Salary',
+     xlim = range(X1),
+     ylim = range(X2)
+)
+contour(X1, X2, matrix(as.numeric(y_grid),length(X1), length(X2)), add = TRUE)
+points(grid_set, pch = '.', col = ifelse(y_grid==1, 'springgreen3', 'tomato') )
+points(set, pch = 21, bg = ifelse(set[, 1]== 1, 'green4', 'red3'))
+
+#------------------------------------------------------------------- Testing set
+library(tidyverse)
+library(Rfast)
+set  = TestNB
+X1 = seq(min(set[, 1]) -1, max(set[, 1]) + 1, by = 0.01)
+X2 = seq(min(set[, 2]) -1, max(set[, 2]) + 1, by = 0.01)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('Age', 'EstimatedSalary')
+y_grid = predict(glss, newdata = grid_set)
+plot(set[, -1],
+     main = 'Naive Bayes (Test Set)',
+     xlab = 'Age',
+     ylab = 'Estimated Salary',
+     xlim = range(X1),
+     ylim = range(X2)
+)
+contour(X1,X2, matrix(as.numeric(y_grid),length(X1), length(X2)), add = TRUE)
+points(grid_set, pch = '.', col = ifelse(y_grid==1, 'springgreen3', 'tomato') )
+points(set, pch = 21, bg = ifelse(set[, 1]== 1, 'green4', 'red3'))
 
 
 
