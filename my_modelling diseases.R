@@ -1,6 +1,6 @@
 rm(list=ls())
 gc(reset = TRUE)
-#------------------------------------modelling---------------------
+#------------------------------------modelling------------------------------
 library(readxl)
 library(readr)
 library(rio)
@@ -8,7 +8,7 @@ library(tidyverse)
 library(skimr)
 library(deSolve)
 library(reshape2)
-#Part one: SIR Mode-----------(Example one)_________________________
+#Part one: SIR Mode-----------(Example one)_________________________________
 
 sir<-function(time,state,parameters)
 {with(as.list(c(state,parameters)),

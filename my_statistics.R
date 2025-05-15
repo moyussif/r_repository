@@ -1,6 +1,6 @@
 rm(list=ls())
 gc(reset = TRUE)
-#
+#set directorate
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #-------------------------------------------------------------------------------
 Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
