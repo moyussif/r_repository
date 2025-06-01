@@ -50,7 +50,19 @@ tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
 hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
 
 #   #   #
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  When packages are loadings fails ----use the codes below
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+install.packages(                                                
+  "webr",
+  repos = c("http://rstudio.org/_packages",                      
+            "http://cran.rstudio.com")                           
+)                                                                
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#  #  #
+  
+  
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                     Data flow Dplyr                                                  +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
@@ -173,6 +185,12 @@ imdata %>%
 par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
+install.packages(
+  "webr",
+  repos = c("http://rstudio.org/_packages",
+            "http://cran.rstudio.com")
+)
+
 
 library(ggplot2)
 library(RColorBrewer)
@@ -180,7 +198,7 @@ library(plotrix)
 library(webr)
 library(readxl)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
+imdata <- read_excel("immuData.xlsx")
 View(imdata)
 
 #-------------------------------- Pie Chart ------------------------
@@ -329,17 +347,47 @@ immuLAB <- ggplot(data = imdata)+
             fontface ="bold", size =4.0,angle = 30)+
   theme_classic()+scale_colour_viridis_d()
 immuLAB
-#--------------viridis(City\nCenter)----------------
+#--------------viridis(City\nCenter)--------------------------------
 immuLAB <- ggplot(data = imdata)+
   geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
   labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy", color ="purple",
             fontface ="bold", size =4.0,angle = 30)+
   theme_classic()+scale_colour_viridis_d(option = "City\nCenter")
 immuLAB
 
+#------------------- Error Bars ------------------------------------
+
+  install.packages(
+    "magrittr",
+    repos = c("http://rstudio.org/_packages",
+              "http://cran.rstudio.com")
+  )
+  
+library(magrittr)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(ggsci)
+library(ggpubr)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+vkdata <- read_excel("VMB-1.xlsx")
+print(vkdata)
+
+# Default bar plot
+p<- ggplot(vkdata, aes(x=Sex_frequency, y=AGE, fill=Abnormal_discharge)) + 
+  geom_bar(stat="identity", color="grey", 
+           position=position_dodge()) +
+  geom_errorbar(aes(ymin=AGE-sd(AGE), ymax=AGE+sd(AGE)), width=.2,
+                position=position_dodge(.9))+
+  theme_light()+
+  scale_colour_aaas()+
+  labs(title="number of affairs ", x="Frequency of sex", y = "Age")
+ 
+print(p)
+  
 # Save plot 
-ggsave("immuLAB.png")
+ggsave("p.png")
 
 #   #   #
 
