@@ -55,7 +55,7 @@ hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),freq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
 install.packages(                                                
-  "webr",
+  "VIM",
   repos = c("http://rstudio.org/_packages",                      
             "http://cran.rstudio.com")                           
 )                                                                
@@ -146,7 +146,7 @@ t.test(imdata$ bwgt,
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                              Descriptive statistics                                         +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  library(skimr)
+library(skimr)
 skim_without_charts(imdata)
 library(psych)
 summary(imdata)
@@ -186,7 +186,7 @@ par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
 install.packages(
-  "webr",
+  "AICcmodavg",
   repos = c("http://rstudio.org/_packages",
             "http://cran.rstudio.com")
 )
@@ -218,6 +218,7 @@ pie3D(slices,labels=lbls,explode=0.1,
       main="Pie Chart of exposure ")
 
 #------------------------------- Donut chart ----------------------
+install.packages("webr")
 library(webr)
 # Pie-Donut chart
 PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status")
@@ -359,7 +360,7 @@ immuLAB
 #------------------- Error Bars ------------------------------------
 
   install.packages(
-    "magrittr",
+    "DMwR",
     repos = c("http://rstudio.org/_packages",
               "http://cran.rstudio.com")
   )
@@ -395,7 +396,7 @@ ggsave("p.png")
 +                        TEST OF ONE / TWO SAMPLES                                                 +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
   #------------------One sample t-test with obs as VECTORS
-  observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
+observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
 
 t.test(observed, mu = theoretical, conf.int = 0.95)
@@ -483,7 +484,7 @@ p1
 
 #================== ANOVA ANALYSIS----option.2 ==================
 =====================  Factorial Anova ========================== 
-  library(psych)
+library(psych)
 library(ggplot2)
 library(ggpubr)
 library(readxl)
@@ -572,7 +573,7 @@ though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ------------------------------ One-way Anova ------------------------
   if(!require(agricolae)){install.packages("agricolae")}
 ---------------------------------------------------------------------
-  library(FSA)
+library(FSA)
 Summarize(age ~ expose, data = imdata)
 
 #Fit the linear model and conduct ANOVA 
