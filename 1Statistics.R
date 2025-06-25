@@ -643,6 +643,8 @@ if(!require(FSA)){install.packages("FSA")
   It ranks the data to determine the degree of correlation.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
+
+==================================================================================
 install.packages("GGally")
 library(psych)
 library(ggplot2)
@@ -653,7 +655,7 @@ print(EGF01)
 GGally::ggcorr(EGF01)
 GGally::ggpairs(EGF01)
 psych::pairs.panels(EGF01)
- 
+================================================================================== 
   
   #Spearman correlation (Non-parametric / ordinals)
   Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
