@@ -643,14 +643,16 @@ if(!require(FSA)){install.packages("FSA")
   It ranks the data to determine the degree of correlation.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
-install.packages("GGally") 
+install.packages("GGally")
+library(psych)
+library(ggplot2)
 library(GGally)   
 library(readxl)
-EGFL7 <- read_excel("C:/Users/User/Desktop/EGFL7.xlsx")
-print(EGFL7)
-GGally::ggcorr(EGFL7)
-GGally::ggpairs(EGFL7)
-psych::pairs.panels(EGFL7)
+EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
+print(EGF01)
+GGally::ggcorr(EGF01)
+GGally::ggpairs(EGF01)
+psych::pairs.panels(EGF01)
  
   
   #Spearman correlation (Non-parametric / ordinals)
