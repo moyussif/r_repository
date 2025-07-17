@@ -44,7 +44,44 @@ df <- df %>% select(-c(Age, Gender))
 
 
 #  #  #
+================================================================================
 
+================================================================================
+install.packages("ggstatsplot") 
+library(ggstatsplot)
+library(readxl) 
+EGFL <- read_excel("C:/Users/User/Desktop/EGFL.xlsx")
+print(EGFL)
+
+ 
+ggscatterstats(
+  data = EGFL,
+  x = `EGFL ELISA`,
+  y = `sENG ELISA`,
+  type = "nonparametric")  
+
+
+# creating a plot
+p <- ggscatterstats(
+  EGFL,
+  x = 'EGFL ELISA',
+  y = 'sENG ELISA',
+  label.var = 'PE only',
+  label.expression = 'sENG ELISA' > 7.6
+) +
+  ggplot2::geom_rug(sides = "b")
+
+
+ggcoefstats()
+
+
+# looking at the plot
+p
+
+# extracting details from statistical tests
+extract_stats(p)
+================================================================================  
+  
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 +                               Regression Analysis                                                  +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -126,7 +163,7 @@ sample_data <- data.frame(x=1:10,
                           y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
 View(sample_data)
 
-#------------ fit linear -----------------
+#------------------------- fit linear ------------------------------------------
 # create a basic scatterplot 
 plot(sample_data$x, sample_data$y)
 # define x-axis values 

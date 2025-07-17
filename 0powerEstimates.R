@@ -291,7 +291,7 @@ wp.logistic(n = NULL, p0 = 0.15, p1 = 0.25, alpha = 0.05, power = 0.80,
             family = "normal")  
   
 #To generate a power curve given a sequence of sample sizes:
-range_size <- wp.logistic(n = seq(250,600,50), p0 = 0.15, p1 = 0.1, alpha = 0.05,
+range_size <- wp.logistic(n = seq(2000,3000,500), p0 = 0.15, p1 = 0.1, alpha = 0.05,
                    power = NULL, family = "normal", parameter = c(0,1))
 range_size
 
@@ -332,7 +332,7 @@ plot(range_size)
   
   
 #3--------To generate sequence of sample sizes given power and effect size:
-multi.samples <- wp.poisson(n = seq(400, 1600, 100), exp0 = 2.798, exp1 = 0.8938,
+multi.samples <- wp.poisson(n = seq(2000, 2500, 500), exp0 = 2.798, exp1 = 0.8938,
                             alpha = 0.05, power = NULL, family = "Bernoulli", parameter = 0.53)
 multi.samples  
 #4--------To plot the power curve:  
@@ -352,7 +352,7 @@ library(WebPower)-----------------------------------------------------------
 # f----------Effect size 0.1(small), 0.25(medium), 0.4(large)
 # n ---------sample size.
 # j ---------number of clusters
-# icc -------intra class corellation (degree to which two randomly obs within a cluster are correlated )
+# icc -------intra class correlation (degree to which two randomly obs within a cluster are correlated )
 wp.crt2arm(n = NULL, f = NULL, J = NULL, icc = NULL, alpha = 0.05, power = 0.80,alternative = ("two.sided", "one.sided"))
   
 #----CRT sample size(number per cluster)    
@@ -360,9 +360,9 @@ wp.crt2arm(n = NULL, f = 0.25, J = 100, icc = 0.1, alpha = 0.05, power = 0.80, a
 #----CRT sample size(number of clusters)  
 wp.crt2arm(n = 15, f = 0.25, J = NULL, icc = 0.1, alpha = 0.05, power = 0.80, alternative = "two.sided") 
 --------------------------------------------------
-wp.crt2arm(f = 0.25, n = NULL, J = 10, icc = 0.1, alpha = 0.05, power = 0.8)
+wp.crt2arm(f = 0.25, n = NULL, J = 7, icc = 0.1, alpha = 0.05, power = 0.8)
 #Generate sequence of sample sizes:
-range.sequence <- wp.crt2arm(f = 0.6, n = seq(20,100,10), J = 10, icc = 0.1, alpha = 0.05, power = NULL)
+range.sequence <- wp.crt2arm(f = 0.25, n = seq(250,500,50), J = 7, icc = 0.1, alpha = 0.05, power = NULL)
 range.sequence
 
 plot(range.sequence)

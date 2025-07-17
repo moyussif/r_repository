@@ -186,7 +186,7 @@ par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
 install.packages(
-  "AICcmodavg",
+  "webr",
   repos = c("http://rstudio.org/_packages",
             "http://cran.rstudio.com")
 )
@@ -235,7 +235,7 @@ immu <- ggplot(data = imdata,
   geom_point()+theme_classic()
 immu
 #creating density plot 
-immu1 <- ggplot(data = imdata,
+immu1 <- ggplot(data = mdata,
                 mapping = aes(x = diastol1, colour = CaseControl))+
   geom_density()
 immu1
@@ -252,14 +252,15 @@ ht <-ggplot(data = imdata,
   geom_bar()
 ht
 #column Barchrt
-ht1 <-ggplot(data = imdata,
-             mapping = aes(x = expose, colour = expose, fill = expose))+
+ht1 <-ggplot(data = amdata,
+             mapping = aes(x = gender, colour = target, fill = target))+
   geom_bar()
 ht1
 #stacked Barchart
-ht2 <-ggplot(data = imdata,
-             mapping = aes(x = CaseControl, fill = expose))+
-  geom_bar()
+ht2 <-ggplot(data = amdata,
+             mapping = aes(x = gender, colour = target))+
+  geom_bar()+
+  theme_classic()
 ht2
 
 #------------------------------ Histogram:-------------------------
@@ -288,13 +289,13 @@ hh + scale_fill_viridis_d(direction = -1)
 hh
 
 #----------------------------- Boxplot:----------------------------
-immu <- ggplot(data = imdata,
-               mapping = aes(x = systol1, y = diastol1))+
+immu <- ggplot(data = amdata,
+               mapping = aes(x = gender, y = estimated_parasitemia))+
   geom_boxplot()
 immu
 # Boxplot by category ##
-immu <- ggplot(data = imdata,
-               mapping = aes(x = systol1, y = diastol1, colour = expose))+
+immu <- ggplot(data = amdata,
+               mapping = aes(x = gender, y = estimated_parasitemia, colour = target))+
   geom_boxplot()
 immu
 
@@ -318,10 +319,10 @@ immwrp <- ggplot(data = imdata,
 immwrp
 
 # Facet grid
-immgrd <- ggplot(data = imdata,
-                 mapping = aes(x = systol1, y = diastol1, colour = grvdty))+
+immgrd <- ggplot(data = amdata,
+                 mapping = aes(x = gender, y =age, colour = estimated_parasitemia))+
   geom_violin()+
-  facet_grid(CaseControl~expose)
+  facet_grid(estimated_parasitemia~age)
 immgrd
 
 #---------------------- Label & Annotation
@@ -394,8 +395,21 @@ ggsave("p.png")
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                        TEST OF ONE / TWO SAMPLES                                                 +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-  #------------------One sample t-test with obs as VECTORS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+library(psych)
+library(readxl) 
+library(lessR)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+amdata <- read_excel("ARMdata.xlsx")
+print(amdata)  
+
+describe(amdata)  
+t.test(estimated_parasitemia ~ gender, data=amdata, var.equal=FALSE, conf.level=0.95)
+
+  
+  
+#------------------One sample t-test with obs as VECTORS
 observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
 theoretical = 0
 
@@ -435,7 +449,7 @@ wilcox.test(Value ~ Group, data=Data)
 #Box plots
 boxplot(Value ~ Group, data = Data, names=c("2 pm","5 pm"), ylab="Value")
 
-boxplot(age ~ CaseControl, data = imdata, names=c("Control","Case"), ylab="Value")
+boxplot(estimated_parasitemia ~ age, data=imdata, names=c("Control","Case"), ylab="Value")
 
 #  #  #
 
@@ -453,20 +467,20 @@ abline(0,1, col="blue", lwd=2)
 library(lessR)
 library(readxl)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
+imdata <- read_excel("ARMdata.xlsx")
 print(imdata)
 #normality assumption
-tapply(imdata$age, imdata$expose, shapiro.test)
+tapply(imdata$estimated_parasitemia, imdata$age, shapiro.test)
 library(car)
-leveneTest(age ~ expose, data=imdata)
+leveneTest(estimated_parasitemia ~ age, data=imdata)
 #One-way ANOVA
-ANOVA(age ~ expose, data=imdata)
+ANOVA(estimated_parasitemia ~ site_name, data=imdata)
 #effect size(for groups with significant)
 library(effsize)
 cohen.d(age ~ expose, data=subset(imdata, expose!= "non exposed"), paired=FALSE)        
 cohen.d(age ~ expose, data=subset(imdata, expose!= "singleexposed"),paired=FALSE)        
 #Bar charts 
-age_means <- tapply(imdata$age, imdata$expose,mean)
+age_means <- tapply(imdata$estimated_parasitemia, imdata$age,mean)
 
 BarChart(age_means)
 BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
@@ -474,7 +488,7 @@ BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
 #ggplot2
 library(ggplot2)
 
-p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+ geom_density(alpha = 0.7)
+p <- ggplot(imdata, aes(x=estimated_parasitemia, color = age, fill=age))+ geom_density(alpha = 0.7)
 p
 p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+ geom_density(alpha = 0.4)
 p1
@@ -489,19 +503,19 @@ library(ggplot2)
 library(ggpubr)
 library(readxl)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
+amdata <- read_excel("ARMdata.xlsx")
 
-describe(imdata)
+describe(amdata)
 #plot
-p <- ggplot(imdata, aes(x=age, color = expose, fill=expose))+geom_density(alpha = 0.7)
+p <- ggplot(amdata, aes(x=site_name, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.7)+theme_minimal()
 p
-p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+geom_density(alpha = 0.4)
+p1 <- ggplot(imdata, aes(x=age, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.4)+theme_cleveland()
 p1
-p2 <- ggboxplot(imdata, "expose", "age", fill = "expose", palette = get_palette("default", 3), add = "jitter")
+p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.5)+theme_gray()
 p2
 
 #to arrange plot for publication
-ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "C"), ncol = 3, nrow = 1,
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
           common.legend = TRUE, legend = "bottom")
 #residuals
 res_aov <- aov(bmi ~ expose, data = imdata)
@@ -527,7 +541,7 @@ leveneTest(bmi ~ expose*CaseControl*sex*mode*grvdty, data = imdata)
 bartlett.test(bmi ~ grvdty, data = imdata)
 bartlett.test(bmi ~ interaction(grvdty,sex,expose), data = imdata)
 #One_way Anova
-one <- aov(bmi ~ grvdty, data = imdata)
+one <- aov(estimated_parasitemia ~ age, data = imdata)
 summary(one)
 #Two_way Anova
 two <- aov(bmi ~ expose + grvdty, data = imdata)
