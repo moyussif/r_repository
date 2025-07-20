@@ -200,7 +200,46 @@ library(readxl)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 imdata <- read_excel("immuData.xlsx")
 View(imdata)
+------------------------------------------------------------------------------------------------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+ARMdata <- read_csv("Untitled2.csv")
+print(ARMdata)
 
+#Convert categorical variable to factors
+ARMdata$Age <-as.integer(ARMdata$Age)
+ARMdata$Gender <-as.factor(ARMdata$Gender)
+ARMdata$AgeGroup <-as.factor(ARMdata$AgeGroup)
+ARMdata$study_site <-as.factor(ARMdata$study_site)
+ARMdata$ParasitePresence <-as.factor(ARMdata$ParasitePresence)
+str(ARMdata)
+###
+ARMdata <- ARMdata %>%
+select(Dateenroll, Gender,   Age, AgeGroup, study_site, ParasitePresence, -study__1 ) 
+print(ARMdata)
+#Recoding Back
+
+ARMdata$Age <-as.integer(ARMdata$Age)
+ARMdata$ParasitePresence <-factor(ARMdata$ParasitePresence,
+                                  levels = c(0,1),
+                                  labels = c("Negative", "Positive"))
+  
+ARMdata$AgeGroup <-factor(ARMdata$AgeGroup,
+                          levels = c(0,1,2),
+                          labels = c("Below 5yrs", "5 - 14yrs", "Above 14 yrs "))
+  
+ARMdata$Gender <-factor(ARMdata$Gender,
+                        levels = c(0,1),
+                        labels = c("Female", "Male"))
+  
+ARMdata$study_site <-factor(ARMdata$study_site,
+                            levels = c(1,2,3,4,5,6,7,8,9,10),
+                            labels = c("Ada East", "Dzodze", "Ejura", "Kade", "Kenyase", "Nkoranza", "Saboba", "Walewale", "Weija", "Zebilla"))
+str(ARMdata)
+print(ARMdata) 
+  
+  
+  
+------------------------------------------------------------------------------------------------------------------------
 #-------------------------------- Pie Chart ------------------------
 slices <- c(18, 35, 47, 64)
 lbls <- c( "None", "Low", "Medium", "High")
@@ -252,13 +291,13 @@ ht <-ggplot(data = imdata,
   geom_bar()
 ht
 #column Barchrt
-ht1 <-ggplot(data = amdata,
-             mapping = aes(x = gender, colour = target, fill = target))+
+ht1 <-ggplot(data = ARMdata,
+             mapping = aes(x = Gender, colour = ParasitePresence, fill = ParasitePresence))+
   geom_bar()
 ht1
 #stacked Barchart
-ht2 <-ggplot(data = amdata,
-             mapping = aes(x = gender, colour = target))+
+ht2 <-ggplot(data = ARMdata,
+             mapping = aes(x = AgeGroup, colour = ParasitePresence,fill = ParasitePresence))+
   geom_bar()+
   theme_classic()
 ht2
@@ -317,6 +356,32 @@ immwrp <- ggplot(data = imdata,
   geom_violin()+
   facet_wrap(~expose)
 immwrp
+-------------------------------------------------------------------------------------
+  ht2 <-ggplot(data = ARMdata,
+               mapping = aes(x = Gender, colour = AgeGroup,fill = AgeGroup))+
+  geom_bar()+
+  labs(title ="Parasite Across 10 Site ", subtitle = "Parasitemia estimation across age and gender",caption = "By Parasitology Team")+
+  annotate( "text",x = 145,y = 90, label =" Dynamic of Parasite Infection", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)+
+  theme_bw()+scale_colour_viridis_d()+
+  facet_wrap(~study_site)  
+ht2
+
+p <- ggplot(ARMdata, aes(x=study_site, color = ParasitePresence, fill=ParasitePresence,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_update()+scale_color_jama()
+p
+p1 <- ggplot(ARMdata, aes(x=AgeGroup, color = ParasitePresence, fill=ParasitePresence))+geom_bar(alpha = 0.8)+theme_test()
+p1
+p2 <- ggplot(ARMdata, aes(x=Gender, color = ParasitePresence, fill = ParasitePresence))+geom_bar(alpha = 0.8)+theme_update()
+p2
+p2 <- PieDonut(ARMdata, aes(ParasitePresence, AgeGroup ), title = "Expose status")
+
+#to arrange plot for publication
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
+          common.legend = TRUE, legend = "bottom")
+
+-------------------------------------------------------------------------------------
+
+
 
 # Facet grid
 immgrd <- ggplot(data = amdata,
@@ -350,7 +415,7 @@ immuLAB <- ggplot(data = imdata)+
   theme_classic()+scale_colour_viridis_d()
 immuLAB
 #--------------viridis(City\nCenter)--------------------------------
-immuLAB <- ggplot(data = imdata)+
+immuLAB <- ggplot(data = ARMdata)+
   geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
   labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
   annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy", color ="purple",
@@ -507,11 +572,11 @@ amdata <- read_excel("ARMdata.xlsx")
 
 describe(amdata)
 #plot
-p <- ggplot(amdata, aes(x=site_name, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.7)+theme_minimal()
+p <- ggplot(amdata, aes(x=site_name, color = estimated_parasitemia, fill=target,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
 p
-p1 <- ggplot(imdata, aes(x=age, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.4)+theme_cleveland()
+p1 <- ggplot(imdata, aes(x=age, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.8)+theme_cleveland()
 p1
-p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.5)+theme_gray()
+p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_gray()
 p2
 
 #to arrange plot for publication
@@ -667,9 +732,9 @@ library(GGally)
 library(readxl)
 EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
 print(EGF01)
-GGally::ggcorr(EGF01)
-GGally::ggpairs(EGF01)
-psych::pairs.panels(EGF01)
+GGally::ggcorr(ARMdata1)
+GGally::ggpairs(ARMdata1)
+psych::pairs.panels(ARMdata1)
 ================================================================================== 
   
   #Spearman correlation (Non-parametric / ordinals)
@@ -926,13 +991,22 @@ library(ggplot2)
 library(ggpubr)
 library(dplyr)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
-View(imdata)
-str(imdata)
+ARMdata <- read_csv("Untitled2.csv")
+print(ARMdata)
+str(ARMdata)
 #Convert categorical variable to factors
-imdata$CaseControl <-as.factor(imdata$CaseControl)
-imdata$parity <-as.factor(imdata$parity)
-str(imdata)
+ARMdata$ParasitePresence <-as.factor(ARMdata$ParasitePresence)
+ARMdata$AgeGroup <-as.factor(ARMdata$AgeGroup)
+ARMdata$Gender <-as.factor(ARMdata$Gender)
+ARMdata$study_site <-as.factor(ARMdata$study_site)
+str(ARMdata)
+
+multi_logist <- glm(ParasitePresence ~ Gender + AgeGroup + study_site, data = ARMdata, family = "binomial" )
+summary(multi_logist)
+confint(multi_logist)
+exp(coef(multi_logist))
+exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+
 #Create contingency table of categorical outcome and predictors we want to make sure no 0 cells.
 table(imdata$CaseControl,imdata$parity)
 #regression model

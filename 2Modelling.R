@@ -508,6 +508,7 @@ library(ggplot2)
 library(tseries)
 library(forecast)
 library(readxl)
+library(readr)
 #-------------------------------------------------------------------------------
 
 Converting date to time series
@@ -586,7 +587,31 @@ Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 #alternate the lag values until the P.values is > 0.05  ---- indicate No further autocorrelation
 
 #   #   #
+------------------------------------------------------------------------------------------------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")  
+cnfm <- read_csv("cnfm.csv")  
+#
+cnfm <- cnfm %>%
+  select(Dateenroll, Gender,   Age, AgeGroup, study_site)
+print(cnfm) 
 
+# 
+cnfm$Age <-as.integer(cnfm$Age)
+
+
+cnfm$AgeGroup <-factor(cnfm$AgeGroup,
+                       levels = c(0,1,2),
+                       labels = c("Below 5yrs", "5 - 14yrs", "Above 14 yrs "))
+
+cnfm$Gender <-factor(cnfm$Gender,
+                     levels = c(0,1),
+                     labels = c("Female", "Male"))
+
+cnfm$study_site <-factor(cnfm$study_site,
+                         levels = c(1,2,3,4,5,6,7,8,9,10),
+                         labels = c("Ada East", "Dzodze", "Ejura", "Kade", "Kenyase", "Nkoranza", "Saboba", "Walewale", "Weija", "Zebilla"))
+---------------------------------------------------------------------------------------------------------------------------------------------
+#  #  #
 =========================== Time series Using ggplot2 ==========================
 #------------------------------------------------------------------------------
 library(readxl)
