@@ -103,7 +103,27 @@ df <- df %>% select(-c(Age, Gender))
 
 
 #  #  #
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                    Merge Data
+---------------------------------------------------------------------------------------------------------
+library(readxl)
+library(readr)
+library(writexl)
+library(tidyverse)
+library(dplyr)
 
+df2 <- read_excel("C:/Users/User/Desktop/Epid.csv")
+print(df1)
+df1 <- read_excel("C:/Users/User/Desktop/Lab.csv")
+print(df2)
+
+names(df1)
+names(df2)
+joined_df <- left_join(df1, df2, by = "SAMPLE_ID")
+ View(joined_df)
+str(joined_df)
+
+write_xlsx(joined_df, "Mergedoo.xlsx")
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                  Explore data                                                        +
