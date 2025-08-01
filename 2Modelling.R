@@ -532,12 +532,13 @@ Yearly data
 --------------------------------------------------------------------------------
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 tdata <- read_excel("CTrends.xlsx")
-View(tdata)
-class(tdata)
-boxplot(attendance~Date, data = tdata)
+cnfm <- read_csv("cnfm.csv")
+View(cnfm)
+class(cnfm)
+boxplot(ParasitePresence~Date, data = cnfm)
 --------------------------------------------------------------------------------
 #To control//make the variance Equal
-log(tdata$attendance)
+log(cnfm$ParasitePresence)
 plot(log(tdata$attendance))  
 #To control//make the mean Equal
 plot(diff(log(tdata$attendance)))
@@ -591,8 +592,6 @@ Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")  
 cnfm <- read_csv("cnfm.csv")  
 #
-cnfm <- cnfm %>%
-  select(Dateenroll, Gender,   Age, AgeGroup, study_site)
 print(cnfm) 
 
 # 

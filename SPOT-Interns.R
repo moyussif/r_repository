@@ -1,42 +1,104 @@
-
 rm(list=ls())
 gc(reset = TRUE)
-#set directorate
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-#-------------------------------------------------------------------------------
-Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
-#---------------------------- Import functions ---------------------------------
-child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
-library(readr)
-all_data2 <- read_csv(file = 'children_data.csv')                               
+#--------------------------- required packages _________________________________
 library(readxl)
-imdata <- read_excel("C:/Users/User/Desktop/repos/immunoData.xlsx")
-library(rio)
-import("C:/Users/User/Desktop/repos/NNJ.csv")
+library(readr)
+library(writexl)
+library(tidyverse)
+library(RColorBrewer)
+library(ggpubr)
+library(psych)
+library(car)
+library(lessR)
+library(plotrix)
+library(FSA)
+library(Hmisc)
+library(epitools)
+
+-------------------------------------------------------------------------------------------------------------
+
+setwd("C:/Users/User/Desktop")
+ghdata <- read_excel("amp.xlsx")
+print(ghdata)
+
+p <- ggplot(ghdata, aes(x=  Status, color = Count, fill=Lineage,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
+p
+p1 <- ggplot(ghdata, aes(x= Status, color = Count, fill=Status))+geom_bar(alpha = 0.8)+theme_minimal()
+p1
+p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_minimal()
+p2
+
+#to arrange plot for publication
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
+          common.legend = TRUE, legend = "bottom")
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+
+
+
+#---------------------------- Import functions ---------------------------------
+#set directorate 
+setwd("C:/Users/User/Desktop")
+ghsdata <- read_excel("yussif.xlsx")
+
+library(readr)
+csv <- read_csv("yussif.csv")
+#simply---------------------
+library(readxl)
+ghsdata <- read_excel("C:/Users/User/Desktop/yussif.xlsx")
+
+View(ghsdata)
+print(ghsdata)
 #--------------------------- EXport function  
 library(writexl)
-write_xlsx(table1, "eigentable.xlsx")
+write_xlsx(ghsdata, "newData.xlsx")
 
-#--------------------------- Reshape data  
-library(tidyr) 
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-HTdata <- read_excel("HTdata.xlsx")
-print(HTdata)
-# use gather()function to make data longer
-long <- HTdata %>%  
-  gather(fullName, Frequency, 
-         first_trimester, second_trimester, third_trimester)
-print(long)
-# use separate()function 
-separate_data <- long %>%  
-  separate(fullName, c("firstName","secondName"))
-separate_data
-# use unite() function 
-unite_data <- separate_data %>%  
-  unite(fullName, firstName, secondName, sep = " ") 
-unite_data
+#  #  #
 
-#-------------------------- Data Conversion 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                Merge Data
+--------------------------------------------------------------------------------
+library(readxl)
+library(readr)
+library(writexl)
+library(tidyverse)
+library(dplyr)
+
+df2 <- read_excel("C:/Users/User/Desktop/Epid.csv")
+print(df1)
+df1 <- read_excel("C:/Users/User/Desktop/Lab.csv")
+print(df2)
+
+names(df1)
+names(df2)
+joined_df <- left_join(df1, df2, by = "SAMPLE_ID")
+View(joined_df)
+str(joined_df)
+
+write_xlsx(joined_df, "Mergedoo.xlsx")
+
+#  #  #
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                             Data flow Dplyr                                  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+library(tidyverse)
+library(dplyr)
+ghsdata1 <- ghsdata %>%
+  select(Status, Age, Gravidity, Parity, bld_grp, Weight, Height, Systolic, Diastolic, ModeOfDelivery, Babysex, Apgar1min, -Apgar5min) %>% 
+  filter(Age > 20)        
+print(ghsdata1)
+
+# Remove the 'Apgar1min' column
+ghsdata1 <- ghsdata1 %>% select(-Apgar1min)
+print(ghsdata1)
+#Remove multiple columns
+ghsdata1 <- ghsdata1 %>% select(-c(Age, Gender))
+#  #  #
+-------------------------- Data Conversion ------------------------------------ 
 #Categorical data
 sex <- as.factor(data$gender)
 salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
@@ -48,89 +110,59 @@ Income <- as.integer(data$salary)
 #Date to time series
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
 hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
+#----------------------------Examples
+library(ggplot2)
+library(RColorBrewer)
+library(plotrix)
+library(webr)
+library(readxl)
+str(ghsdata1)
+ghsdata1$Age <-as.integer(ghsdata1$Age)
+ghsdata1$Gravidity <- as.integer(ghsdata1$Gravidity)
+ghsdata1$Parity <- as.integer(ghsdata1$Parity)
+ghsdata1$Status <-factor(ghsdata1$Status,
+                                  levels = c(1,2),
+                                  labels = c("control", "case"))
 
+ghsdata1$Babysex <-factor(ghsdata1$Babysex,
+                          levels = c(1,2),
+                          labels = c("Male", "Female"))
+
+ghsdata1$ModeOfDelivery <-factor(ghsdata1$ModeOfDelivery,
+                        levels = c(1,2),
+                        labels = c("Vaginal", "Caesarean"))
+
+ghsdata1$bld_grp <-factor(ghsdata1$bld_grp,
+                            levels = c(1,2,3,4),
+                            labels = c("A positive", "B positive", "AB positive", "O positive"))
+str(ghsdata1)
+print(ghsdata1)
 #   #   #
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  When packages are loadings fails ----use the codes below
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  
-install.packages(                                                
-  "VIM",
-  repos = c("http://rstudio.org/_packages",                      
-            "http://cran.rstudio.com")                           
-)                                                                
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#  #  #
-  
-  
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                     Data flow Dplyr                                                  +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-library(tidyverse)
-library(dplyr)
-data2 <- imdata %>%
-  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
-  filter(hb > 10)        
-print(data2)
 
-#  #  #
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                 HANDLING MISSING DATA                                               +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
-print(imdata)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                               Explore data                                   +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+#_______________________________________________________________________________
+ +                            HANDLING MISSING DATA                            +
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #Missing Data Summary-----------------
-summary(data2)
+summary(ghsdata1)
 # Count missing values in each column
-missing_per_column <- colSums(is.na(data2))
+missing_per_column <- colSums(is.na(ghsdata1))
 print(missing_per_column)
 # Remove rows with any missing values 
-cleaned_data <- na.omit(data2)
+cleaned_data <- na.omit(ghsdata1)
 print(cleaned_data)
-# Perform mean imputation for the 'salary' column where NA values are present
-mean_salary <- mean(data$Salary, na.rm = TRUE)
 
-# Perform KNN imputation
-library(VIM)  
-# Perform KNN imputation
-data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
+verify_missing <- colSums(is.na(cleaned_data))
+print(verify_missing)
 
-# Remove the 'Age' column
-df <- df %>% select(-Age)
-#Remove multiple columns
-df <- df %>% select(-c(Age, Gender))
+#  #  #  
 
-
-#  #  #
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    Merge Data
----------------------------------------------------------------------------------------------------------
-library(readxl)
-library(readr)
-library(writexl)
-library(tidyverse)
-library(dplyr)
-setwd("C:/Users/User/Desktop")
-df2 <- read_csv("epi1.csv")
-print(df1)
-df1 <- read_csv("lab1.csv")
-print(df2)
-
-str(df2)
-
-names(df1)
-names(df2)
-join_df <- left_join(df1, df2, by = "SAMPLE_ID", relationship = "many-to-many")
- View(join_df)
-str(join_df)
-
-write_xlsx(join_df, "lastmerged.csv")
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                  Explore data                                                        +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#                               Data Transformation 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+                             Data Transformation 
 #-------------------------------------------------------------------------------------------------------
 skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96     #Skewness = Mean - Median
 ---------- -        |                   --------- -          #            -------------
@@ -140,45 +172,40 @@ POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # 
 #-------------------------------------------------------------------------------------------------------
 library(psych)
 library(readxl)
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
 
-skew(imdata$age, na.rm = TRUE)
-kurtosi(imdata$age, na.rm = TRUE)
-mardia(imdata$age,na.rm = TRUE)
+skew(ghsdata1$Age, na.rm = TRUE)
+kurtosi(ghsdata1$Age, na.rm = TRUE)
+
 
 #Square root Transformation ==== moderately skew (-1 to -0.5 // 0.5 to 1 )
-sq_data <-sqrt(imdata$bmi)
+sq_data <-sqrt(ghsdata1$Age)
 hist(sq_data)
 #Cube root==== moderately----right skewed can apply to negative and zero values
-cb_data <-sign(imdata$age)*abs(imdata$age)^(1/3)
+cb_data <-sign(ghsdata1$Age)*abs(ghsdata1$Age)^(1/3)
 hist(cb_data)
 #Log Transformation====highly skewed (above 1),Cannot be applied negative/zero values
 lg_data <-log(imdata$systol1)
 hist(lg_data)
 
 #-----------------Confidence interval of the mean
-t.test(imdata$ bwgt,
+t.test(ghsdata1$Age,
        conf.level=0.95)         
 
-#     #     #
-
-
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                              Descriptive statistics                                         +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#   #   #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Descriptive statistics                            +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 library(skimr)
-skim_without_charts(imdata)
+skim_without_charts(ghsdata1)
 library(psych)
-summary(imdata)
-describe(imdata)
+summary(ghsdata1)
+describe(ghsdata1$Age)
 
 summary(imdata$bwgt)
 describe(imdata$bwgt)
 
 Histogram
-hist(imdata$ bwgt, col="gray", main="Immuno assay data", xlab="Birthwgt")
+hist(ghsdata1$Age, col="gray", main="NCD for pregnant women", xlab="Birthweight")
 # Will also report count of NA’
 describe(imdata$bwgt, type=2)    
 #-------------- aggregate data Table for report
@@ -204,7 +231,7 @@ imdata %>%
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                             Visualization with ggplot2                                            +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-par()
+  par()
 #par(mfrow = c(2,2))                               par(mfrow = c(4,4))
 #plot(data$vars)                                   plot(data$vars)
 install.packages(
@@ -214,55 +241,11 @@ install.packages(
 )
 
 
-library(ggplot2)
-library(RColorBrewer)
-library(plotrix)
-library(webr)
-library(readxl)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 imdata <- read_excel("immuData.xlsx")
 View(imdata)
-------------------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-ARMdata <- read_csv("Untitled2.csv")
-print(ARMdata)
 
-#Convert categorical variable to factors
-ARMdata$Age <-as.integer(ARMdata$Age)
-ARMdata$Gender <-as.factor(ARMdata$Gender)
-ARMdata$AgeGroup <-as.factor(ARMdata$AgeGroup)
-ARMdata$study_site <-as.factor(ARMdata$study_site)
-ARMdata$ParasitePresence <-as.factor(ARMdata$ParasitePresence)
-str(ARMdata)
-###
-ARMdata <- ARMdata %>%
-select(Dateenroll, Gender,   Age, AgeGroup, study_site, ParasitePresence, -study__1 ) 
-print(ARMdata)
-#Recoding Back
-
-ARMdata$Age <-as.integer(ARMdata$Age)
-ARMdata$ParasitePresence <-factor(ARMdata$ParasitePresence,
-                                  levels = c(0,1),
-                                  labels = c("Negative", "Positive"))
-  
-ARMdata$AgeGroup <-factor(ARMdata$AgeGroup,
-                          levels = c(0,1,2),
-                          labels = c("Below 5yrs", "5 - 14yrs", "Above 14 yrs "))
-  
-ARMdata$Gender <-factor(ARMdata$Gender,
-                        levels = c(0,1),
-                        labels = c("Female", "Male"))
-  
-ARMdata$study_site <-factor(ARMdata$study_site,
-                            levels = c(1,2,3,4,5,6,7,8,9,10),
-                            labels = c("Ada East", "Dzodze", "Ejura", "Kade", "Kenyase", "Nkoranza", "Saboba", "Walewale", "Weija", "Zebilla"))
-str(ARMdata)
-print(ARMdata) 
-  
-  
-  
-------------------------------------------------------------------------------------------------------------------------
-#-------------------------------- Pie Chart ------------------------
+#-------------------------------- Pie Chart ---------------------------------
 slices <- c(18, 35, 47, 64)
 lbls <- c( "None", "Low", "Medium", "High")
 pct <- round(slices/sum(slices)*100)
@@ -278,7 +261,7 @@ lbls <- c( "None", "Low", "Medium", "High")
 pie3D(slices,labels=lbls,explode=0.1,
       main="Pie Chart of exposure ")
 
-#------------------------------- Donut chart ----------------------
+#------------------------------- Donut chart --------------------------------
 install.packages("webr")
 library(webr)
 # Pie-Donut chart
@@ -290,7 +273,7 @@ PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 2
 #Explode Donut for Case
 PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 1, explodeDonut=TRUE)
 
-#------------------------------ plotting points ------------------- 
+#------------------------------ plotting points ----------------------------- 
 immu <- ggplot(data = imdata,
                mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
   geom_point()+theme_classic()
@@ -307,7 +290,7 @@ immu2 <- ggplot(data = imdata,
   geom_point()
 immu2
 
-#------------------------------ Barchart: ------------------------
+#------------------------------ Barchart: -----------------------------------
 ht <-ggplot(data = imdata,
             mapping = aes(x = expose))+
   geom_bar()
@@ -324,7 +307,7 @@ ht2 <-ggplot(data = ARMdata,
   theme_classic()
 ht2
 
-#------------------------------ Histogram:-------------------------
+#------------------------------ Histogram:-----------------------------------
 ht3 <-ggplot(data = imdata,
              mapping = aes(x = systol1))+
   geom_histogram()
@@ -341,7 +324,7 @@ ht <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
 ht
-#--------------------------Viridis-(Histogram)---------------------
+#--------------------------Viridis-(Histogram)-------------------------------
 hh <-ggplot(data = imdata,
             mapping = aes(x = systol1, fill = expose))+
   geom_histogram(bins = 10, position = "dodge")
@@ -349,7 +332,7 @@ hh + scale_fill_viridis_d()
 hh + scale_fill_viridis_d(direction = -1)
 hh
 
-#----------------------------- Boxplot:----------------------------
+#----------------------------- Boxplot:-------------------------------------
 immu <- ggplot(data = amdata,
                mapping = aes(x = gender, y = estimated_parasitemia))+
   geom_boxplot()
@@ -378,36 +361,10 @@ immwrp <- ggplot(data = imdata,
   geom_violin()+
   facet_wrap(~expose)
 immwrp
--------------------------------------------------------------------------------------
-  ht2 <-ggplot(data = ARMdata,
-               mapping = aes(x = Gender, colour = AgeGroup,fill = AgeGroup))+
-  geom_bar()+
-  labs(title ="Parasite Across 10 Site ", subtitle = "Parasitemia estimation across age and gender",caption = "By Parasitology Team")+
-  annotate( "text",x = 145,y = 90, label =" Dynamic of Parasite Infection", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_bw()+scale_colour_viridis_d()+
-  facet_wrap(~study_site)  
-ht2
-
-p <- ggplot(ARMdata, aes(x=study_site, color = ParasitePresence, fill=ParasitePresence,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_update()+scale_color_jama()
-p
-p1 <- ggplot(ARMdata, aes(x=AgeGroup, color = ParasitePresence, fill=ParasitePresence))+geom_bar(alpha = 0.8)+theme_test()
-p1
-p2 <- ggplot(ARMdata, aes(x=Gender, color = ParasitePresence, fill = ParasitePresence))+geom_bar(alpha = 0.8)+theme_update()
-p2
-p2 <- PieDonut(ARMdata, aes(ParasitePresence, AgeGroup ), title = "Expose status")
-
-#to arrange plot for publication
-ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
-          common.legend = TRUE, legend = "bottom")
-
--------------------------------------------------------------------------------------
-
-
-
+ 
 # Facet grid
 immgrd <- ggplot(data = amdata,
-                 mapping = aes(x = gender, y =age, colour = estimated_parasitemia))+
+                   mapping = aes(x = gender, y =age, colour = estimated_parasitemia))+
   geom_violin()+
   facet_grid(estimated_parasitemia~age)
 immgrd
@@ -415,68 +372,13 @@ immgrd
 #---------------------- Label & Annotation
 immuLAB <- ggplot(data = imdata)+
   geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)
-immuLAB
-#  Alternative
-immuLAB <- ggplot(data = imdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")
 immuLAB
 
-#---------------------- Viridis -------------------
-immuLAB <- ggplot(data = imdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()+scale_colour_viridis_d()
-immuLAB
-#--------------viridis(City\nCenter)--------------------------------
-immuLAB <- ggplot(data = ARMdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()+scale_colour_viridis_d(option = "City\nCenter")
-immuLAB
+print(immuLAB)
 
-#------------------- Error Bars ------------------------------------
-
-  install.packages(
-    "DMwR",
-    repos = c("http://rstudio.org/_packages",
-              "http://cran.rstudio.com")
-  )
-  
-library(magrittr)
-library(readxl)
-library(tidyverse)
-library(ggplot2)
-library(ggsci)
-library(ggpubr)
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-vkdata <- read_excel("VMB-1.xlsx")
-print(vkdata)
-
-# Default bar plot
-p<- ggplot(vkdata, aes(x=Sex_frequency, y=AGE, fill=Abnormal_discharge)) + 
-  geom_bar(stat="identity", color="grey", 
-           position=position_dodge()) +
-  geom_errorbar(aes(ymin=AGE-sd(AGE), ymax=AGE+sd(AGE)), width=.2,
-                position=position_dodge(.9))+
-  theme_light()+
-  scale_colour_aaas()+
-  labs(title="number of affairs ", x="Frequency of sex", y = "Age")
- 
-print(p)
-  
 # Save plot 
-ggsave("p.png")
+ggsave("immuLAB.png")
 
 #   #   #
 
@@ -494,23 +396,14 @@ print(amdata)
 describe(amdata)  
 t.test(estimated_parasitemia ~ gender, data=amdata, var.equal=FALSE, conf.level=0.95)
 
-  
-  
-#------------------One sample t-test with obs as VECTORS
-observed    = c(0.52, 0.20, 0.59, 0.62, 0.60)
-theoretical = 0
-
-t.test(observed, mu = theoretical, conf.int = 0.95)
-
 #-----------------One sample t-test with obs as DATA.FRAME--------------------- 1_sample
-observed    = Data$Angle
-theoretical = 50
+observed    = Data$Age
+theoretical = 40
 hist(Data$ Angle, col="gray", main="Histogram of values", xlab="Angle")
 
 t.test(observed, mu = theoretical, conf.int=0.95)
 
 #  #  #
-
 #------------------Two Samples Student’s t–test for --------------------------- 2_sample
 Two-sample t-test, independent (unpaired) observations
 bartlett.test(Value ~ Group, data=Data) #If p-value >= 0.05, use var.equal=TRUE below.
@@ -580,132 +473,11 @@ p
 p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+ geom_density(alpha = 0.4)
 p1
 
-#   #   # 
-
-
-#================== ANOVA ANALYSIS----option.2 ==================
-=====================  Factorial Anova ========================== 
-library(psych)
-library(ggplot2)
-library(ggpubr)
-library(readxl)
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-amdata <- read_excel("ARMdata.xlsx")
-
-describe(amdata)
-#plot
-p <- ggplot(amdata, aes(x=site_name, color = estimated_parasitemia, fill=target,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
-p
-p1 <- ggplot(imdata, aes(x=age, color = estimated_parasitemia, fill=target))+geom_bar(alpha = 0.8)+theme_cleveland()
-p1
-p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_gray()
-p2
-
-#to arrange plot for publication
-ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
-          common.legend = TRUE, legend = "bottom")
-#residuals
-res_aov <- aov(bmi ~ expose, data = imdata)
-res_aov
-
-#combine plots
-par(mfrow = c(1,2))
-#histogram
-hist(res_aov$residuals)
-#QQ-plot
-library(car)
-QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
-shapiro.test(res_aov$residuals) #normality
-
-#Bartlett’s test and Levene’s test to check the homoscedasticity of groups from a one-way anova.
-#Levene-test------------------------------  is less sensitive to deviation from normality
-#homogeneity of variance one variable
-leveneTest(bmi ~ grvdty, data = imdata)
-#homogeneity of variance multiple variable
-leveneTest(bmi ~ expose*CaseControl*sex*mode*grvdty, data = imdata) 
-
-#Bartlett test----------------------------
-bartlett.test(bmi ~ grvdty, data = imdata)
-bartlett.test(bmi ~ interaction(grvdty,sex,expose), data = imdata)
-#One_way Anova
-one <- aov(estimated_parasitemia ~ age, data = imdata)
-summary(one)
-#Two_way Anova
-two <- aov(bmi ~ expose + grvdty, data = imdata)
-summary(two)
-#three_way Anova
-three <- aov(bmi ~ expose + grvdty + sex, data = imdata)
-summary(three)
-#interaction
-interaction <- aov(bmi ~ expose + grvdty + sex + CaseControl, data = imdata)
-summary(interaction)
-
-#model fit----------------------------------
-library(AICcmodavg)
-model.set <- list(one,two,three,interaction)
-model.names <- c("one", "two","three", "interaction")
-aictab(model.set, modnames = model.names, sort = TRUE)
-bictab(model.set, modnames = model.names, sort = TRUE)
-
-#effect size--------------------------------
-library(effectsize)
-eta_squared(interaction, partial = TRUE)
-eta_squared(interaction, partial = FALSE)
-omega_squared(interaction, partial = TRUE)
-epsilon_squared(interaction, partial = TRUE)
-
-#post hoc analysis
-tukey.interaction <- TukeyHSD(interaction)
-tukey.interaction
-
-tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
-tukey.plot.test <-TukeyHSD(tukey.plot.aov)
-plot(tukey.plot.test,las = 2)
-
-#   #   #
------------------------------------------------------------
-  Tukey and LSD mean separation tests (pairwise comparisons)
-TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
-though TukeyHSD does make an adjustment for mildly unequal sample sizes.
-----------------------------------------------------------
-  
-  
-  #====================== ANOVA ANALYSIS----option.3 ==================
------------------------------- One-way Anova ------------------------
-  if(!require(agricolae)){install.packages("agricolae")}
----------------------------------------------------------------------
-library(FSA)
-Summarize(age ~ expose, data = imdata)
-
-#Fit the linear model and conduct ANOVA 
-model = lm(age ~ expose, data=imdata)
-
-library(car)
-Anova(model, type="II")                    
-
-# Can use type="III"
-Anova(model, type="III", contrasts = c("contr.sum", "contr.poly")) 
-
-# Produces type I sum of squares
-anova(model)                               
-
-# Produces r-square, overall p-value, parameter estimates
-summary(model)     
-
-#Checking assumptions of the model
-hist(residuals(model), col="darkgray")
-
-#plot of residuals vs. predicted values.
-library(car)
-QQ <- qqPlot(residuals(model), id = TRUE)
-
 #   #    #
-
-
 #----------------Kruskal–Wallis Test-------------------------------------------
 if(!require(FSA)){install.packages("FSA")
-  #--------------------------------------------------- kruskal.test(Value ~ Group,
-  #---------------------------------------------------              data = Data)
+#--------------------------------------------------- kruskal.test(Value ~ Group,
+#---------------------------------------------------              data = Data)
   library(psych)
   describe(imdata)
   #-Medians and descriptive statistics
@@ -727,8 +499,7 @@ if(!require(FSA)){install.packages("FSA")
   
   #   #   #
   
-  
-  #----------------------- Correlation and Linear Regression ---------------------
+#------------------------------- Correlation -------------------------------
   Correlation
   Correlation can be performed with the cor.test function in the native stats package.  
   It can perform Pearson, Kendall, and Spearman correlation procedures.  
@@ -739,38 +510,24 @@ if(!require(FSA)){install.packages("FSA")
   --------
     cor.test( ~ age + bmi, data=imdata, method = "pearson", conf.level = 0.95)
   
-  #Kendall correlation (Non-parametric)
-  Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
-  It ranks the data to determine the degree of correlation.
-  --------
-    cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
-
-==================================================================================
-install.packages("GGally")
-
-library(psych)
-library(ggplot2)
-library(GGally)   
-library(readxl)
-EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
-print(EGF01)
-GGally::ggcorr(ARMdata1)
-GGally::ggpairs(ARMdata1)
-psych::pairs.panels(ARMdata1)
-================================================================================== 
-  
   #Spearman correlation (Non-parametric / ordinals)
   Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
   It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
   
+  #Kendall correlation (Non-parametric)
+  Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
+  It ranks the data to determine the degree of correlation.
+  --------
+  cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
+  
   #   #   #
   
   
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                            Regression analysis                                                 +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                           Regression analysis                                +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #       Regression analysis study the relationship between variables:
     
   1-By identifying (Linear, Curvilinear, or Quadratic).
@@ -834,91 +591,6 @@ psych::pairs.panels(ARMdata1)
   abline(int, slope, lty=1, lwd=2, col="blue")     #  style and color of line 
   
   #    #    #   
-  
-#------------------------ Curvilinear Regression -------------------------------
-How to fit models to curvilinear data using three methods:
-    
-1) Polynomial regression;  
-2) B-spline regression with polynomial splines;  
-3) Nonlinear regression with the nls function.  
-
-Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
-
-# create sample data 
-sample_data <- data.frame(x=1:10, 
-                          y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
-View(sample_data)
-
-#------------ fit linear -----------------
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y)
-# define x-axis values 
-x_axis <- seq(1, 10, length=10)
-#fit model
-linear_model1 <- lm(y~x, data=sample_data)
-
-lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
-
-summary(linear_model1)
-
-
-
-#---- fit polynomial regression models up to degree 4 -------
--------------------------------------------------------------
-  #----------- Curvilinear ------------------------------------
-
-linear_model2 <- lm(y~poly(x,2,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model2, data.frame(x=x_axis)), col='red')
-
-# add curve of each model to plot----------------------------
-linear_model3 <- lm(y~poly(x,3,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model3, data.frame(x=x_axis)), col='purple')
-
-# multiple curve to plot-------------------------------------
-linear_model4 <- lm(y~poly(x,4,raw=TRUE), data=sample_data)
-linear_model5 <- lm(y~poly(x,5,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
-lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
-
-================================================================================
-  
-  #---------------------- Polynomial regression -----------------------------
-Polynomial regression is really just a special case of multiple regression, 
-
-#Simple plot of model
-library(ggplot2)
-ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Black")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,3), colour = "Green")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,2), colour = "Red")
-
-#    #    #
-
-===================================
-  View(imdata)  
-Data = imdata
-plot(imdata$age,imdata$bmi)
-
-model <- lm(bmi~poly(age,1,raw=TRUE), data=imdata)
-plot(model)
-
-lines(x_axis, predict(model, data.frame(age=x_axis)), col='blue')
-
-plot(bwgt ~ age, data = imdata, pch=16, xlab = "Age", ylab = "Babywt") 
-i = seq(min(imdata$age), max(imdata$age), len=100)          #  x-values for line
-predy = predict(model, data.frame(age=i))                   #  fitted values
-lines(i, predy, lty=1, lwd=2, col="blue")                   #  style and color
 
 #---------------------------- Multiple Regression ------------------------------ 
 library(psych)
@@ -941,7 +613,7 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 ---------------------------- Model Building ------------------------------------  
   
   # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)
@@ -992,7 +664,6 @@ plot(pred)
 dev.off()
 
 #   #   #
-
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                              LOGISTIC REGRESSION                                               +
@@ -1079,7 +750,7 @@ logist2
 
 #   #   #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                             Poisson  Regression                               #Log-linear model
+                      Poisson  Regression                      #Log-linear model
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Assumptions ---- y
 # should not be negative
@@ -1121,9 +792,6 @@ increase in the log mean number of age    ---- Holding other variables constant
 
 #    #    #
 
-
-
-
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -1132,16 +800,16 @@ increase in the log mean number of age    ---- Holding other variables constant
 using bonferroni correction----/------post hoc chi square of independence.
 #----------------------------------------------------------------------------
 1----Exact Goodness-of-fit--------------#whether is difference to hypothised value
-  2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
-  3----Chi-Square test of independence----#Test of association
-  4----Fisher exact test------------- N < 100
+2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
+3----Chi-Square test of independence----#Test of association
+4----Fisher exact test------------- N < 100
 5----McNemars test.---------------------#TO compare before and after observations
-  6----G test-----------------------------#Can accommodate experimental design
+6----G test-----------------------------#Can accommodate experimental design
   
   
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                    Chisquare - ODDRATIO - RISKRATIO                                             +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                    Chisquare - ODDRATIO - RISKRATIO                          +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
 library(epitools)
 library(readxl)
@@ -1176,7 +844,7 @@ RR <-epitab(imdata$CaseControl,imdata$sex,
 
 RR
 --------------------------------------
-  library(ggplot2)
+library(ggplot2)
 #stacked Barchart
 ht2 <-ggplot(data = imdata,
              mapping = aes(x = CaseControl, fill = sex))+
@@ -1184,3 +852,4 @@ ht2 <-ggplot(data = imdata,
 
 ht2
 ---------------
+  
