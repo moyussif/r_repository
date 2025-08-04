@@ -1,3 +1,15 @@
+---
+title: "SPOT Interns"
+author: "Mohammed Yussif -Data Manager"
+date: "2025-08-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
 rm(list=ls())
 gc(reset = TRUE)
 #--------------------------- required packages
@@ -227,4 +239,4 @@ imdata <- read_excel("immunoData.xlsx")
 table(imdata$CaseControl,imdata$sex)
 chisq.test(imdata$CaseControl,imdata$sex)
 
-  
+```

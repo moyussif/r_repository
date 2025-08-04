@@ -1184,3 +1184,58 @@ ht2 <-ggplot(data = imdata,
 
 ht2
 ---------------
+  
+  
+ 
+  
+  
+  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Merge Data
+--------------------------------------------------------------------------------
+  library(readxl)
+library(readr)
+library(writexl)
+library(tidyverse)
+library(dplyr)
+
+df2 <- read_excel("C:/Users/User/Desktop/Epid.csv")
+print(df1)
+df1 <- read_excel("C:/Users/User/Desktop/Lab.csv")
+print(df2)
+
+names(df1)
+names(df2)
+joined_df <- left_join(df1, df2, by = "SAMPLE_ID")
+View(joined_df)
+str(joined_df)
+
+write_xlsx(joined_df, "Mergedoo.xlsx")
+
+#  #  #  
+  
+  
+  
+  
+   
+-------------------------------------------------------------------------------------------------------------
+  
+  setwd("C:/Users/User/Desktop")
+ghdata <- read_excel("amp.xlsx")
+print(ghdata)
+
+p <- ggplot(ghdata, aes(x=  Status, color = Count, fill=Lineage,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
+p
+p1 <- ggplot(ghdata, aes(x= Status, color = Count, fill=Status))+geom_bar(alpha = 0.8)+theme_minimal()
+p1
+p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_minimal()
+p2
+
+#to arrange plot for publication
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
+          common.legend = TRUE, legend = "bottom")
+
+
+
+-------------------------------------------------------------------------------------------------------------
+  
