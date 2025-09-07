@@ -19,68 +19,66 @@ library(Hmisc)
 setwd("C:/Users/User/Desktop")
 ghsdata <- read_excel("yussif.xlsx")
 
-library(readr)
-csv <- read_csv("yussif.csv")
-#simply---------------------
-library(readxl)
-ghsdata <- read_excel("C:/Users/User/Desktop/yussif.xlsx")
 
-View(ghsdata)
-print(ghsdata)
+bosco <- read_excel("C:/Users/User/Desktop/yussif.xlsx")
+
+str(bosco)
+
+View(bosco)
+
+print(bosco)
 
 #  #  #--------------------- Working with dplyr
-library(dplyr)
 # Remove the 'Apgar1min' column
 
-ghsdata1 <- ghsdata1 %>% select(-Apgar1min)
+judith <- bosco %>% select(-Apgar1min)
 print(ghsdata1)
 #Remove multiple columns
 ghsdata1 <- ghsdata1 %>% select(-c(Age, Gender))
 #  #  #
 #--------------------------- Data Conversion 
 
-library(ggplot2)
-library(RColorBrewer)
-library(plotrix)
-library(readxl)
-str(ghsdata1)
-ghsdata1$Age <-as.integer(ghsdata1$Age)
-ghsdata1$Gravidity <- as.integer(ghsdata1$Gravidity)
-ghsdata1$Parity <- as.integer(ghsdata1$Parity)
-ghsdata1$Status <-factor(ghsdata1$Status,
+str(judith)
+
+judith$Age <-as.integer(judith$Age)
+
+judith$Gravidity <- as.integer(judith$Gravidity)
+judith$Parity <- as.integer(judith$Parity)
+
+judith$Status <-factor(judith$Status,
                                   levels = c(1,2),
                                   labels = c("control", "case"))
 
-ghsdata1$Babysex <-factor(ghsdata1$Babysex,
+judith$Babysex <-factor(judith$Babysex,
                           levels = c(1,2),
                           labels = c("Male", "Female"))
 
-ghsdata1$ModeOfDelivery <-factor(ghsdata1$ModeOfDelivery,
+judith$ModeOfDelivery <-factor(judith$ModeOfDelivery,
                         levels = c(1,2),
                         labels = c("Vaginal", "Caesarean"))
 
-ghsdata1$bld_grp <-factor(ghsdata1$bld_grp,
+judith$bld_grp <-factor(judith$bld_grp,
                             levels = c(1,2,3,4),
                             labels = c("A positive", "B positive", "AB positive", "O positive"))
-str(ghsdata1)
-print(ghsdata1)
+str(judith)
+print(judith)
 #   #   #
 
 
 #---------------------------- Explore data                                   
 #Missing Data Summary
-summary(ghsdata1)
+summary(judith)
 
 # Count missing values in each column
-missing_per_column <- colSums(is.na(ghsdata1))
+missing_per_column <- colSums(is.na(judith))
 print(missing_per_column)
 
 # Remove rows with any missing values 
-cleaned_data <- na.omit(ghsdata1)
-print(cleaned_data)
+judith <- na.omit(judith)
+print(judith)
 
-verify_missing <- colSums(is.na(cleaned_data))
-print(verify_missing)
+judith <- colSums(is.na(judith))
+print(judith)
 
 #  #  # 
 #--------------------- Data Transformation 
@@ -104,8 +102,9 @@ t.test(ghsdata1$Age,
 +                            Descriptive statistics                            
 
 library(psych)
-summary(ghsdata1)
-describe(ghsdata1$Age)
+summary(judith)
+describe(judith)
+describe(judith$Age)
 
 summary(imdata$bwgt)
 describe(imdata$bwgt)
@@ -122,21 +121,23 @@ library(psych)
 library(readxl) 
 library(lessR)
 
+describe(judith$Age)
+
 amdata <- read_excel("ARMdata.xlsx")
 print(amdata)  
 describe(amdata)  
 #-----------------One sample t-test
-observed    = Data$Age
-theoretical = 40
-hist(Data$ Angle, col="gray", main="Histogram of values", xlab="Angle")
+observed    = judith$Age
+theoretical = 29
+hist(judith$Age, col="gray", main="Histogram of Age", xlab="Age")
 
-t.test(observed, mu = theoretical, conf.int=0.95)
+t.test(observed, mu = theoretical, conf.int=0.95) 
 
 #------------------Two Samples Student’s t–test 
 #paired t.test  
-t.test(Value ~ Group, data=Data, var.equal=TRUE, conf.level=0.95)
+t.test(Age ~ Status, data=judith, var.equal=TRUE, conf.level=0.95)
 #independent t.test
-t.test(Value ~ Group, data=Data, var.equal=FALSE, conf.level=0.95)
+t.test(Gravidity ~ Babysex, data=judith, var.equal=FALSE, conf.level=0.95)
 
 # Histogram
 hs<-histogram(~ age | CaseControl, col="gray",data = imdata)

@@ -112,20 +112,36 @@ library(writexl)
 library(tidyverse)
 library(dplyr)
 setwd("C:/Users/User/Desktop")
-df2 <- read_csv("epi1.csv")
-print(df1)
-df1 <- read_csv("lab1.csv")
-print(df2)
+df_A <- read_csv("epidata.csv")
+print(df_A)
+df_B <- read_csv("labdata.csv")
+print(df_B)
 
 str(df2)
 
+combodata <- left_join(df_A,df_B, by = 'Sample_ID')
+joined_df <- merge(df_A, df_B, by = "ID", all.x = TRUE)
+
+df <- merge(df_A, df_B, by.x = "Sample_ID", by.y = "Sample_ID", all = TRUE)
+
+final_df <-left_join(df_A, df_B, by = c('SAMPLE_ID'='Sample_ID'))
+
+write.csv(df,"C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos/kk.csv")
+write_xlsx(combo, "zzdata.xlsx")
+write_xlsx(df, "C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos/output.xlsx")
+
+
 names(df1)
 names(df2)
-join_df <- left_join(df1, df2, by = "SAMPLE_ID", relationship = "many-to-many")
- View(join_df)
+joindf <- left_join(df1, df2, by = "SAMPLE_ID", relationship = "many-to-many")
+
+final_df <- left_join(df_A, df_B, by = "SAMPLE_ID")
+
+
+ View(joindf)
 str(join_df)
 
-write_xlsx(join_df, "lastmerged.csv")
+write_xlsx(join_df, "wednesday.csv")
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                  Explore data                                                        +
@@ -1078,9 +1094,9 @@ logist2
 
 
 #   #   #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                             Poisson  Regression                               #Log-linear model
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                             Poisson  Regression                                #Log-linear model
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Assumptions ---- y
 # should not be negative
 # Should be discrete
@@ -1124,9 +1140,9 @@ increase in the log mean number of age    ---- Holding other variables constant
 
 
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#---------------------------- TEST OF NOMINAL VARIABLE ---------------------------------------------
-----------------------------------------------------------------------------------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#---------------------------- TEST OF NOMINAL VARIABLE ------------------------------------------
+-------------------------------------------------------------------------------------------------
   Follow up with post hoc tests (optional for Chi-Square)
 #if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
 using bonferroni correction----/------post hoc chi square of independence.
@@ -1137,14 +1153,28 @@ using bonferroni correction----/------post hoc chi square of independence.
   4----Fisher exact test------------- N < 100
 5----McNemars test.---------------------#TO compare before and after observations
   6----G test-----------------------------#Can accommodate experimental design
+
+
+#  #  #  
   
   
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                    Chisquare - ODDRATIO - RISKRATIO                                             +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
-library(epitools)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                         Chisquare / Fisher Exact                                              +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 library(readxl)
+library(tidyverse)
+library(stats)
+cngTB <- read_excel("C:/Users/User/Desktop/MTB only_ Lineage.xlsx")
+table(cngTB$Lineage,cngTB$AgeCategory)
+# Perform Fisher's Exact Test
+fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+# Perform Chi-square Test
+chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)    
+  
+================================================================================
++                         ODDRATIO - RISKRATIO                                  +
+================================================================================
+library(epitools)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 imdata <- read_excel("immunoData.xlsx")
 #chisquare
@@ -1160,7 +1190,7 @@ odds ratio // Risk ratio
 #pvalue = c("fisher.exact", "midp.exact", "chi2"),
 #correction = FALSE, verbose = FALSE)
 ---------------------------------------
-  oddsratio(imdata$CaseControl,imdata$sex)       #or
+oddsratio(imdata$CaseControl,imdata$sex)       #or
 
 OR <-epitab(imdata$CaseControl,imdata$sex,
             method = "oddsratio",
@@ -1176,7 +1206,7 @@ RR <-epitab(imdata$CaseControl,imdata$sex,
 
 RR
 --------------------------------------
-  library(ggplot2)
+library(ggplot2)
 #stacked Barchart
 ht2 <-ggplot(data = imdata,
              mapping = aes(x = CaseControl, fill = sex))+
@@ -1184,16 +1214,14 @@ ht2 <-ggplot(data = imdata,
 
 ht2
 ---------------
-  
-  
  
-  
-  
+   
+#  #  #
   
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Merge Data
+                              Merge Data
 --------------------------------------------------------------------------------
-  library(readxl)
+library(readxl)
 library(readr)
 library(writexl)
 library(tidyverse)
@@ -1215,20 +1243,33 @@ write_xlsx(joined_df, "Mergedoo.xlsx")
 #  #  #  
   
   
-  
-  
    
--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
   
-  setwd("C:/Users/User/Desktop")
-ghdata <- read_excel("amp.xlsx")
-print(ghdata)
+setwd("C:/Users/User/Desktop")
+ayoola <- read_csv("Untitled.csv")
+print(ayoola)
 
-p <- ggplot(ghdata, aes(x=  Status, color = Count, fill=Lineage,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
+ayoola$Status <-factor(ayoola$Status,
+                        levels = c(1,2,3,4,5,6,7,8,9,10,11,12,13),
+                        labels = c("M.TB", "Africanm", "Bovis", "Caprae", "No.amplification", "Africanm/Intercellulare",
+                                   "M.TB/ Avium", "M.Avium","Intercellulare", "M.TB/Intercellulare", "M.TB/Mucogenicum",
+                                   "M.TB/Simae", "M.TB/Abscesses"))
+
+ayoola$Lineage <-factor(ayoola$Lineage,
+                       levels = c(1,2,3,4,5,6,7,8),
+                       labels = c("L1", "L2", "L3", "L4", "L5", "L6", "Bovis", "NTM"))
+
+str(judith)
+print(judith)
+
+
+
+p <- ggplot(ayoola, aes(x=  Status, color = Status, fill=Status,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
 p
-p1 <- ggplot(ghdata, aes(x= Status, color = Count, fill=Status))+geom_bar(alpha = 0.8)+theme_minimal()
+p1 <- ggplot(ayoola, aes(x= Status, color = Sublineage, fill=Sublineage))+geom_bar(alpha = 0.8)+theme_minimal()
 p1
-p2 <- ggplot(imdata, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_minimal()
+p2 <- ggplot(ayoola, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_minimal()
 p2
 
 #to arrange plot for publication
