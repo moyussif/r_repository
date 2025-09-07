@@ -1098,16 +1098,15 @@ logist2
 ==================================================================================
 +                            Multinomial regression                              +
 ==================================================================================  
-  library(VGAM)
-
+library(VGAM)
 data(cngTB)
-
 # Original factor
 lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
 # Releveling the factor
 lineage <- relevel(lineag, ref = "Bovis")
 # Displaying the levels of the releveled factor
 levels(lineage)
+
 #fit model
 model <- vglm(lineage ~ Gender + AgeCategory + B5Marital_Status + B6Education,B13MonthlyIncome,
               family = multinomial,
@@ -1115,7 +1114,7 @@ model <- vglm(lineage ~ Gender + AgeCategory + B5Marital_Status + B6Education,B1
 summary(model)
 
 all <- exp(cbind(OR = coef(model), confint(model)))
-summary(all)
+print(all)
 
 #_____________future predictions____________________
 predicted_probs <- predict(model, type = "response")
@@ -1141,9 +1140,10 @@ model <- multinom(Lineage ~ Gender
                   + B5Marital_Status,
                   + B6Education,
                   data = cngTB)
+summary(model)
 
 all <- exp(cbind(OR = coef(model), confint(model)))
-summary(all)
+print(all)
 
 # # #
 
