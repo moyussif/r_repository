@@ -12,7 +12,10 @@ library(lessR)
 library(plotrix)
 library(FSA)
 library(Hmisc)
-
+library(stats)
+library(epitools)
+library(VGAM)
+library(nnet)
 
 #---------------------------- Import functions 
 #set directorate 
@@ -228,4 +231,161 @@ imdata <- read_excel("immunoData.xlsx")
 table(imdata$CaseControl,imdata$sex)
 chisq.test(imdata$CaseControl,imdata$sex)
 
-  
+=======================================================================================
+                                 Ayoola data
+______________________________________________________________________________________
+
+cngTB <- read_excel("C:/Users/User/Desktop/MTB only_ Lineage.xlsx")
+str(cngTB)
+
+table(cngTB$Lineage,cngTB$AgeCategory)
+table(cngTB$Lineage,cngTB$Gender)
+table(cngTB$Lineage,cngTB$B5Marital_Status)
+# Perform Fisher's Exact Test
+fisher.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$B5Marital_Status, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$B6Education, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$occupationClass, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$B10ResidenceClassification, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$B13MonthlyIncome, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Coughgt2wk, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Coughphlegm, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$phlegmDuration, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$bloodysputum, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$bloodysputumDuration, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Fever, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationFever, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$weightloss, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationWeightloss, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Night_Sweats, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationNightSweat, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$SwollenGlnds, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurantionSwollenGlnds, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Shortnessofbreath, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationShortnessBreath, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Chestpain, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationChestPain, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$weakness, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationWeakness, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Recurringchills, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DuratiionChills, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Lossofappetite, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DurationLossAppetite, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$receivedinjections, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Completetreatment, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$outcomeoftreatment, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$familymembercoughing, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$samehousewithTBpatient, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Share_Room, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$neighborhood, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Church, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Workplace, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$close_Friend, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Friend_Similar, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$E1_Haveyoueverworkedinalabthat, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$aresidentinajailpris, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$employeeorvolunteer, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workedinahospital, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workedinanursinghome, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$livedinrefugeecamp, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workinanoffice_Open, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workinvolvesand, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workinvolvesmoke, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$manyinthesameroom, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$workwithcattle, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$DiabetesMellitus, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$BodyWeight, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$HIV, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$AIDS, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Treatmentforrheumatoidarthritis, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$G7_Medicaltreatment_corticosteroids, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Cancer, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Kidneydisease, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Silicosis, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Leukemia, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Substanceabuse, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Smokingcigarette, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$BCG, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Scanty, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$countSmear, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+fisher.test(cngTB$Lineage,cngTB$Socialize, simulate.p.value = TRUE)
+# Perform Chi-square Test
+chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+
+==================================================================================
++                            Multinomial regression                              +
+==================================================================================  
+library(VGAM)
+
+data(cngTB)
+
+# Original factor
+lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
+# Releveling the factor
+lineage <- relevel(lineag, ref = "Bovis")
+# Displaying the levels of the releveled factor
+levels(lineage)
+#fit model
+model <- vglm(lineage ~ Gender + AgeCategory + B5Marital_Status + B6Education,B13MonthlyIncome,
+              family = multinomial,
+              data = cngTB)
+summary(model)
+
+all <- exp(cbind(OR = coef(model), confint(model)))
+summary(all)
+
+#_____________future predictions____________________
+predicted_probs <- predict(model, type = "response")
+predicted_classes <- colnames(predicted_probs)[apply(predicted_probs, 1, which.max)]
+
+new_sample <- data.frame(Sepal.Length = 5.1, Sepal.Width = 3.5,
+                         Petal.Length = 1.4, Petal.Width = 0.2)
+
+new_pred <- predict(model, newdata = new_sample, type = "response")
+print(new_pred)
+#______________________________________________________________________ Option 2
+library(nnet)
+data(cngTB)
+# Original factor
+lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
+# Releveling the factor
+lineage <- relevel(lineag, ref = "Bovis")
+# Displaying the levels of the releveled factor
+levels(lineage)
+#fit model
+model <- multinom(Lineage ~ Gender
+                  + AgeCategory,
+                  + B5Marital_Status,
+                  + B6Education,
+                  data = cngTB)
+
+all <- exp(cbind(OR = coef(model), confint(model)))
+summary(all)
+
+# # #
+
+#__________future predictions____________________
+new_data <- data.frame(Petal.Length = 1.5,
+                       Petal.Width = 0.3, 
+                       Sepal.Length = 4.5, 
+                       Sepal.Width = 3.1)
+predict(model, newdata = new_data, type = "class")
+
+data$outcome_var <- relevel(data$outcome_var, ref = "BaselineCategory")
+
+
+
+
+
+
+

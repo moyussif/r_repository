@@ -1093,7 +1093,71 @@ logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
 
 
+# # #
+
+==================================================================================
++                            Multinomial regression                              +
+==================================================================================  
+  library(VGAM)
+
+data(cngTB)
+
+# Original factor
+lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
+# Releveling the factor
+lineage <- relevel(lineag, ref = "Bovis")
+# Displaying the levels of the releveled factor
+levels(lineage)
+#fit model
+model <- vglm(lineage ~ Gender + AgeCategory + B5Marital_Status + B6Education,B13MonthlyIncome,
+              family = multinomial,
+              data = cngTB)
+summary(model)
+
+all <- exp(cbind(OR = coef(model), confint(model)))
+summary(all)
+
+#_____________future predictions____________________
+predicted_probs <- predict(model, type = "response")
+predicted_classes <- colnames(predicted_probs)[apply(predicted_probs, 1, which.max)]
+
+new_sample <- data.frame(Sepal.Length = 5.1, Sepal.Width = 3.5,
+                         Petal.Length = 1.4, Petal.Width = 0.2)
+
+new_pred <- predict(model, newdata = new_sample, type = "response")
+print(new_pred)
+#______________________________________________________________________ Option 2
+library(nnet)
+data(cngTB)
+# Original factor
+lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
+# Releveling the factor
+lineage <- relevel(lineag, ref = "Bovis")
+# Displaying the levels of the releveled factor
+levels(lineage)
+#fit model
+model <- multinom(Lineage ~ Gender
+                  + AgeCategory,
+                  + B5Marital_Status,
+                  + B6Education,
+                  data = cngTB)
+
+all <- exp(cbind(OR = coef(model), confint(model)))
+summary(all)
+
+# # #
+
+#__________future predictions____________________
+new_data <- data.frame(Petal.Length = 1.5,
+                       Petal.Width = 0.3, 
+                       Sepal.Length = 4.5, 
+                       Sepal.Width = 3.1)
+predict(model, newdata = new_data, type = "class")
+
+data$outcome_var <- relevel(data$outcome_var, ref = "BaselineCategory")
+
 #   #   #
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                              Poisson  Regression                                #Log-linear model
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1279,4 +1343,4 @@ ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nr
 
 
 -------------------------------------------------------------------------------------------------------------
-  
+ 
