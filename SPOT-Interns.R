@@ -17,7 +17,6 @@ library(epitools)
 library(VGAM)
 library(mlogit)
 library(nnet)
-library(stargazer)
 
 #---------------------------- Import functions 
 #set directorate 
@@ -328,19 +327,17 @@ chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
 +                            Multinomial regression                              +
 ==================================================================================  
 library(VGAM)
-library(stargazer)
-cngTB <- read_excel("C:/Users/User/Desktop/DST.xlsx")
+cngTB <- read_excel("C:/Users/User/Desktop/MTB only_ Sublineage.xlsx")
 str(cngTB)
 
 # lineag <- factor(cngTB$Lineage)
 #fit model
-model <- vglm(Sublineage ~ DST,
+model <- vglm(Lineage ~DiabetesMellitus+BodyWeight+HIV+AIDS+ Treatmentforrheumatoidarthritis+G7_Medicaltreatment_corticosteroids+
+                Cancer+Kidneydisease+Silicosis+Leukemia+Substanceabuse+Smokingcigarette+BCG+countSmear,
               family = multinomial,
               data = cngTB)
 
 summary(model)
-
-describe(cngTB$Lineage)
 
 
 all <- exp(cbind(OR = coef(model), confint(model)))
