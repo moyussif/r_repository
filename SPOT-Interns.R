@@ -20,61 +20,72 @@ library(VGAM)
 library(mlogit)
 library(nnet)
 
-#---------------------------- Import functions 
+#---------------------------- Import functions ------------------------------------------------------- 
 #set directorate 
+Hanisah <- read_excel("C:/Users/User/Desktop/TrainingData.xlsx")                #.xlsx format
+str(Hanisah)
+
+Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            #.csv format
+View(Neonate)
+str(Neonate)
+
+#------------------------ Data Manipulation with Dplyr ----------------------------------------------
 library(dplyr)
-TrainingData <- read_excel("C:/Users/User/Desktop/TrainingData.xlsx")
-View(TrainingData)
-
-print(TrainingData)
-
-str(TrainingData)
-
-#------------------------ Data Manipulation with Dplyr -------------------------
-
 #---------Selecting column
-Hanisah <- TrainingData %>% select(c(Age, Gender,NewReligion,OccupationCLASS,Education,
-                                   SmearCount,Age_Categories))
-
+columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,
+                                       Baby_sex,Baby_age_days,Baby_gestational_age,Baby_Weight,Baby_bloodgroup,Baby_G6PD,
+                            Babyfood,Diagnosis2,Diagnosis3))
+str(columns_needed)
 #----------Remove a column
-Hanisa <- Hanisah %>% select(-Age)
-print(Hanisa)
+remove_one <- columns_needed %>% select(-Syphilis)
+str(remove_one)
 
 #--Remove multiple columns
-Hanis <- Hanisah %>% select(-c(Age, NewRegion))
-print(Hanis)
+remove_more <- remove_one %>% select(-c(HBV, HIV))
+str(remove_more)
+
+#---------filter rows ?filter()
+Hanisah <- remove_more %>% select(c(Motherage,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,Baby_age_days,Baby_sex,
+                                    Baby_bloodgroup,Baby_G6PD,Baby_Weight,Baby_gestational_age,Babyfood,Diagnosis2,Diagnosis3)) %>% 
+                            filter(Motherage < 40)
+print(Hanisah)
+
+#---------summarise()
+Hanisah1 <- Hanisah %>% summarise(sum_Age=sum(Motherage))
+print(Hanisah1)
+Hanisah2 <- Hanisah %>% summarise(mean_Age=mean(Motherage,na.rm = TRUE))
+print(Hanisah2)
+Hanisah3 <- Hanisah %>% summarise(sum_BabyWt=sum(Baby_Weight),Mean_BabyWt=mean(Baby_Weight))
+print(Hanisah3)
+
+#---------group_by()
+AverageWeightbyGender <-Hanisah %>%
+               group_by(Baby_sex) %>%
+               summarise(mean = mean(Baby_Weight))
+
+print(AverageWeightbyGender)
 
 #---------rename a column
 #Data %>% rename(NewColumn=OldColumn)
-Hanidd<-Hanisah %>% rename(Sex=Gender)
-print(Hanidd)
 
-#---------Create New column (mutate)
-Hanisah <- TrainingData %>% mutate(bmi=height/weight)
+names(Hanisah)[1]<- "mum_Age"
+names(Hanisah)[4]<- "Delivery_mode"
+names(Hanisah)[5]<- "Baby_Age"
+names(Hanisah)[10]<- "Baby_Gest_Age"
+str(Hanisah)
 
+
+#---------Create New column (mutate)--------------------------------------------
+mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
 #---------show only New column (transmute)
-Hanisah <- TrainingData %>% transmute(bmi)
-
+transmutate_col <- mutate_colmn %>% transmute(bmi)
 #---------Change character type(rename_with)
-Hanisah <- TrainingData %>% rename_with(Education,toupper)
-Hanisah <- TrainingData %>% rename_with(Education,tolower)
+Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
+Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
-#---------filter rows
-Hanisah <- TrainingData %>% select(c(Age, Gender,NewReligion,Education,
-                                     filter(Age>18)))
-
-#---------summarise()
-Hanisah <- TrainingData %>% summarise(sum_Age=sum(Age))
-Hanisah <- TrainingData %>% summarise(sum_Age=sum(Age,na.rm = TRUE))
-Hanisah <- TrainingData %>% summarise(sum_Age=sum(Age),Mean_Age=mean(Age)
-
-#---------group_by()
-Hanisgroup <-TrainingData %>%
-               group_by(Gender) %>%
-               summarise(mean = mean(Age)))
 ###
 
-#--------------------Reshaping Data-(LONG.data / WIDE.data)---------------------
+#-------------------- Reshaping Data-(LONG.data / WIDE.data) ----------------------------------------
 library(tidyr) 
 print(HTdata)
 # use gather()function to make data longer
@@ -92,112 +103,142 @@ unite_data <- separate_data %>%
 unite_data
 
 
-#-------------------------- Data Transformation --------------------------------
+#-------------------------- Data Conversion ------------------------------------
+str(Hanisah)
 
-#--------- Data Conversion 
-str(Anita)
+#-------Continuous data
+Hanisah$mum_Age <-as.integer(Hanisah$mum_Age)
+Hanisah$Baby_Age <-as.integer(Hanisah$Baby_Age)
+Hanisah$Baby_Weight <-as.integer(Hanisah$Baby_Weight)
+Hanisah$Baby_Gest_Age <-as.integer(Hanisah$Baby_Gest_Age)
 
-Hanisah$Age <-as.integer(Hanisah$Age)
+#-------Categorical data
+Hanisah$Baby_sex <-factor(Hanisah$Baby_sex,
+                          levels = c(0,1),
+                          labels = c("Female", "Male"))
 
-Anita$Sex <-factor(Anita$Sex,
-                        levels = c(1,2),
-                        labels = c("Male", "Female"))
-Anita$NewReligion <-factor(Anita$NewReligion,
-                   levels = c(1,2,4,5,99),
-                   labels = c("Afric", "Christinity","Islam", "Other","NA"))
-str(Anita)
+Hanisah$Baby_bloodgroup <-factor(Hanisah$Baby_bloodgroup,
+                                 levels = c(0,1,2,3,4,5,6,7),
+                                 labels = c("Notdone", "A-","A+", "B-","B+","AB+", "AB-","O+"))
+
+Hanisah$Baby_G6PD <-factor(Hanisah$Baby_G6PD,
+                           levels = c(0,1,2,3),
+                           labels = c("No defect","Full defect","Partial defect","Not done"))
+
+Hanisah$Mother_bloodgroup <-factor(Hanisah$Mother_bloodgroup,
+                                   levels = c(0,1,2,3,4,5,6,7),
+                                   labels = c("Notdone", "A-","A+", "B-","B+","AB+", "AB-","O+"))
+
+Hanisah$Mother_G6PD <-factor(Hanisah$Mother_G6PD,
+                             levels = c(0,1,2,3),
+                             labels = c("No defect","Full defect","Partial defect","Not done"))
 
 
-judith$Gravidity <- as.integer(judith$Gravidity)
-judith$Parity <- as.integer(judith$Parity)
-#----------------------------------------------------------------
-judith$Status <-factor(judith$Status,
-                                  levels = c(1,2),
-                                  labels = c("control", "case"))
+Hanisah$Delivery_mode <-factor(Hanisah$Delivery_mode,
+                        levels = c(0,1,2),
+                        labels = c("Vaginal", "Caesarean", "Assisted"))
 
+Hanisah$Babyfood <-factor(Hanisah$Babyfood,
+                            levels = c(0,1,2),
+                            labels = c("No feeding", "Breastfeeding", "Mixedfeeding"))
 
-judith$ModeOfDelivery <-factor(judith$ModeOfDelivery,
-                        levels = c(1,2),
-                        labels = c("Vaginal", "Caesarean"))
+Hanisah$Diagnosis2 <-factor(Hanisah$Diagnosis2,
+                          levels = c(0,1),
+                          labels = c("No NNJ", "NNJ"))
 
-judith$bld_grp <-factor(judith$bld_grp,
-                            levels = c(1,2,3,4),
-                            labels = c("A positive", "B positive", "AB positive", "O positive"))
-str(judith)
-print(judith)
+Hanisah$Diagnosis3 <-factor(Hanisah$Diagnosis3,
+                            levels = c(0,1,2),
+                            labels = c("No NNJ", "NNJ", "NNJ & Others"))
+str(Hanisah)
+print(Hanisah)
+
 #   #   #
 
-#--------------------------- Handling Missing Data -----------------------------
+#--------------------------- Handling Missing Data --------------------------------------------------
 # Count missing values in each column
-missing_per_column <- colSums(is.na(judith))
+missing_per_column <- colSums(is.na(Hanisah))
 print(missing_per_column)
 
 # Remove rows with any missing values 
-judith <- na.omit(judith)
-print(judith)
+Cleaned_Hanisah <- na.omit(Hanisah)
+print(Cleaned_Hanisah)
 
-judith <- colSums(is.na(judith))
-print(judith)
-
-# Perform mean imputation for the 'salary' column where NA values are present
-mean_salary <- mean(data$Salary, na.rm = TRUE)
-
+Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
+print(Check_Clean_Hanisah)
 
 # # 
-#--------------------------- Data Normality ----------------------------------- Skewness = Mean - Median
-#                                                                                          -------------
-skewness(-1+1)---- statistic + 1.96   | Kurtosis(1-3)---- statistic + 1.96      #              Sd
---------                                ---------                                       
- SE                                       SE                                                  
-#_____________________________________________________________________________# Q1-1.5(IQR) ____________
-#POS_skewed = Mean > Median/Mode      | NEG_skewed = Mean < Median/Mode        # Q3+1.5(IQR)        
-##
+#--------------------------- Data Normality ----------------------------------- Skewness=Mean - Median -----------
+#                                                                                        -------------
+skewness(-1+1)---- statistic + 1.96   |   Kurtosis(1-3)---- statistic + 1.96    #             Sd
+--------                                  ---------                                       
+ SE                                         SE                                                  
+#POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
+#                                                                               HIGH = Q3+1.5(IQR)
 library(psych)
 library(readxl)
 
-skew(imdata$age, na.rm = TRUE)
-kurtosi(imdata$age, na.rm = TRUE)
-mardia(imdata$age,na.rm = TRUE)
-#------------------------------Transforming skewed data-------------------------
+skew(Cleaned_Hanisah$Baby_Age, na.rm = TRUE)
+kurtosi(Cleaned_Hanisah$Baby_Age, na.rm = TRUE)
+mardia(Cleaned_Hanisah$mum_Age,na.rm = TRUE)
 
-#Square root Transformation ==== moderately skew (-1 to -0.5 // 0.5 to 1 )
-sq_data <-sqrt(imdata$bmi)
+#---------------------------Transforming skewed data--------------------------------------------------------------
+
+#Square root Transformation-------------------------moderately skewed (-1 to -0.5//0.5 to 1)
+sq_data <-sqrt(Cleaned_Hanisah$Baby_Age)
 hist(sq_data)
-#Cube root==== moderately----right skewed can apply to negative and zero values
-cb_data <-sign(imdata$age)*abs(imdata$age)^(1/3)
+#Cube root Transformation---------------------------moderately Right skewed(Negative//Zero)
+cb_data <-sign(Cleaned_Hanisah$Baby_Weight)*abs(Cleaned_Hanisah$Baby_Weight)^(1/3)
 hist(cb_data)
-#Log Transformation====highly skewed (above 1),Cannot be applied negative/zero values
-lg_data <-log(imdata$systol1)
+#Log Transformation---------------------------------Highly skewed(above1),But not (Negative//Zero)
+lg_data <-log(Cleaned_Hanisah$Baby_Age)
 hist(lg_data)
 
-#-----------------Confidence interval of the mean
-t.test(imdata$ bwgt,
-       conf.level=0.95)         
-
 #     #     #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                            Descriptive statistics                            
+library(skimr)
+skim_without_charts(Cleaned_Hanisah)
+str(Cleaned_Hanisah)
+library(psych)
+summary(Cleaned_Hanisah)
+describeBy(Cleaned_Hanisah)
 
-#---------------------------- Data Visualization -------------------------------
+#-----------------Confidence interval of the mean
+t.test(Cleaned_Hanisah$mum_Age,
+       conf.level=0.95)
+
+#   #   #
+
+#---------------------------- Data Visualization -------------------------------------------------------------------
 #-----------------Pie Chart 
-slices <- c(18, 35, 47, 64)
-lbls <- c( "None", "Low", "Medium", "High")
+library(lessR)
+slices <- c(35, 47, 64)
+lbls <- c( "No NNJ", "NNJ", "NNJ & Others")
 pct <- round(slices/sum(slices)*100)
 lbls <- paste(lbls, pct)
 # add percents to labels
 lbls <- paste(lbls,"%",sep="") # ad % to labels
 pie(slices,labels = lbls, col=rainbow(length(lbls)),
-    main="Pie Chart of exposure")
+    main="Diagnostic outcomes")
 # 3D Exploded Pie Chart
 library(plotrix)
-slices <- c(18, 35, 47, 64)
-lbls <- c( "None", "Low", "Medium", "High")
+slices <- c(35, 47, 64)
+lbls <- c( "No NNJ", "NNJ", "NNJ & Others")
 pie3D(slices,labels=lbls,explode=0.1,
-      main="Pie Chart of exposure ")
+      main="Diagnostic outcomes")
 
 #----------------Donut chart
 install.packages("webr")
+
+install.packages(                                                
+  "webr",
+  repos = c("http://rstudio.org/_packages",                      
+            "http://cran.rstudio.com")                           
+)
+
 library(webr)
 # Pie-Donut chart
-PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status")
+PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender")
 #Explode Pie
 PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 2, explodeDonut=FALSE)
 #Explode Donut for Control
@@ -205,94 +246,109 @@ PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 2
 #Explode Donut for Case
 PieDonut(imdata, aes(CaseControl, expose ), title = "Expose status", explode = 1, explodeDonut=TRUE)
 
-#-------------plotting points 
-immu <- ggplot(data = imdata,
-               mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
+#-------------plotting points
+library(ggplot2)
+immu <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_Weight, y = Baby_Age, colour = Baby_sex))+
   geom_point()+theme_classic()
 immu
 #creating density plot 
-immu1 <- ggplot(data = mdata,
-                mapping = aes(x = diastol1, colour = CaseControl))+
+immu1 <- ggplot(data = Cleaned_Hanisah,
+                mapping = aes(x = Baby_Weight, colour = Baby_sex))+
   geom_density()
 immu1
 #point and smoothing
-immu2 <- ggplot(data = imdata,
-                mapping = aes(x = bmi, y = plt, colour = nicu))+
+immu2 <- ggplot(data = Cleaned_Hanisah,
+                mapping = aes(x = Baby_Weight, y = Baby_Age, colour = Delivery_mode))+
   geom_smooth()+
   geom_point()
 immu2
 
 #-----------------Barchart
-ht <-ggplot(data = imdata,
-            mapping = aes(x = expose))+
+ht <-ggplot(data = Cleaned_Hanisah,
+            mapping = aes(x = Baby_G6PD))+
   geom_bar()
 ht
-#column Barchrt
-ht1 <-ggplot(data = ARMdata,
-             mapping = aes(x = Gender, colour = ParasitePresence, fill = ParasitePresence))+
+#Stacked Barchart
+ht1 <-ggplot(data = Cleaned_Hanisah,
+             mapping = aes(x = Baby_G6PD, colour = Baby_sex, fill = Baby_sex))+
   geom_bar()
 ht1
-#stacked Barchart
-ht2 <-ggplot(data = ARMdata,
-             mapping = aes(x = AgeGroup, colour = ParasitePresence,fill = ParasitePresence))+
+#Stacked Barchart
+ht2 <-ggplot(data = Cleaned_Hanisah,
+             mapping = aes(x = Baby_G6PD, colour = Baby_sex, fill = Baby_sex))+
   geom_bar()+
   theme_classic()
 ht2
 
 #----------------Histogram:
-ht3 <-ggplot(data = imdata,
-             mapping = aes(x = systol1))+
+Histogram
+hist(Cleaned_Hanisah$mum_Age, col="gray", main="Maternal Age", xlab="Age")
+
+
+ht3 <-ggplot(data = Cleaned_Hanisah,
+             mapping = aes(x = mum_Age))+
   geom_histogram()
 ht3
 
 #Histogram with stacked
-ht <-ggplot(data = imdata,
-            mapping = aes(x = systol1, fill = expose))+
+ht <-ggplot(data = Cleaned_Hanisah,
+            mapping = aes(x = mum_Age, fill = Delivery_mode))+
   geom_histogram(bins = 10, position = "stack")
 ht
 
 #Histogram with dodge
-ht <-ggplot(data = imdata,
-            mapping = aes(x = systol1, fill = expose))+
+ht <-ggplot(data = Cleaned_Hanisah,
+            mapping = aes(x = mum_Age, fill = Delivery_mode))+
   geom_histogram(bins = 10, position = "dodge")
 ht
 #------------------------Viridis-(Histogram)
-hh <-ggplot(data = imdata,
-            mapping = aes(x = systol1, fill = expose))+
+hh <-ggplot(data = Cleaned_Hanisah,
+            mapping = aes(x = mum_Age, fill = Delivery_mode))+
   geom_histogram(bins = 10, position = "dodge")
 hh + scale_fill_viridis_d()
 hh + scale_fill_viridis_d(direction = -1)
 hh
 
 #--------------------------Boxplot:
-immu <- ggplot(data = amdata,
-               mapping = aes(x = gender, y = estimated_parasitemia))+
+immu <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_sex, y = Baby_Weight))+
   geom_boxplot()
 immu
 # Boxplot by category ##
-immu <- ggplot(data = amdata,
-               mapping = aes(x = gender, y = estimated_parasitemia, colour = target))+
+immu <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_sex, y = Baby_Weight, color = Baby_sex))+
   geom_boxplot()
 immu
 
 #Boxplot with coord_flip
-immu <- ggplot(data = imdata,
-               mapping = aes(x = systol1, y = diastol1, colour = expose))+
-  geom_boxplot()+ coord_flip()
-immu
+immu <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_sex, y = Baby_Weight, color = Baby_sex))+
+  geom_boxplot()+coord_flip()
+immu 
 
 #plotting by factor
-immu <- ggplot(data = imdata,
-               mapping = aes(x = systol1, y = diastol1))+
-  geom_boxplot(aes(fill = factor(nicu)))
+immu <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_sex, y = Baby_Weight))+
+  geom_boxplot(aes(fill = factor(Babyfood)))
 immu
 
 # Facet wrap 
-immwrp <- ggplot(data = imdata,
-                 mapping = aes(x = systol1, y = diastol1, colour = grvdty))+
+immwrp <- ggplot(data = Cleaned_Hanisah,
+               mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Diagnosis3))+
   geom_violin()+
-  facet_wrap(~expose)
+  facet_wrap(~Diagnosis3)
 immwrp
+# Facet grid
+immwrp <- ggplot(data = Cleaned_Hanisah,
+                 mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Baby_G6PD))+
+  geom_violin()+
+  facet_grid(~Diagnosis3)
+immwrp
+
+
+
+
 -------------------------------------------------------------------------------------
   
   ht2 <-ggplot(data = ARMdata,
@@ -395,27 +451,10 @@ print(p)
 ggsave("p.png")
 
 
-
-
 #   #   #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                            Descriptive statistics                            
-
-library(psych)
-summary(judith)
-describe(judith)
-describe(judith$Age)
-
-summary(imdata$bwgt)
-describe(imdata$bwgt)
-
-Histogram
-hist(ghsdata1$Age, col="gray", main="NCD for pregnant women", xlab="Birthweight")
-
-#   #   #
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                        TEST OF ONE / TWO SAMPLES                                                
+======================================================================================================
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                        TEST OF ONE / TWO SAMPLES                                                
   
 library(psych)
 library(readxl) 
