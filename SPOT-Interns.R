@@ -45,15 +45,15 @@ remove_more <- remove_one %>% select(-c(HBV, HIV))
 str(remove_more)
 
 #---------filter rows ?filter()
-Hanisah <- remove_more %>% select(c(Motherage,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,Baby_age_days,Baby_sex,
-                                    Baby_bloodgroup,Baby_G6PD,Baby_Weight,Baby_gestational_age,Babyfood,Diagnosis2,Diagnosis3)) %>% 
+Hanisah <- remove_more %>% select(c(Motherage,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,Baby_sex,Baby_age_days,
+                                    Baby_gestational_age,Baby_Weight,Baby_bloodgroup,Baby_G6PD,Babyfood,Diagnosis2,Diagnosis3)) %>% 
                             filter(Motherage < 40)
 print(Hanisah)
-
+str(Hanisah)
 #---------summarise()
-Hanisah1 <- Hanisah %>% summarise(sum_Age=sum(Motherage))
+Hanisah1 <- Hanisah %>% summarise(sum_MotherAge=sum(Motherage))
 print(Hanisah1)
-Hanisah2 <- Hanisah %>% summarise(mean_Age=mean(Motherage,na.rm = TRUE))
+Hanisah2 <- Hanisah %>% summarise(mean_Age=mean(Motherage))
 print(Hanisah2)
 Hanisah3 <- Hanisah %>% summarise(sum_BabyWt=sum(Baby_Weight),Mean_BabyWt=mean(Baby_Weight))
 print(Hanisah3)
@@ -68,10 +68,11 @@ print(AverageWeightbyGender)
 #---------rename a column
 #Data %>% rename(NewColumn=OldColumn)
 
+
 names(Hanisah)[1]<- "mum_Age"
 names(Hanisah)[4]<- "Delivery_mode"
-names(Hanisah)[5]<- "Baby_Age"
-names(Hanisah)[10]<- "Baby_Gest_Age"
+names(Hanisah)[6]<- "Baby_Age"
+names(Hanisah)[7]<- "Baby_Gest_Age"
 str(Hanisah)
 
 
@@ -110,7 +111,6 @@ str(Hanisah)
 Hanisah$mum_Age <-as.integer(Hanisah$mum_Age)
 Hanisah$Baby_Age <-as.integer(Hanisah$Baby_Age)
 Hanisah$Baby_Weight <-as.integer(Hanisah$Baby_Weight)
-Hanisah$Baby_Gest_Age <-as.integer(Hanisah$Baby_Gest_Age)
 
 #-------Categorical data
 Hanisah$Baby_sex <-factor(Hanisah$Baby_sex,
@@ -155,9 +155,10 @@ Hanisah$Diagnosis3 <-factor(Hanisah$Diagnosis3,
                             labels = c("No NNJ", "NNJ", "NNJ & Others"))
 str(Hanisah)
 print(Hanisah)
-
-#   #   #
-
+print(Hanisah$Baby_G6PD)
+#=============================================
+==============================================
+# #  #
 #--------------------------- Handling Missing Data --------------------------------------------------
 # Count missing values in each column
 missing_per_column <- colSums(is.na(Hanisah))
