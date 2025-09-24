@@ -172,65 +172,96 @@ Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
 print(Check_Clean_Hanisah)
 
 # # 
+
+library(writexl)
+write_xlsx(Cleaned_Hanisah, "Aziz.xlsx")
+
 #--------------------------- Data Normality ----------------------------------- Skewness=Mean - Median -----------
-#                                                                                        -------------
+library(psych)
+library(readxl) 
+
+Hanisah <- read_excel("C:/Users/User/Desktop/Aziz.xlsx") 
+
+#  #  #
+
+
+-------------
 skewness(-1+1)---- statistic + 1.96   |   Kurtosis(1-3)---- statistic + 1.96    #             Sd
 --------                                  ---------                                       
  SE                                         SE                                                  
 #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
 #                                                                               HIGH = Q3+1.5(IQR)
-library(psych)
-library(readxl)
 
-skew(Cleaned_Hanisah$Baby_Age, na.rm = TRUE)
-kurtosi(Cleaned_Hanisah$Baby_Age, na.rm = TRUE)
-mardia(Cleaned_Hanisah$mum_Age,na.rm = TRUE)
+skew(Hanisah$Baby_Age, na.rm = TRUE)
+kurtosi(Hanisah$Baby_Age, na.rm = TRUE)
+mardia(Hanisah$Baby_Weight)
 
 #---------------------------Transforming skewed data--------------------------------------------------------------
 
 #Square root Transformation-------------------------moderately skewed (-1 to -0.5//0.5 to 1)
-sq_data <-sqrt(Cleaned_Hanisah$Baby_Age)
+sq_data <-sqrt(Hanisah$Baby_Weight)
 hist(sq_data)
 #Cube root Transformation---------------------------moderately Right skewed(Negative//Zero)
-cb_data <-sign(Cleaned_Hanisah$Baby_Weight)*abs(Cleaned_Hanisah$Baby_Weight)^(1/3)
+cb_data <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)
 hist(cb_data)
 #Log Transformation---------------------------------Highly skewed(above1),But not (Negative//Zero)
-lg_data <-log(Cleaned_Hanisah$Baby_Age)
+lg_data <-log(Hanisah$Baby_Weight)
 hist(lg_data)
 
 #     #     #
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                            Descriptive statistics                            
 library(skimr)
-skim_without_charts(Cleaned_Hanisah)
-str(Cleaned_Hanisah)
+str(Hanisah)
+skim_without_charts(Hanisah)
+
 library(psych)
-summary(Cleaned_Hanisah)
-describeBy(Cleaned_Hanisah)
+describeBy(Hanisah)
+
 
 #-----------------Confidence interval of the mean
-t.test(Cleaned_Hanisah$mum_Age,
+t.test(Hanisah$Baby_Weight,
        conf.level=0.95)
 
 #   #   #
 
 #---------------------------- Data Visualization -------------------------------
+
+#---------group_by()
+Tablehanisah <-Hanisah %>%
+  group_by(Delivery_mode) %>%
+  summarise(sum = sum(Baby_Weight))
+print(Tablehanisah)
+
 #-----------------Pie Chart 
 library(lessR)
-slices <- c(35, 47, 64)
-lbls <- c( "No NNJ", "NNJ", "NNJ & Others")
+slices <- c(13, 262, 597)
+lbls <- c( "Assisted", "Caesarean", "Vaginal")
 pct <- round(slices/sum(slices)*100)
 lbls <- paste(lbls, pct)
 # add percents to labels
 lbls <- paste(lbls,"%",sep="") # ad % to labels
 pie(slices,labels = lbls, col=rainbow(length(lbls)),
-    main="Diagnostic outcomes")
-# 3D Exploded Pie Chart
+    main="Baby's Weight by Mode of Delivery")
+
+# 3D Exploded Pie Chart - Done by Hanisah
 library(plotrix)
-slices <- c(35, 47, 64)
-lbls <- c( "No NNJ", "NNJ", "NNJ & Others")
+slices <- c(13, 262, 597)
+lbls <- c( "Assisted", "Caesarean", "Vaginal")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct)
+lbls <- paste(lbls,"%",sep="")
 pie3D(slices,labels=lbls,explode=0.1,
-      main="Diagnostic outcomes")
+      main="Baby's Weight by Mode of Delivery")
+
+Hanisah100 <- data.frame(Hanisah)
+#---------------Barchart
+Hanisah100 <- as.data.frame(Hanisah)
+BarChart(Hanisah100, Delivery_mode)
+
+#----------------Histogram:
+Histogram
+hist(Hanisah$mum_Age, col= "turquoise", main="Maternal Age", xlab="Age")
 
 #----------------Donut chart
 install.packages("webr")
@@ -243,7 +274,7 @@ install.packages(
 
 library(webr)
 # Pie-Donut chart
-PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender")
+PieDonut(Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender")
 #Explode Pie
 PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 2, explodeDonut=FALSE)
 #Explode Donut for Control
@@ -251,9 +282,9 @@ PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGend
 #Explode Donut for Case
 PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 1, explodeDonut=TRUE)
 
-#-------------plotting points
+#-------------plotting points---------------------------------GGPLOT2
 library(ggplot2)
-immu <- ggplot(data = Cleaned_Hanisah,
+immu <- ggplot(data = Hanisah,
                mapping = aes(x = Baby_Weight, y = Baby_Age, colour = Baby_sex))+
   geom_point()+theme_classic()
 immu
@@ -288,7 +319,7 @@ ht2
 
 #----------------Histogram:
 Histogram
-hist(Cleaned_Hanisah$mum_Age, col="gray", main="Maternal Age", xlab="Age")
+hist(Hanisah$mum_Age, col="gray", main="Maternal Age", xlab="Age")
 
 
 ht3 <-ggplot(data = Cleaned_Hanisah,
