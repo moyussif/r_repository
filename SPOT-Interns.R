@@ -16,6 +16,7 @@ library(FSA)
 library(Hmisc)
 library(stats)
 library(epitools)
+#---------------------------
 library(VGAM)
 library(mlogit)
 library(nnet)
@@ -86,7 +87,7 @@ Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
 ###
 
-#-------------------- Reshaping Data-(LONG.data / WIDE.data) ----------------------------------------
+#-------------------- Reshaping Data-(LONG.data / WIDE.data) -------------------
 library(tidyr) 
 print(HTdata)
 # use gather()function to make data longer
@@ -282,64 +283,75 @@ PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGend
 #Explode Donut for Case
 PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 1, explodeDonut=TRUE)
 
+# # #
+
 #-------------plotting points---------------------------------GGPLOT2
+Hanisah25 <- read_excel("C:/Users/User/Desktop/Aziz.xlsx")
+
+
+ggplot(data = DATASET,
+       mapping = aes(x = COLUMN, y = COLUMN, colour, fill, alpha))+
+?geom()
+
+
 library(ggplot2)
-immu <- ggplot(data = Hanisah,
-               mapping = aes(x = Baby_Weight, y = Baby_Age, colour = Baby_sex))+
-  geom_point()+theme_classic()
-immu
+
+Hanis1 <- ggplot(data = Hanisah25,
+               mapping = aes(x = Baby_Weight, y = Baby_Age))+
+  geom_point()+
+  geom_smooth() +
+  theme_minimal() 
+
+Hanis1
 #creating density plot 
-immu1 <- ggplot(data = Cleaned_Hanisah,
+immu1 <- ggplot(data = Hanisah100,
                 mapping = aes(x = Baby_Weight, colour = Baby_sex))+
   geom_density()
 immu1
 #point and smoothing
-immu2 <- ggplot(data = Cleaned_Hanisah,
+immu2 <- ggplot(data = Hanisah25,
                 mapping = aes(x = Baby_Weight, y = Baby_Age, colour = Delivery_mode))+
   geom_smooth()+
   geom_point()
 immu2
 
 #-----------------Barchart
-ht <-ggplot(data = Cleaned_Hanisah,
-            mapping = aes(x = Baby_G6PD))+
-  geom_bar()
+ht <-ggplot(data = Hanisah25,
+            mapping = aes(x = Baby_G6PD, fill = Baby_G6PD))+
+  geom_bar()+theme_classic()
 ht
 #Stacked Barchart
-ht1 <-ggplot(data = Cleaned_Hanisah,
-             mapping = aes(x = Baby_G6PD, colour = Baby_sex, fill = Baby_sex))+
+ht1 <-ggplot(data = Hanisah25,
+             mapping = aes(x = Baby_sex, fill = Diagnosis3))+
   geom_bar()
 ht1
 #Stacked Barchart
-ht2 <-ggplot(data = Cleaned_Hanisah,
+ht2 <-ggplot(data = Hanisah25,
              mapping = aes(x = Baby_G6PD, colour = Baby_sex, fill = Baby_sex))+
   geom_bar()+
   theme_classic()
 ht2
 
 #----------------Histogram:
-Histogram
-hist(Hanisah$mum_Age, col="gray", main="Maternal Age", xlab="Age")
 
-
-ht3 <-ggplot(data = Cleaned_Hanisah,
+ht3 <-ggplot(data = Hanisah25,
              mapping = aes(x = mum_Age))+
   geom_histogram()
 ht3
 
 #Histogram with stacked
-ht <-ggplot(data = Cleaned_Hanisah,
+ht <-ggplot(data = Hanisah25,
             mapping = aes(x = mum_Age, fill = Delivery_mode))+
   geom_histogram(bins = 10, position = "stack")
 ht
 
 #Histogram with dodge
-ht <-ggplot(data = Cleaned_Hanisah,
+ht <-ggplot(data = Hanisah25,
             mapping = aes(x = mum_Age, fill = Delivery_mode))+
-  geom_histogram(bins = 10, position = "dodge")
+  geom_histogram(bins = 2.5, position = "dodge")
 ht
 #------------------------Viridis-(Histogram)
-hh <-ggplot(data = Cleaned_Hanisah,
+hh <-ggplot(data = Hanisah100,
             mapping = aes(x = mum_Age, fill = Delivery_mode))+
   geom_histogram(bins = 10, position = "dodge")
 hh + scale_fill_viridis_d()
@@ -347,36 +359,40 @@ hh + scale_fill_viridis_d(direction = -1)
 hh
 
 #--------------------------Boxplot:
-immu <- ggplot(data = Cleaned_Hanisah,
+immu <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight))+
   geom_boxplot()
 immu
 # Boxplot by category ##
-immu <- ggplot(data = Cleaned_Hanisah,
-               mapping = aes(x = Baby_sex, y = Baby_Weight, color = Baby_sex))+
+immu <- ggplot(data = Hanisah25,
+               mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Baby_sex))+
   geom_boxplot()
 immu
 
 #Boxplot with coord_flip
-immu <- ggplot(data = Cleaned_Hanisah,
+immu <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight, color = Baby_sex))+
   geom_boxplot()+coord_flip()
 immu 
 
 #plotting by factor
-immu <- ggplot(data = Cleaned_Hanisah,
+immu <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight))+
   geom_boxplot(aes(fill = factor(Babyfood)))
 immu
-
+=======================================================================================
 # Facet wrap 
-immwrp <- ggplot(data = Cleaned_Hanisah,
+immwrp <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Diagnosis3))+
   geom_violin()+
   facet_wrap(~Diagnosis3)
 immwrp
+======================================================================================
+
+facet
+
 # Facet grid
-immwrp <- ggplot(data = Cleaned_Hanisah,
+immwrp <- ggplot(data = Hanisah25,
                  mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Baby_G6PD))+
   geom_violin()+
   facet_grid(~Diagnosis3)
@@ -385,25 +401,26 @@ immwrp
 
 
 
--------------------------------------------------------------------------------------
-  
-  ht2 <-ggplot(data = ARMdata,
-               mapping = aes(x = Gender, colour = AgeGroup,fill = AgeGroup))+
-  geom_bar()+
-  labs(title ="Parasite Across 10 Site ", subtitle = "Parasitemia estimation across age and gender",caption = "By Parasitology Team")+
-  annotate( "text",x = 145,y = 90, label =" Dynamic of Parasite Infection", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_bw()+scale_colour_viridis_d()+
-  facet_wrap(~study_site)  
-ht2
+#-------------------------------- Combos --------------------------------------
+library(RColorBrewer)
+par()
 
-p <- ggplot(ARMdata, aes(x=study_site, color = ParasitePresence, fill=ParasitePresence,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_update()+scale_color_jama()
+ 
+p <- ggplot(data = Hanisah25,
+            mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Baby_sex))+
+      geom_boxplot()+
+      theme_update()
 p
-p1 <- ggplot(ARMdata, aes(x=AgeGroup, color = ParasitePresence, fill=ParasitePresence))+geom_bar(alpha = 0.8)+theme_test()
+p1 <- ggplot(data = Hanisah25,
+             mapping = aes(x = Baby_sex, fill = Diagnosis3))+
+        geom_bar()+
+        theme_test()
 p1
-p2 <- ggplot(ARMdata, aes(x=Gender, color = ParasitePresence, fill = ParasitePresence))+geom_bar(alpha = 0.8)+theme_update()
+p2 <- ggplot(data = Hanisah25,
+             mapping = aes(x = mum_Age, fill = Delivery_mode))+
+        geom_histogram(bins = 5, position = "dodge")+theme_update()
 p2
-p2 <- PieDonut(ARMdata, aes(ParasitePresence, AgeGroup ), title = "Expose status")
+
 
 #to arrange plot for publication
 ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
@@ -491,23 +508,24 @@ ggsave("p.png")
 ======================================================================================================
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                        TEST OF ONE / TWO SAMPLES                                                
-  
-library(readxl)
+Hanisah30 <- read_excel("C:/Users/User/Desktop/Aziz.xlsx")
+
 library(psych)
 library(lessR)
-
-Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            
-View(Neonate)
-str(Neonate)
 ##
-summary(Cleaned_Hanisah)
-describeBy(Cleaned_Hanisah)  
+summary(Hanisah25)
+describeBy(Hanisah25)  
+
 #-----------------One sample t-test
-observed    = Cleaned_Hanisah$mum_Age
-theoretical = 20
+observed    = Hanisah30$Baby_Age
+theoretical = 5
+
+t.test(observed, mu = theoretical, conf.int=0.95)  
+
+
 hist(Cleaned_Hanisah$mum_Age, col="gray", main="Histogram of Mother's Age", xlab="Age")
 
-t.test(observed, mu = theoretical, conf.int=0.95) 
+
 
 #------------------Two Samples Student’s t–test 
 #paired t.test  
@@ -527,6 +545,7 @@ wilcox.test(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, exact = TRUE)
 
 #Box plots
 boxplot(mum_Age ~ Baby_Gest_Age, data=Cleaned_Hanisah, names=c("preterm","Fullterm"), ylab="age")
+
 
 #   #   #
 
