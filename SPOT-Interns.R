@@ -187,15 +187,15 @@ Hanisah <- read_excel("C:/Users/User/Desktop/Aziz.xlsx")
 
 
 -------------
-skewness(-1+1)---- statistic + 1.96   |   Kurtosis(1-3)---- statistic + 1.96    #             Sd
+skewness(-1+1)---- statistic + 1.96   |   Kurtosis(0-3)---- statistic + 1.96    #             Sd
 --------                                  ---------                                       
  SE                                         SE                                                  
 #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
 #                                                                               HIGH = Q3+1.5(IQR)
 
-skew(Hanisah$Baby_Age, na.rm = TRUE)
-kurtosi(Hanisah$Baby_Age, na.rm = TRUE)
-mardia(Hanisah$Baby_Weight)
+skew(Hanisah30$mum_Age)
+kurtosi(Hanisah30$Baby_Age, na.rm = TRUE)
+mardia(Hanisah30$Baby_Age)
 
 #---------------------------Transforming skewed data--------------------------------------------------------------
 
@@ -206,7 +206,7 @@ hist(sq_data)
 cb_data <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)
 hist(cb_data)
 #Log Transformation---------------------------------Highly skewed(above1),But not (Negative//Zero)
-lg_data <-log(Hanisah$Baby_Weight)
+Hanisah30$lg_mum_age <-log(Hanisah30$mum_Age)
 hist(lg_data)
 
 #     #     #
@@ -495,7 +495,8 @@ p<- ggplot(vkdata, aes(x=Sex_frequency, y=AGE, fill=Abnormal_discharge)) +
   geom_errorbar(aes(ymin=AGE-sd(AGE), ymax=AGE+sd(AGE)), width=.2,
                 position=position_dodge(.9))+
   theme_light()+
-  scale_colour_aaas()+
+  scale_colour_aaas()+ Hanisah19 <- read_excel("C:/Users/User/Desktop/immudata.xlsx")
+
   labs(title="number of affairs ", x="Frequency of sex", y = "Age")
 
 print(p)
@@ -504,12 +505,24 @@ print(p)
 ggsave("p.png")
 
 
-#   #   #
-======================================================================================================
+  #   #    #
+Hanisah19 <- read_excel("C:/Users/User/Desktop/immudata.xlsx")
+print(Hanisah19)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #                             Chi square                                        +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+table(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
+chisq.test(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
+# Perform Fisher's Exact Test
+fisher.test(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
+
+# # #   
+  
+  
+  
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                        TEST OF ONE / TWO SAMPLES                                                
-Hanisah30 <- read_excel("C:/Users/User/Desktop/Aziz.xlsx")
-
+ 
 library(psych)
 library(lessR)
 ##
@@ -517,7 +530,7 @@ summary(Hanisah25)
 describeBy(Hanisah25)  
 
 #-----------------One sample t-test
-observed    = Hanisah30$Baby_Age
+observed    = Hanisah19$age
 theoretical = 5
 
 t.test(observed, mu = theoretical, conf.int=0.95)  
@@ -528,20 +541,26 @@ hist(Cleaned_Hanisah$mum_Age, col="gray", main="Histogram of Mother's Age", xlab
 
 
 #------------------Two Samples Student’s t–test 
+#==============PARAMETRIC============================================
+Hanisah17 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah17)
+describe.by(Hanisah17)
 #paired t.test  
-t.test(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, var.equal=TRUE, conf.level=0.95)
+t.test(Age ~ SEX, data=Hanisah17, var.equal=TRUE, conf.level=0.95)
 #independent t.test
-t.test(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, var.equal=FALSE, conf.level=0.95)
+t.test(Age ~ SEX, data=Hanisah17, var.equal=FALSE, conf.level=0.95)
 
 # Histogram
-hs<-hist(mum_Age ~ Diagnosis2, col="gray",data=Cleaned_Hanisah)
+hs<-hist(Age ~ SEX, col="gray",data=Hanisah17, margin=FALSE)
 hs
 # Boxplot
-boxplot(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, names=c("No_NNJ","NNJ"), ylab="age")
+boxplot(Age ~ SEX, data=Hanisah17, names=c("Female","Male"), ylab="Age")
 
-#------------- Mann–Whitney Test
-wilcox.test(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, exact = FALSE)
-wilcox.test(mum_Age ~ Diagnosis2, data=Cleaned_Hanisah, exact = TRUE)
+#NON -PARAMETRIC=========================================================
+#------------- Mann–Whitney Test ---Independent test
+wilcox.test(mum_Age ~ Baby_sex, data=Hanisah30, exact = FALSE)
+#--------------Wilcoxon sign Test---Paired test
+wilcox.test(lg_mum_age ~ Diagnosis2, data=Hanisah30, exact = TRUE)
 
 #Box plots
 boxplot(mum_Age ~ Baby_Gest_Age, data=Cleaned_Hanisah, names=c("preterm","Fullterm"), ylab="age")
@@ -555,39 +574,173 @@ boxplot(mum_Age ~ Baby_Gest_Age, data=Cleaned_Hanisah, names=c("preterm","Fullte
 
 library(readxl)
 library(lessR)
-print(Cleaned_Hanisah)
-#plot
-Plot(mum_Age, data=Cleaned_Hanisah, by1=Diagnosis3)
-#normality assumption
-tapply(Cleaned_Hanisah$mum_Age, Cleaned_Hanisah$Diagnosis3, shapiro.test)
 library(car)
-leveneTest(mum_Age ~ Diagnosis3, data=Cleaned_Hanisah)
+
+str(Hanisah19)
+
+
+
+#plot
+Plot(Age, data=Hanisah17, by1=categoryofcases)
+
+#Normality assumption
+library(lessR)
+tapply(Hanisah17$Age, Hanisah17$categoryofcases, shapiro.test)
+library(car)
+QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
+shapiro.test(res_aov$residuals) #normality
+
+# Bartlett’s test and Levene’s test 
+-----------------------------------
+leveneTest(mum_Age ~ Diagnosis3, data=Hanisah30)
+leveneTest(mum_Age ~ Diagnosis3*Delivery_mode*Baby_sex*Baby_Gest_Age, data=Hanisah30) 
+
+bartlett.test(mum_Age ~ Diagnosis3, data=Hanisah30)
+bartlett.test(mum_Age ~interaction(Delivery_mode,Baby_sex,Baby_Gest_Age), data=Hanisah30) 
 
 #One-way ANOVA
-ANOVA(mum_Age ~ Diagnosis3, data=Cleaned_Hanisah)
+ANOVA(Durationdays ~ categoryofcases, data=Hanisah17)
 
 #effect size(for groups with significant)
 library(effsize)
-cohen.d(mum_Age ~ Diagnosis3, data=subset(Cleaned_Hanisah, Diagnosis3!= "No NNJ"), paired=FALSE)        
-cohen.d(mum_Age ~ Diagnosis3, data=subset(Cleaned_Hanisah, Diagnosis3!= "NNJ"),paired=FALSE)        
+cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "mild"), paired=FALSE)        
+cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "severe"),paired=FALSE)        
 
 #Bar charts 
-age_means <- tapply(Cleaned_Hanisah$mum_Age, Cleaned_Hanisah$Diagnosis3)
+age_means <- tapply(Hanisah17$Durationdays, Hanisah17$categoryofcases)
 
 BarChart(age_means)
-BarChart(age_means, values="off", bxlab = "Diagnostic outcome", ylab = "Women Age")
+
+******************************************************************************
+
+
+
+#===================== ANOVA ANALYSIS----option.2 =============================
+==========================  Factorial Anova =================================== 
+library(psych)
+
+#residuals
+res_aov <- aov(bmi ~ expose, data = imdata)
+res_aov
+
+#combine plots
+par(mfrow = c(1,2))
+#histogram
+hist(res_aov$residuals)
+----------------------------------------------------------------------------
+str(Hanisah17)
+#One_way Anova
+one <- aov(Durationdays ~ categoryofcases, data = Hanisah17)
+summary(one)
+#postHoc
+tukey.one <- TukeyHSD(one)
+tukey.one
+summary(tukey.one)
+plot(tukey.one,las = 2)
+
+#Two_way Anova
+two <- aov(bmi ~ exposed + grvdty, data = Hanisah19)
+summary(two)
+#three_way Anova
+three <- aov(bmi ~ exposed + grvdty + sex, data = Hanisah19)
+summary(three)
+
+#interaction
+interaction <- aov(bmi ~ exposed + grvdty + sex + grvdty*sex, data = Hanisah19)
+summary(interaction)
+describe.by(Hanisah19$bmi)
+
+#post hoc analysis
+tukey.interaction <- TukeyHSD(interaction)
+tukey.interaction
+
+tukey.plot.aov <- aov(bmi ~ exposed:casecontrol, data = Hanisah19)
+summary(tukey.plot.aov)
+
+tukey.plot.test <-TukeyHSD(tukey.plot.aov)
+plot(tukey.plot.test,las = 2)
+
+#   #   #
+-------------------------------------------------------------------------------------------------
+Tukey and LSD mean separation tests (pairwise comparisons)
+TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
+though TukeyHSD does make an adjustment for mildly unequal sample sizes.
+-------------------------------------------------------------------------------------------------
 
 #   #    #
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#                             Chi square                                        +
-  
-table(Cleaned_Hanisah$Baby_sex,Cleaned_Hanisah$Diagnosis2)
-chisq.test(Cleaned_Hanisah$Baby_sex,Cleaned_Hanisah$Diagnosis2)
-# Perform Fisher's Exact Test
-fisher.test(Cleaned_Hanisah$Baby_sex,Cleaned_Hanisah$Diagnosis2)
 
-# # # 
+#--------------------------- Kruskal–Wallis Test -----------------------------------------------
+if(!require(FSA)){install.packages("FSA")
+#---------------------------------------------- kruskal.test(Value ~ Group, data = Data)
+  library(psych)
+  describe(imdata)
+  #-Medians and descriptive statistics
+  library(FSA)
+  Summarize(age ~ expose, data = imdata)
+  
+  #-Kruskal–Wallis test
+  kruskal.test(age ~ expose, data = imdata)
+  
+  #-Dunn test for multiple comparisons(Post Hoc)
+  The Dunn test is performed with the dunnTest function in the FSA package.  
+  Adjustments to the p-values could be made using the method option to control the familywise error rate or 
+  to control the false discovery rate.  
+  # Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
+  
+  library(FSA)
+  PT = dunnTest(bmi ~ expose, data=imdata, method="bh")           
+  PT
+  
+  #   #   #
+  
+  
+  #----------------------- Correlation and Linear Regression ---------------------
+  Correlation
+  Correlation can be performed with the cor.test function in the native stats package.  
+  It can perform Pearson, Kendall, and Spearman correlation procedures.  
+  
+  #Pearson correlation (Parametric)
+  Pearson correlation is a parametric test, and assumes that the data are linearly related 
+  and that the residuals are normally distributed.
+  --------
+    cor.test( ~ age + bmi, data=imdata, method = "pearson", conf.level = 0.95)
+  
+  #Kendall correlation (Non-parametric)
+  Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
+  It ranks the data to determine the degree of correlation.
+  --------
+    cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
+  
+  ==================================================================================
+    install.packages("GGally")
+  
+  library(psych)
+  library(ggplot2)
+  library(GGally)   
+  library(readxl)
+  EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
+  print(EGF01)
+  GGally::ggcorr(ARMdata1)
+  GGally::ggpairs(ARMdata1)
+  psych::pairs.panels(ARMdata1)
+  ================================================================================== 
+    
+    #Spearman correlation (Non-parametric / ordinals)
+    Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
+  It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
+  --------
+    cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
+  
+  #   #   #
+
+
+
+
+
+
+=========================================================================================
+
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
