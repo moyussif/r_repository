@@ -567,26 +567,44 @@ boxplot(mum_Age ~ Baby_Gest_Age, data=Cleaned_Hanisah, names=c("preterm","Fullte
 
 
 #   #   #
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#------------------------- One-way Anova using LessR -------------------option.1
-#visualise statistical assumptions
-
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#-------------------------- One-way Anova using LessR --------------------------option.1
 library(readxl)
 library(lessR)
 library(car)
-
-str(Hanisah19)
-
-
+Hanisah17 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah17)
 
 #plot
 Plot(Age, data=Hanisah17, by1=categoryofcases)
-
 #Normality assumption
-library(lessR)
 tapply(Hanisah17$Age, Hanisah17$categoryofcases, shapiro.test)
+# Bartlett’s test and Levene’s test 
+-----------------------------------
+leveneTest(Age ~ categoryofcases, data=Hanisah17)
+
+library(psych)
+#One-way ANOVA
+ANOVA(Durationdays ~ categoryofcases, data=Hanisah17)
+#effect size(for groups with significant)
+library(effsize)
+cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "mild"), paired=FALSE) 
+cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "moderate"), paired=FALSE) 
+cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "severe"),paired=FALSE)        
+
+#Bar charts 
+age_means <- tapply(Hanisah17$Durationdays, Hanisah17$categoryofcases)
+
+BarChart(age_means)
+
+# # #
+#===================== ANOVA ANALYSIS----option.2 =============================
+==========================  Factorial Anova =================================== 
+library(psych)
 library(car)
+Hanisah17 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah17)
+
 QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
 shapiro.test(res_aov$residuals) #normality
 
@@ -596,33 +614,10 @@ leveneTest(mum_Age ~ Diagnosis3, data=Hanisah30)
 leveneTest(mum_Age ~ Diagnosis3*Delivery_mode*Baby_sex*Baby_Gest_Age, data=Hanisah30) 
 
 bartlett.test(mum_Age ~ Diagnosis3, data=Hanisah30)
-bartlett.test(mum_Age ~interaction(Delivery_mode,Baby_sex,Baby_Gest_Age), data=Hanisah30) 
-
-#One-way ANOVA
-ANOVA(Durationdays ~ categoryofcases, data=Hanisah17)
-
-#effect size(for groups with significant)
-library(effsize)
-cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "mild"), paired=FALSE)        
-cohen.d(Durationdays ~ categoryofcases, data=subset(Hanisah17, categoryofcases!= "severe"),paired=FALSE)        
-
-#Bar charts 
-age_means <- tapply(Hanisah17$Durationdays, Hanisah17$categoryofcases)
-
-BarChart(age_means)
-
-******************************************************************************
-
-
-
-#===================== ANOVA ANALYSIS----option.2 =============================
-==========================  Factorial Anova =================================== 
-library(psych)
-
+bartlett.test(mum_Age ~interaction(Delivery_mode,Baby_sex,Baby_Gest_Age), data=Hanisah30)
 #residuals
 res_aov <- aov(bmi ~ expose, data = imdata)
 res_aov
-
 #combine plots
 par(mfrow = c(1,2))
 #histogram
@@ -630,23 +625,23 @@ hist(res_aov$residuals)
 ----------------------------------------------------------------------------
 str(Hanisah17)
 #One_way Anova
-one <- aov(Durationdays ~ categoryofcases, data = Hanisah17)
+one <- aov(Noofsymptoms ~ categoryofcases, data = Hanisah17)
 summary(one)
 #postHoc
 tukey.one <- TukeyHSD(one)
 tukey.one
 summary(tukey.one)
 plot(tukey.one,las = 2)
-
+-----------------------------------------------------------
 #Two_way Anova
-two <- aov(bmi ~ exposed + grvdty, data = Hanisah19)
+two <- aov(Noofsymptoms ~ categoryofcases + Coinfection, data = Hanisah17)
 summary(two)
 #three_way Anova
-three <- aov(bmi ~ exposed + grvdty + sex, data = Hanisah19)
+three <- aov(Noofsymptoms ~ categoryofcases + Coinfection+Hospitalstatus, data = Hanisah17)
 summary(three)
 
 #interaction
-interaction <- aov(bmi ~ exposed + grvdty + sex + grvdty*sex, data = Hanisah19)
+interaction <- aov(Noofsymptoms ~ categoryofcases + Coinfection + Hospitalstatus + Coinfection*Hospitalstatus, data = Hanisah17)
 summary(interaction)
 describe.by(Hanisah19$bmi)
 
@@ -669,7 +664,7 @@ though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 
 #   #    #
 
-
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #--------------------------- Kruskal–Wallis Test -----------------------------------------------
 if(!require(FSA)){install.packages("FSA")
 #---------------------------------------------- kruskal.test(Value ~ Group, data = Data)
@@ -677,10 +672,10 @@ if(!require(FSA)){install.packages("FSA")
   describe(imdata)
   #-Medians and descriptive statistics
   library(FSA)
-  Summarize(age ~ expose, data = imdata)
+  Summarize(Durationdays ~ categoryofcases, data=Hanisah17)
   
   #-Kruskal–Wallis test
-  kruskal.test(age ~ expose, data = imdata)
+  kruskal.test(Durationdays ~ categoryofcases, data=Hanisah17)
   
   #-Dunn test for multiple comparisons(Post Hoc)
   The Dunn test is performed with the dunnTest function in the FSA package.  
@@ -689,13 +684,13 @@ if(!require(FSA)){install.packages("FSA")
   # Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
   
   library(FSA)
-  PT = dunnTest(bmi ~ expose, data=imdata, method="bh")           
+  PT = dunnTest(Durationdays ~ categoryofcases, data=Hanisah17, method="bh")           
   PT
   
   #   #   #
   
-  
-  #----------------------- Correlation and Linear Regression ---------------------
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #---------------------------- Correlation -------------------------------------------------
   Correlation
   Correlation can be performed with the cor.test function in the native stats package.  
   It can perform Pearson, Kendall, and Spearman correlation procedures.  
@@ -704,15 +699,33 @@ if(!require(FSA)){install.packages("FSA")
   Pearson correlation is a parametric test, and assumes that the data are linearly related 
   and that the residuals are normally distributed.
   --------
-    cor.test( ~ age + bmi, data=imdata, method = "pearson", conf.level = 0.95)
-  
+  cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah17, method = "pearson", conf.level = 0.95)
+
   #Kendall correlation (Non-parametric)
   Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
   It ranks the data to determine the degree of correlation.
   --------
-    cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
+    cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah17, method = "kendall", continuity = FALSE, conf.level = 0.95)
   
-  ==================================================================================
+  #Spearman correlation (Non-parametric / ordinals)
+  Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
+  It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
+  --------
+    cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
+  
+  #   #   #
+  ==============================================================================
+  #plot
+  plot(Hanisah17$Noofsymptoms,Hanisah17$Durationdays,
+       main = "Age by duration",
+       xlab = "MOther Age",
+       ylab = "Baby Age",
+       pch=19,col="blue")
+  # plot with ggplot2
+  ggplot(Hanisah17, aes(x = Durationdays, y = Noofsymptoms)) +
+    geom_point(color = "blue")
+  
+#Matrix plots
     install.packages("GGally")
   
   library(psych)
@@ -721,43 +734,15 @@ if(!require(FSA)){install.packages("FSA")
   library(readxl)
   EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
   print(EGF01)
-  GGally::ggcorr(ARMdata1)
-  GGally::ggpairs(ARMdata1)
-  psych::pairs.panels(ARMdata1)
-  ================================================================================== 
-    
-    #Spearman correlation (Non-parametric / ordinals)
-    Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
-  It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
-  --------
-    cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
+  GGally::ggcorr(Hanisah17)
+  GGally::ggpairs(Hanisah17)
+  psych::pairs.panels(Hanisah17)
   
-  #   #   #
-
-
-
-
-
-
-=========================================================================================
-
-
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#-------------------------------- Correlation ----------------------------------
-  
-#Pearson correlation (Parametric)
-cor.test( ~ Baby_Age + Baby_Weight, data=Cleaned_Hanisah, method = "pearson", conf.level = 0.95)
-#Spearman correlation (Non-parametric)
-cor.test( ~ Baby_Age + Baby_Weight, data=Cleaned_Hanisah, method = "spearman", continuity = FALSE, conf.level = 0.95)
-  
-#   #   #
-  
-  
+  ============================================================================== 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                           Regression analysis                                +
 
-  model = lm(Species ~ Latitude, data = Data)
+  model = lm(Noofsymptoms ~ Durationdays, data = Hanisah17)
   summary(model)                    
   
   #    #    #   

@@ -1212,11 +1212,11 @@ increase in the log mean number of age    ---- Holding other variables constant
 using bonferroni correction----/------post hoc chi square of independence.
 #----------------------------------------------------------------------------
 1----Exact Goodness-of-fit--------------#whether is difference to hypothised value
-  2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
-  3----Chi-Square test of independence----#Test of association
-  4----Fisher exact test------------- N < 100
+2----Chi-Square Goodness-of -fit--------#Differecnes between observed and expected value
+3----Chi-Square test of independence----#Test of association
+4----Fisher exact test------------- N < 100
 5----McNemars test.---------------------#TO compare before and after observations
-  6----G test-----------------------------#Can accommodate experimental design
+6----G test-----------------------------#Can accommodate experimental design
 
 
 #  #  #  
