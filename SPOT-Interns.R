@@ -105,7 +105,7 @@ unite_data <- separate_data %>%
 unite_data
 
 
-#-------------------------- Data Conversion ------------------------------------
+#-------------------------- Data Conversion ------------------------------------ Option 1
 str(Hanisah)
 
 #-------Continuous data
@@ -157,7 +157,18 @@ Hanisah$Diagnosis3 <-factor(Hanisah$Diagnosis3,
 str(Hanisah)
 print(Hanisah)
 print(Hanisah$Baby_G6PD)
-#=============================================
+#==============================Reverse conversion ----------------------------- Option 2
+
+
+
+Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
+                                 levels = c("delta", "omicron"),
+                                 labels = c(1, 2))
+
+Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
+                                   levels = c("mild", "moderate", "severe"),
+                                   labels = c(1,2,3))
+
 ==============================================
 # #  #
 #--------------------------- Handling Missing Data --------------------------------------------------
@@ -511,14 +522,17 @@ print(Hanisah19)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #                             Chi square                                        +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-table(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
-chisq.test(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
-# Perform Fisher's Exact Test
-fisher.test(Hanisah19$`PE-CaseControl`,Hanisah19$mode)
+table(Hanisah6$SEX,Hanisah6$Durationweeks)
+table(Hanisah6$Hospitalstatus,Hanisah6$SEX)
 
+chisq.test(Hanisah6$Hospitalstatus,Hanisah6$SEX)
+
+# Perform Fisher's Exact Test
+fisher.test(Hanisah6$SEX,Hanisah6$Hospitalstatus)
 # # #   
-  
-  
+oddsratio(Hanisah6$SEX,Hanisah6$Hospitalstatus)
+
+riskratio(Hanisah6$SEX,Hanisah6$Hospitalstatus)  
   
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                        TEST OF ONE / TWO SAMPLES                                                
@@ -572,14 +586,16 @@ boxplot(mum_Age ~ Baby_Gest_Age, data=Cleaned_Hanisah, names=c("preterm","Fullte
 library(readxl)
 library(lessR)
 library(car)
-Hanisah17 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-str(Hanisah17)
+Hanisah6 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah6)
 
 #plot
-Plot(Age, data=Hanisah17, by1=categoryofcases)
+Plot(Noofsymptoms, data=Hanisah6, by1=Coinfection)
 #Normality assumption
-tapply(Hanisah17$Age, Hanisah17$categoryofcases, shapiro.test)
-# Bartlett’s test and Levene’s test 
+tapply(Hanisah6$Noofsymptoms, Hanisah6$Coinfection, shapiro.test)
+#decribe skewness/Kurtosis
+describe.by(Hanisah6)
+# Bartlett’s test and Levene’s test Homogeneity of variance 
 -----------------------------------
 leveneTest(Age ~ categoryofcases, data=Hanisah17)
 
@@ -672,10 +688,10 @@ if(!require(FSA)){install.packages("FSA")
   describe(imdata)
   #-Medians and descriptive statistics
   library(FSA)
-  Summarize(Durationdays ~ categoryofcases, data=Hanisah17)
+  Summarize(Noofsymptoms ~ Coinfection, data=Hanisah6)
   
   #-Kruskal–Wallis test
-  kruskal.test(Durationdays ~ categoryofcases, data=Hanisah17)
+  kruskal.test(Noofsymptoms ~ Coinfection, data=Hanisah6)
   
   #-Dunn test for multiple comparisons(Post Hoc)
   The Dunn test is performed with the dunnTest function in the FSA package.  
@@ -684,7 +700,7 @@ if(!require(FSA)){install.packages("FSA")
   # Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
   
   library(FSA)
-  PT = dunnTest(Durationdays ~ categoryofcases, data=Hanisah17, method="bh")           
+  PT = dunnTest(Noofsymptoms ~ Coinfection, data=Hanisah6, method="bh")           
   PT
   
   #   #   #
@@ -745,20 +761,55 @@ if(!require(FSA)){install.packages("FSA")
   model = lm(Noofsymptoms ~ Durationdays, data = Hanisah17)
   summary(model)                    
   
+  
   #    #    #   
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                           LOGISTIC REGRESSION                                +
 
-#--------------------------- Simple Logistic Regression 
-logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
-summary(logistic)
-exp(0.05512)
-exp(coef(logistic))
+Hanisah7 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah7)
+# Count missing values in each column
+Hanisah77 <- colSums(is.na(Hanisah7))
+print(Hanisah77)
+# Remove rows with any missing values 
+Hanisah77 <- na.omit(Hanisah7)
+print(Hanisah77)
+str(Hanisah77)
+#c=Convert to factors
+Hanisah77$SarsCovStrain <- as.factor(Hanisah77$SarsCovStrain)
+Hanisah77$categoryofcases <- as.factor(Hanisah77$categoryofcases)
+
+str(Hanisah77)
+
+#------------------------ Simple Logistic Regression ---------------------------
+
+#categoricals
+table(Hanisah77$SarsCovStrain, Hanisah77$categoryofcases)
+#continuous
+logis1<-glm(SarsCovStrain~categoryofcases,data = Hanisah77,family = "binomial")
+logis1
+summary(logis1)
+#Oddratio
+exp(coef(logis1))
+
+all <- exp(cbind(OR = coef(logis1), confint(logis1)))
+print(all)
 
 #----------------------- Multiple Logistics regression 
-multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
+multi_logist <- glm(SarsCovStrain ~ Age + categoryofcases, data = Hanisah77, family = "binomial" )
+multi_logist
 summary(multi_logist)
 
+#Oddratio
+exp(coef(logis1))
+
+all <- exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+print(all)
+
+#Note_______in case we want to reorder /change the reference group, Use relevel
+change_ref <-relevel(imdata$parity, ref = "1")
+logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
+logist2
 
 #   #   #
 
@@ -771,12 +822,9 @@ str(cngTB)
 
 table(cngTB$Lineage,cngTB$AgeCategory)
 table(cngTB$Lineage,cngTB$Gender)
-table(cngTB$Lineage,cngTB$B5Marital_Status)
 # Perform Fisher's Exact Test
 fisher.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
 fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
-fisher.test(cngTB$Lineage,cngTB$B5Marital_Status, simulate.p.value = TRUE)
-
 # Perform Chi-square Test
 chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
 
@@ -799,177 +847,4 @@ vglm(Lineage~DiabetesMellitus+BodyWeight+HIV+AIDS+Treatmentforrheumatoidarthriti
      family = multinomial,
      data = datafrme)
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-cngTB <- read_excel("C:/Users/User/Desktop/All_lineages.xlsx")
-str(cngTB)
-act <-remove_missing(cngTB)  
-#---------------------------- Explore data -------------------------------------                                  
-#Missing Data Summary
-summary(cngTB)
-
-# Count missing values in each column
-missing_per_column <- colSums(is.na(cngTB))
-print(missing_per_column)
-
-# Remove rows with any missing values 
-judith <- na.omit(cngTB)
-print(judith)
-
-judith <- colSums(is.na(judith))
-print(judith)
-str(judith)
-
-#--------------------------------- Data Conversion 
-cngTB$Gender <-factor(cngTB$Gender,
-                      levels = c(1,2),
-                      labels = c("Male", "Female"))
-##
-cngTB$AgeCategory <-factor(cngTB$AgeCategory,
-                           levels = c(1,2,3,4,5),
-                           labels = c("Below 18", "18 - 29", "30 - 44", "45 - 60", "Above 60"))
-##
-cngTB$Marital_Status <-factor(cngTB$Marital_Status,
-                              levels = c(1,2,3,4),
-                              labels = c("single", "married","divorced","widowed"))
-##
-cngTB$Education <-factor(cngTB$Education,
-                         levels = c(1,2,3,4,5),
-                         labels = c("primary", "junior high","senior high","tertiary","none"))
-##
-cngTB$occupationClass <-factor(cngTB$occupationClass,
-                               levels = c(1,2,3,4,5),
-                               labels = c("unemployed", "student","skilled","unskilled","unknown"))
-##
-cngTB$ResidenceClassification <-factor(cngTB$ResidenceClassification,
-                                       levels = c(1,2,3,4,5),
-                                       labels = c("village", "town","residential","suburb","slum"))
-##
-cngTB$MonthlyIncome <-factor(cngTB$MonthlyIncome,
-                             levels = c(1,2,3,4,5,6),
-                             labels = c("none", "500 & below","501-1000","1001-1500","1501-2500", "Above 2500"))
-##-------------------------------------------------------------------------------------------------------------
-
-cngTB$Coughgt2wk <-factor(cngTB$Coughgt2wk,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-cngTB$Coughphlegm <-factor(cngTB$Coughphlegm,
-                           levels = c(1,2),
-                           labels = c("yes", "no"))
-cngTB$bloodysputum <-factor(cngTB$bloodysputum,
-                            levels = c(1,2),
-                            labels = c("yes", "no"))
-cngTB$Fever <-factor(cngTB$Fever,
-                     levels = c(1,2),
-                     labels = c("yes", "no"))
-cngTB$weightloss <-factor(cngTB$weightloss,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-cngTB$SwollenGlnds <-factor(cngTB$SwollenGlnds,
-                            levels = c(1,2),
-                            labels = c("yes", "no"))
-cngTB$Shortnessofbreath <-factor(cngTB$Shortnessofbreath,
-                                levels = c(1,2),
-                                labels = c("yes", "no"))
-cngTB$Night_Sweats <-factor(cngTB$Night_Sweats,
-                            levels = c(1,2),
-                            labels = c("yes", "no"))
-cngTB$Chestpain <-factor(cngTB$Chestpain,
-                         levels = c(1,2),
-                         labels = c("yes", "no"))
-cngTB$weakness <-factor(cngTB$weakness,
-                        levels = c(1,2),
-                        labels = c("yes", "no"))
-
-cngTB$Recurringchills <-factor(cngTB$Recurringchills,
-                               levels = c(1,2),
-                               labels = c("yes", "no"))
-cngTB$Lossofappetite <-factor(cngTB$Lossofappetite,
-                               levels = c(1,2),
-                               labels = c("yes", "no"))
-#----------------------------------------------------------------------------------------------------------------
-cngTB$familymembercoughing <-factor(cngTB$familymembercoughing,
-                                    levels = c(1,2),
-                                    labels = c("yes", "no"))
-cngTB$samehousewithTBpatient <-factor(cngTB$samehousewithTBpatient,
-                                      levels = c(1,2),
-                                      labels = c("yes", "no"))
-cngTB$Share_Room <-factor(cngTB$Share_Room,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-
-cngTB$E1_Haveyoueverworkedinalabthat <-factor(cngTB$E1_Haveyoueverworkedinalabthat,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-
-cngTB$aresidentinajailpris <-factor(cngTB$aresidentinajailpris,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-
-cngTB$workedinahospital <-factor(cngTB$workedinahospital,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-cngTB$workediNAursinghome <-factor(cngTB$workediNAursinghome,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-cngTB$livedinrefugeecamp <-factor(cngTB$livedinrefugeecamp,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-cngTB$workinvolvesand <-factor(cngTB$workinvolvesand,
-                          levels = c(1,2),
-                          labels = c("yes", "no"))
-
-cngTB$workinvolvesmoke <-factor(cngTB$workinvolvesmoke,
-                               levels = c(1,2),
-                               labels = c("yes", "no"))
-
-cngTB$manyinthesameroom <-factor(cngTB$manyinthesameroom,
-                                levels = c(1,2),
-                                labels = c("yes", "no"))
-cngTB$workwithcattle <-factor(cngTB$workwithcattle,
-                                 levels = c(1,2),
-                                 labels = c("yes", "no"))
-
-cngTB$DiabetesMellitus <-factor(cngTB$DiabetesMellitus,
-                              levels = c(1,2),
-                              labels = c("yes", "no"))
-cngTB$HIV <-factor(cngTB$HIV,
-                   levels = c(1,2),
-                   labels = c("yes", "no"))
-
-cngTB$AIDS <-factor(cngTB$AIDS,
-                   levels = c(1,2),
-                   labels = c("yes", "no"))
-
-cngTB$Substanceabuse <-factor(cngTB$Substanceabuse,
-                             levels = c(1,2),
-                             labels = c("yes", "no"))
-
-cngTB$Smokingcigarettee <-factor(cngTB$Smokingcigarette,
-                              levels = c(1,2),
-                              labels = c("yes", "no"))
-
-cngTB$BCG  <-factor(cngTB$BCG,
-                    levels = c(1,2),
-                    labels = c("yes", "no"))
-
-str(cngTB)
-print(cngTB)
-#   #   #
-
-#--------------------------- Simple Logistic Regression ------------------------ 
-logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
-summary(logistic)
-exp(0.05512)
-exp(coef(logistic))
-
-#----------------------- Multiple Logistics regression 
-multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
-summary(multi_logist)
-
-summary(model)
-class(judith)
-
-all <- exp(cbind(OR = coef(model), confint(model)))
-print(all)
 
