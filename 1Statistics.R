@@ -1047,6 +1047,7 @@ exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
 
 #Create contingency table of categorical outcome and predictors we want to make sure no 0 cells.
 table(imdata$CaseControl,imdata$parity)
+
 #regression model
 #------when x is continuous====
 logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
