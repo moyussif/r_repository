@@ -766,14 +766,16 @@ if(!require(FSA)){install.packages("FSA")
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                           LOGISTIC REGRESSION                                +
 
-Hanisah7 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-str(Hanisah7)
+Hanisah8 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah8)
 # Count missing values in each column
 Hanisah77 <- colSums(is.na(Hanisah7))
 print(Hanisah77)
+
 # Remove rows with any missing values 
-Hanisah77 <- na.omit(Hanisah7)
+Hanisah77 <- na.omit(Hanisah8)
 print(Hanisah77)
+
 str(Hanisah77)
 #c=Convert to factors
 Hanisah77$SarsCovStrain <- as.factor(Hanisah77$SarsCovStrain)
@@ -786,28 +788,30 @@ str(Hanisah77)
 #categoricals
 table(Hanisah77$SarsCovStrain, Hanisah77$categoryofcases)
 #continuous
-logis1<-glm(SarsCovStrain~categoryofcases,data = Hanisah77,family = "binomial")
-logis1
-summary(logis1)
+logis2<- glm(SarsCovStrain~categoryofcases,data = Hanisah77,family = "binomial")
+logis2
+summary(logis2)
 #Oddratio
-exp(coef(logis1))
+exp(coef(logis2))
 
-all <- exp(cbind(OR = coef(logis1), confint(logis1)))
+all <- exp(cbind(OR = coef(logis2), confint(logis2)))
 print(all)
 
 #----------------------- Multiple Logistics regression 
-multi_logist <- glm(SarsCovStrain ~ Age + categoryofcases, data = Hanisah77, family = "binomial" )
-multi_logist
-summary(multi_logist)
-
+multi.logis1 <-glm(SarsCovStrain~Age+categoryofcases+Coinfection+Durationdays,
+                  data = Hanisah77, family = "binomial")
+multi.logis1
+summary(multi.logis1)
 #Oddratio
 exp(coef(logis1))
 
-all <- exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+all <- exp(cbind(OR = coef(multi.logis1), confint(multi.logis1)))
 print(all)
 
 #Note_______in case we want to reorder /change the reference group, Use relevel
-change_ref <-relevel(imdata$parity, ref = "1")
+change_ref <-relevel(Hanisah77$categoryofcases, ref = "moderate")
+?relevel
+
 logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
 
