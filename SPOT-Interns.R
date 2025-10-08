@@ -810,7 +810,6 @@ print(all)
 
 #Note_______in case we want to reorder /change the reference group, Use relevel
 change_ref <-relevel(Hanisah77$categoryofcases, ref = "moderate")
-?relevel
 
 logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
