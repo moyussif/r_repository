@@ -705,34 +705,57 @@ if(!require(FSA)){install.packages("FSA")
   
   #   #   #
   
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #---------------------------- Correlation -------------------------------------------------
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #-------------------------------- Correlation -------------------------------------------------------------
   Correlation
   Correlation can be performed with the cor.test function in the native stats package.  
   It can perform Pearson, Kendall, and Spearman correlation procedures.  
   
-  #Pearson correlation (Parametric)
+  #Pearson correlation (Parametric)==========================================================================
   Pearson correlation is a parametric test, and assumes that the data are linearly related 
   and that the residuals are normally distributed.
   --------
-  cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah17, method = "pearson", conf.level = 0.95)
+  cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah90, method = "pearson", conf.level = 0.95)
 
   #Kendall correlation (Non-parametric)
   Kendall rank correlation is a non-parametric test that does not assume a distribution of the data.
   It ranks the data to determine the degree of correlation.
   --------
-    cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah17, method = "kendall", continuity = FALSE, conf.level = 0.95)
+    cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah90, method = "kendall", continuity = FALSE, conf.level = 0.95)
   
   #Spearman correlation (Non-parametric / ordinals)
   Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
   It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
   --------
-    cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
+  cor.test( ~ Durationdays + Noofsymptoms, data=Hanisah90, method = "spearman", continuity = FALSE, conf.level = 0.95)
   
-  #   #   #
+  #   #   #---------------------------------------------
+  pearson <- cor.test(Hanisah90$Durationdays, Hanisah90$Noofsymptoms, method = "pearson")
+  pearson
   ==============================================================================
-  library(ggscatter)
-    
+  library(ggpubr)
+    #CorrelationPlot----------ggscatter() 
+  Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+  str(Hanisah90)
+#-----------------------------  
+  ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
+            add = "reg.line",conf.int = TRUE,
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Noofsymptoms", ylab = "Durationdays")
+
+  
+#----------------------------------------------------- 
+  ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
+            add = "reg.line",                                 # Add regression line
+            conf.int = TRUE,                                  # Add confidence interval
+            add.params = list(color = "blue",
+                              fill = "lightgray"))+
+stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coefficient 
+#==========================  
+ 
+  
+  
+  
   #plot
   plot(Hanisah17$Noofsymptoms,Hanisah17$Durationdays,
        main = "Age by duration",

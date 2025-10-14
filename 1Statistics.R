@@ -760,7 +760,19 @@ if(!require(FSA)){install.packages("FSA")
   It ranks the data to determine the degree of correlation.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
-
+======================
+    library(ggpubr)
+  #CorrelationPlot----------ggscatter() 
+  Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+  str(Hanisah90)
+  
+  ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
+            add = "reg.line",                                 # Add regression line
+            conf.int = TRUE,                                  # Add confidence interval
+            add.params = list(color = "blue",
+                              fill = "lightgray"))+
+    stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coefficient   
+  
 ==================================================================================
 install.packages("GGally")
 
