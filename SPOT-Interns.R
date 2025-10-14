@@ -731,6 +731,8 @@ if(!require(FSA)){install.packages("FSA")
   
   #   #   #
   ==============================================================================
+  library(ggscatter)
+    
   #plot
   plot(Hanisah17$Noofsymptoms,Hanisah17$Durationdays,
        main = "Age by duration",
@@ -830,6 +832,26 @@ fisher.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
 fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
 # Perform Chi-square Test
 chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+
+
+===============  Linear Regression ===============================================
+Hanisah14 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah14)
+
+#Simple Regression
+model = lm(Durationdays ~  Age, data = Hanisah14)
+model
+summary(mode4)
+
+# Multiple Regression 
+mode7 = lm(Durationdays ~  Age+SEX+Hospitalstatus+categoryofcases+Noofsymptoms+Coinfection+NoofResistance+
+             Numberoforganism, data = Hanisah14)
+mode7
+summary(mode7)
+
+#--------model building  (Backward)
+Backward1 <- ols_step_backward_aic(mode7, details = TRUE)
+Backward1
 
 =================================================================================
 +                            Multinomial regression                             +

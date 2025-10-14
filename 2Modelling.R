@@ -104,7 +104,7 @@ Thus, it tries to minimise the difference between the observed and the fitted va
 
 # B0 = y - B1x  ---------------- where x(mean),y(mean). -------------------     B1 = Sy
 ----
-  # R squared = 0 - 1,---------R squared = SSE,        Rsquared = 1 - SSR.             Sx
+ # R squared = 0 - 1,---------R squared = SSE,        Rsquared = 1 - SSR.             Sx
   ----                       ----
   #                                        SSR                        SST                 
   

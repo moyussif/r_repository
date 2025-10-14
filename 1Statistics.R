@@ -802,6 +802,7 @@ psych::pairs.panels(ARMdata1)
   2,Each value will not fall exactly on the line of best fit: the difference------residual/error. y(observed)-y-hat(predicted)
   3,Least ordinary square(OLS)------------------is used to determine the slope and the intercept.
   Thus, it tries to minimise the difference between the observed and the fitted values.
+  
   # B0 and B1 are the Least Square Estimates (LSE)
   
   # B0 = y - B1x  ---------------- where x(mean),y(mean). -------------------     B1 = Sy
@@ -956,8 +957,8 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 #-------------------------------------------------------------------------------
 ---------------------------- Model Building ------------------------------------  
   
-  # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+# methods for evaluating subset regression models:
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)
@@ -971,6 +972,7 @@ library(olsrr)
 g <- lm(y~.,data = dataset)       # where . is the x variables
 summary(g)
 g <- lm(bmi~age+parity+hb,data = imdata)
+
 #--------model building
 forward <- ols_step_forward_p(g, penter = 0.05)
 forward                                               # forward
