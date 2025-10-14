@@ -12,6 +12,7 @@ library(psych)
 library(car)
 library(lessR)
 library(plotrix)
+library(ggfortify)
 library(FSA)
 library(Hmisc)
 library(stats)
@@ -788,10 +789,36 @@ stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coef
   
   
   #    #    #   
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                           LOGISTIC REGRESSION                                +
 
-Hanisah8 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+===============  Linear Regression ===============================================
+library(ggfortify)
+Hanisah14 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah14)
+
+#fit model--------simple Regression
+model = lm(Durationdays ~  Age, data = Hanisah14)
+model
+summary(model)
+
+#regression Assumption
+autoplot(model)
+
+#Modelling-------- Multiple Regression 
+mode7 = lm(Durationdays ~  Age+SEX+Hospitalstatus+categoryofcases+Noofsymptoms+Coinfection+
+             NoofResistance+Numberoforganism, data = Hanisah14)
+mode7
+summary(mode7)
+
+#--------model building  (Backward)
+Backward1 <- ols_step_backward_aic(mode7, details = TRUE)
+Backward1
+
+###
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                             LOGISTIC REGRESSION                              +
+--------------------------------------------------------------------------------  
+  Hanisah8 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
 str(Hanisah8)
 # Count missing values in each column
 Hanisah77 <- colSums(is.na(Hanisah7))
@@ -824,7 +851,7 @@ print(all)
 
 #----------------------- Multiple Logistics regression 
 multi.logis1 <-glm(SarsCovStrain~Age+categoryofcases+Coinfection+Durationdays,
-                  data = Hanisah77, family = "binomial")
+                   data = Hanisah77, family = "binomial")
 multi.logis1
 summary(multi.logis1)
 #Oddratio
@@ -840,41 +867,20 @@ logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
 
 #   #   #
-
 =================================================================================
-                                 Ayoola data
+                      Chisquare - Fisher Exact
 _________________________________________________________________________________
 
 cngTB <- read_excel("C:/Users/User/Desktop/MTB only_ Lineage.xlsx")
 str(cngTB)
 
-table(cngTB$Lineage,cngTB$AgeCategory)
 table(cngTB$Lineage,cngTB$Gender)
 # Perform Fisher's Exact Test
 fisher.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
-fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
 # Perform Chi-square Test
-chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+chisq.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
 
 
-===============  Linear Regression ===============================================
-Hanisah14 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-str(Hanisah14)
-
-#Simple Regression
-model = lm(Durationdays ~  Age, data = Hanisah14)
-model
-summary(mode4)
-
-# Multiple Regression 
-mode7 = lm(Durationdays ~  Age+SEX+Hospitalstatus+categoryofcases+Noofsymptoms+Coinfection+NoofResistance+
-             Numberoforganism, data = Hanisah14)
-mode7
-summary(mode7)
-
-#--------model building  (Backward)
-Backward1 <- ols_step_backward_aic(mode7, details = TRUE)
-Backward1
 
 =================================================================================
 +                            Multinomial regression                             +
@@ -882,11 +888,14 @@ Backward1
 library(VGAM)
 cngTB <- read_excel("C:/Users/User/Desktop/All_lineages.xlsx")
 str(cngTB)
+
 act <-remove_missing(cngTB)
 str(act)
+
 describeBy(act)
 print(act)
 View(act)
+
 # lineag <- factor(cngTB$Lineage)
 #fit model
 datafrme <-as.data.frame(judith)
