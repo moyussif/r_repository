@@ -733,25 +733,38 @@ if(!require(FSA)){install.packages("FSA")
   #   #   #---------------------------------------------
   pearson <- cor.test(Hanisah90$Durationdays, Hanisah90$Noofsymptoms, method = "pearson")
   pearson
-  ==============================================================================
+  
+=========================== Correlation Analysis ===============================
+ cor() #compute the correlation coefficient
+cor.test() # test for association between paired samples (coefficient and p-value)
+
+cor.test(x = Hanisah15$Noofsymptoms, y = Hanisah15$AgeCategory,continuity = FALSE,
+         method="spearman")
+
+
+    
   library(ggpubr)
-    #CorrelationPlot----------ggscatter() 
-  Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-  str(Hanisah90)
-#-----------------------------  
-  ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
+  #CorrelationPlot----------ggscatter() 
+  Hanisah15 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+  str(Hanisah15)
+  
+  
+  
+#---------------------------------------------------------------  
+  ggscatter(Hanisah15, x = "Noofsymptoms", y = "Durationdays",
             add = "reg.line",conf.int = TRUE,
             cor.coef = TRUE, cor.method = "pearson",
             xlab = "Noofsymptoms", ylab = "Durationdays")
 
   
 #----------------------------------------------------- 
-  ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
+Hnsh<-ggscatter(Hanisah15, x = "Noofsymptoms", y = "Durationdays",
             add = "reg.line",                                 # Add regression line
             conf.int = TRUE,                                  # Add confidence interval
             add.params = list(color = "blue",
                               fill = "lightgray"))+
 stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coefficient 
+
 #==========================  
  
   
@@ -776,11 +789,11 @@ stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coef
   library(readxl)
   EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
   print(EGF01)
-  GGally::ggcorr(Hanisah17)
-  GGally::ggpairs(Hanisah17)
-  psych::pairs.panels(Hanisah17)
+  GGally::ggcorr(Hnsh)
+  GGally::ggpairs(Hnsh)
+  psych::pairs.panels(Hnsh)
   
-  ============================================================================== 
+================================================================================ 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                           Regression analysis                                +
 
@@ -791,13 +804,13 @@ stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coef
   #    #    #   
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-===============  Linear Regression ===============================================
+============================  Linear Regression ================================
 library(ggfortify)
-Hanisah14 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-str(Hanisah14)
+Hanisah15 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
+str(Hanisah15)
 
 #fit model--------simple Regression
-model = lm(Durationdays ~  Age, data = Hanisah14)
+model = lm(Durationdays ~  Age, data = Hanisah15)
 model
 summary(model)
 
@@ -806,15 +819,24 @@ autoplot(model)
 
 #Modelling-------- Multiple Regression 
 mode7 = lm(Durationdays ~  Age+SEX+Hospitalstatus+categoryofcases+Noofsymptoms+Coinfection+
-             NoofResistance+Numberoforganism, data = Hanisah14)
+             NoofResistance+Numberoforganism, data = Hanisah15)
 mode7
 summary(mode7)
 
+library(olsrr)
 #--------model building  (Backward)
 Backward1 <- ols_step_backward_aic(mode7, details = TRUE)
 Backward1
-
 ###
+forward <- ols_step_forward_p(mode7, penter = 0.05)
+forward                                               # forward
+forward <- ols_step_forward_aic(mode7, details = TRUE)
+forward
+###
+Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
+Both                                                 # Stepwise
+Both.aic <- ols_step_both_aic(g, details = TRUE)
+Both.aic
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                             LOGISTIC REGRESSION                              +
 --------------------------------------------------------------------------------  
