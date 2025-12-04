@@ -1078,7 +1078,7 @@ holding other factors constant(e.g multiple logistic regression).
 logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist1
 summary(logist1)
-#log-odds=-0.7673+0.6719*(parity=1)+2.1535*(parity=2)+1.8659*(parity=3)-15.7988*(parity=4)
+#log-odds=-0.7673+0.6719*(parity=1)+2.1535*(parity=2)+1.8659*(parity=1)-15.7988*(parity=4)
 parity0 is used as reference
 
 #odd ratio only
