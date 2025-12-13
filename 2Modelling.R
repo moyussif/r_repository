@@ -1488,3 +1488,76 @@ Using the last model above, fit a similar model for the scenarios below separate
 (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1 respectively.                        
 
 #   #   #
+
+
+=================================== Data Validation =====================================================
+  
+  #------------------------- Data from Person 1-----------
+data_p1 <- data.frame(
+  ID = c(1, 2, 3, 4),
+  Name = c("Alice", "Bob", "Charlie", "David"),
+  Age = c(24, 30, 25, 28),
+  Score = c(95, 88, 92, 76)
+)
+#------------------------ Data from Person 2------------ (with some differences and different row order)
+data_p2 <- data.frame(
+  ID = c(4, 2, 1, 3),
+  Name = c("David", "Bob", "Alice", "Charlie"),
+  Age = c(28, 30, 24, 26), # Age difference for Charlie
+  Score = c(76, 88, 95, 99) # Score difference for Charlie
+)
+================================================================================
+  library(readxl)
+library(readr)
+data1 <- read_excel("C:/Users/User/Desktop/Data1.xlsx")
+data2 <- read_excel("C:/Users/User/Desktop/Data2.xlsx")
+
+================================================================================ Option 1
+library(dplyr)
+# Merge the two data frames, highlighting the source of each row
+# We will assume a perfect merge based on ID
+merged_data <- merge(data1, data2, by = "ID", all = TRUE, suffixes = c("P1", "P2"))
+
+# Filter for rows where any column has a difference
+differences_found <- merged_data %>%
+  filter(
+    data1$Name != data2$Name |
+      data1$Age != data2$Age |
+      data1$Subject!= data2$Subject |
+      data1$Score != data2$Score
+  )
+
+# Display the rows with differences, showing both entries
+print(differences_found)
+
+================================================================================ Option 2
+#Compare the data frames:
+#Use the comparedf() function, specifying the ID column as the key to match rows.
+
+library(arsenal)
+
+comparison_result <- comparedf(data1, data2, by = "ID")
+
+# View a summary of the differences
+summary(comparison_result)
+
+# Print the specific differences detected by the package
+print(comparison_result)
+# The 'Differences detected' section will show the old and new values, and row numbers.  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

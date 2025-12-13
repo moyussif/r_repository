@@ -925,5 +925,5 @@ vglm(Lineage~DiabetesMellitus+BodyWeight+HIV+AIDS+Treatmentforrheumatoidarthriti
        Cancer+Kidneydisease+Silicosis+Leukemia+Substanceabuse+Smokingcigarette+BCG+countSmear,
      family = multinomial,
      data = datafrme)
-
-
+=========================
++++++++++++++++++++++++++
