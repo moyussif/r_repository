@@ -903,9 +903,9 @@ if(!require(FSA)){install.packages("FSA")
   
   
   
-  =================================================================================
-    +                            Multinomial regression                             +
-    ================================================================================= 
+=================================================================================
++                            Multinomial regression                             +
+================================================================================= 
     library(VGAM)
   cngTB <- read_excel("C:/Users/User/Desktop/All_lineages.xlsx")
   str(cngTB)
@@ -924,5 +924,66 @@ if(!require(FSA)){install.packages("FSA")
          Cancer+Kidneydisease+Silicosis+Leukemia+Substanceabuse+Smokingcigarette+BCG+countSmear,
        family = multinomial,
        data = datafrme)
+  
+================================================================================
++                              DATA VALIDATION                                 +
+================================================================================
+    
+  library(readxl)
+  library(readr)
+  data1 <- read_excel("C:/Users/User/Desktop/Data1.xlsx")
+  data2 <- read_excel("C:/Users/User/Desktop/Data2.xlsx")
+  
+  ================================================================================ Option 1
+  library(dplyr)
+  # Merge the two data frames, highlighting the source of each row
+  # We will assume a perfect merge based on ID
+  merged_data <- merge(data1, data2, by = "ID", all = TRUE, suffixes = c("P1", "P2"))
+  
+  # Filter for rows where any column has a difference
+  differences_found <- merged_data %>%
+    filter(
+      data1$Name != data2$Name |
+        data1$Age != data2$Age |
+        data1$Subject!= data2$Subject |
+        data1$Score != data2$Score
+    )
+  
+  # Display the rows with differences, showing both entries
+  print(differences_found)
+  
+  ================================================================================ Option 2
+  #Compare the data frames:
+  #Use the comparedf() function, specifying the ID column as the key to match rows.
+  
+  library(arsenal)
+  
+  comparison_result <- comparedf(data1, data2, by = "ID")
+  
+  # View a summary of the differences
+  summary(comparison_result)
+  
+  # Print the specific differences detected by the package
+  print(comparison_result)
+  # The 'Differences detected' section will show the old and new values, and row numbers.    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   
   
