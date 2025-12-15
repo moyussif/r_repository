@@ -925,6 +925,10 @@ if(!require(FSA)){install.packages("FSA")
        family = multinomial,
        data = datafrme)
   
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+if there’s a data validation code in R. To check data entries by two people and
+  see what the differences are  
 ================================================================================
 +                              DATA VALIDATION                                 +
 ================================================================================
@@ -934,7 +938,7 @@ if(!require(FSA)){install.packages("FSA")
   data1 <- read_excel("C:/Users/User/Desktop/Data1.xlsx")
   data2 <- read_excel("C:/Users/User/Desktop/Data2.xlsx")
   
-  ================================================================================ Option 1
+================================================================================ Option 1
   library(dplyr)
   # Merge the two data frames, highlighting the source of each row
   # We will assume a perfect merge based on ID
@@ -955,6 +959,11 @@ if(!require(FSA)){install.packages("FSA")
   ================================================================================ Option 2
   #Compare the data frames:
   #Use the comparedf() function, specifying the ID column as the key to match rows.
+  library(readxl)
+  library(readr)
+  data1 <- read_excel("C:/Users/User/Desktop/Data1.xlsx")
+  data2 <- read_excel("C:/Users/User/Desktop/Data2.xlsx")
+  
   
   library(arsenal)
   
