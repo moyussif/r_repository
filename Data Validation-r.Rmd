@@ -1,6 +1,13 @@
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-# Is there a data validation code in R. To check data entries by two people and see the differences   
-===================================================================================================
+---
+title: "Data Validation - r"
+author: "Mohammed Yussif -Data Manager"
+date: "2025-12-15"
+output: pdf_document
+---
+
+```{r}
+
+================================================================================
 +                              DATA VALIDATION                                 +
 ================================================================================
     
@@ -27,7 +34,7 @@
   # Display the rows with differences, showing both entries
   print(differences_found)
   
-================================================================================ Option 2
+  ================================================================================ Option 2
   #Compare the data frames:
   #Use the comparedf() function, specifying the ID column as the key to match rows.
   library(readxl)
@@ -45,18 +52,8 @@
   
   # Print the specific differences detected by the package
   print(comparison_result)
-  # The 'Differences detected' section will show the old and new values, and row numbers.    
+  # The 'Differences detected' section will show the old and new values, and row numbers. 
   
+```
 
 
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
