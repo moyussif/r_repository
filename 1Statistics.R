@@ -277,7 +277,7 @@ print(ARMdata)
   
   
   
-------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
 #-------------------------------- Pie Chart ------------------------
 slices <- c(18, 35, 47, 64)
 lbls <- c( "None", "Low", "Medium", "High")
@@ -680,7 +680,7 @@ plot(tukey.plot.test,las = 2)
 
 #   #   #
 -----------------------------------------------------------
-  Tukey and LSD mean separation tests (pairwise comparisons)
+Tukey and LSD mean separation tests (pairwise comparisons)
 TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
 though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ----------------------------------------------------------
@@ -935,7 +935,7 @@ ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Bl
 #    #    #
 
 ===================================
-  View(imdata)  
+View(imdata)  
 Data = imdata
 plot(imdata$age,imdata$bmi)
 
