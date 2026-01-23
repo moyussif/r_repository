@@ -1,20 +1,7 @@
 rm(list=ls())
 gc(reset = TRUE)
-#--------------------------- required package
-install.packages("readxl")
-install.packages("readr")
-install.packages("tidyverse")
-install.packages("RColorBrewer")
-install.packages("ggpubr")
-install.packages("psych")
-install.packages("car")
-install.packages("lessR")
-install.packages("plotrix")
-install.packages("ggfortify")
-install.packages("epitools")
-install.packages("FSA")
-
 =====================================
+  
 library(readxl)
 library(readr)
 library(tidyverse)
