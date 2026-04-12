@@ -5,6 +5,27 @@ gc(reset = TRUE)
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 #-------------------------------------------------------------------------------
 Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
+  
+  
+#------------------------------ Simulate Data ---------------------------------#  
+library(caTools)
+# Generate a hypothetical dataset
+set.seed(2)
+control.data<-rnorm(25,10,2)
+treatment.data<-rnorm(25,13,2.2)
+dat<-c(control.data,treatment.data)
+groups<-c(rep("control",25),rep("treatment",25))
+data.frame(groups=groups,dat=dat)
+
+#-----------------------------------------------   
+# Generate a hypothetical dataset
+set.seed(123)
+subject <- rep(1:30, times = 3)  # 30 subjects
+group <- rep(c("A", "B", "C"), each = 30)
+outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
+data <- data.frame(subject, group, outcome)
+  
+  
 #---------------------------- Import functions ---------------------------------
 child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
 library(readr)
@@ -564,8 +585,9 @@ abline(0,1, col="blue", lwd=2)
 
 #   #   #
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#------------------------- One-way Anova using LessR -------------------option.1
++++++++++++++++++++++++++++++ANOVA Between Groups ++++++++++++++++++++++++++++++
+#-------------------------- One_Way ANOVA (LessR) ------------------------------
+
 #visualise statistical assumptions
 library(lessR)
 library(readxl)
@@ -597,10 +619,7 @@ p1 <- ggplot(imdata, aes(x=bmi, color = expose, fill=expose))+ geom_density(alph
 p1
 
 #   #   # 
-
-
-#================== ANOVA ANALYSIS----option.2 ==================
-=====================  Factorial Anova ========================== 
+#==============================  Factorial Anova ==============================# 
 library(psych)
 library(ggplot2)
 library(ggpubr)
@@ -653,7 +672,7 @@ summary(two)
 three <- aov(bmi ~ expose + grvdty + sex, data = imdata)
 summary(three)
 #interaction
-interaction <- aov(bmi ~ expose + grvdty + sex + CaseControl, data = imdata)
+interaction <- aov(bmi ~ expose + grvdty + sex + expose*grvdty, data = imdata)
 summary(interaction)
 
 #model fit----------------------------------
@@ -670,7 +689,7 @@ eta_squared(interaction, partial = FALSE)
 omega_squared(interaction, partial = TRUE)
 epsilon_squared(interaction, partial = TRUE)
 
-#post hoc analysis
+#post hoc analysis-------------------------
 tukey.interaction <- TukeyHSD(interaction)
 tukey.interaction
 
@@ -679,51 +698,22 @@ tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 
 #   #   #
------------------------------------------------------------
+----------------------------------------------------------
 Tukey and LSD mean separation tests (pairwise comparisons)
 TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
 though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ----------------------------------------------------------
   
   
-  #====================== ANOVA ANALYSIS----option.3 ==================
------------------------------- One-way Anova ------------------------
-  if(!require(agricolae)){install.packages("agricolae")}
----------------------------------------------------------------------
-library(FSA)
-Summarize(age ~ expose, data = imdata)
-
-#Fit the linear model and conduct ANOVA 
-model = lm(age ~ expose, data=imdata)
-
-library(car)
-Anova(model, type="II")                    
-
-# Can use type="III"
-Anova(model, type="III", contrasts = c("contr.sum", "contr.poly")) 
-
-# Produces type I sum of squares
-anova(model)                               
-
-# Produces r-square, overall p-value, parameter estimates
-summary(model)     
-
-#Checking assumptions of the model
-hist(residuals(model), col="darkgray")
-
-#plot of residuals vs. predicted values.
-library(car)
-QQ <- qqPlot(residuals(model), id = TRUE)
-
-#   #    #
-
-
+#  #  #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 #----------------Kruskal–Wallis Test-------------------------------------------
 if(!require(FSA)){install.packages("FSA")
-  #--------------------------------------------------- kruskal.test(Value ~ Group,
-  #---------------------------------------------------              data = Data)
+  
+#-------------------------------------- kruskal.test(Value ~ Group, data = Data)
   library(psych)
   describe(imdata)
+  
   #-Medians and descriptive statistics
   library(FSA)
   Summarize(age ~ expose, data = imdata)
@@ -743,6 +733,89 @@ if(!require(FSA)){install.packages("FSA")
   
   #   #   #
   
+ ++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
+ #------------------------- Repeated Measures ANOVA ---------------------------#
+ # Set seed for reproducibility
+  set.seed(123)
+  
+ # Simulate data for 10 subjects measured at 3 time points
+  subject <- factor(rep(1:10, each = 3))
+  time <- factor(rep(c("T1", "T2", "T3"), times = 10))
+  response <- c(
+    rnorm(10, mean = 50, sd = 5), # T1
+    rnorm(10, mean = 55, sd = 5), # T2
+    rnorm(10, mean = 60, sd = 5)  # T3
+  )
+  
+  # Create a data frame
+  wgdata <- data.frame(subject, time, response)
+ 
+  # Perform Repeated-Measures ANOVA
+  aov_model <- aov(response ~ time + Error(subject/time), data = wgdata)
+  
+  # View the summary of the ANOVA
+  summary(aov_model) 
+  
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #------------------------------ Friedman test -------------------------------#
+  install.packages("PMCMRplus") 
+  library(PMCMRplus)
+  
+  result <- friedman.test(outcome ~ group, data = your_data)
+ 
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #-------------------------------- ANCOVA ------------------------------------#
+ 
+  library(car)
+  ancova_model <-aov(finalscore~group + initialscore, data=score)
+  Anova(ancova_model,type="III")                           
+
+ 
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ #------------------------------- MANOVA --------------------------------------#   
+ 
+ group <- factor(rep(c("Treatment_A", "Treatment_B", "Treatment_C"), each = 50))
+  
+  weight <- rnorm(150, mean = c(60, 65, 70)[group], sd = 5)
+  height <- rnorm(150, mean = c(150, 155, 160)[group], sd = 6)
+  
+  mv_data <- data.frame(group, weight, height)
+  head(mv_data)
+  
+  #fit Manova Model
+  manova_model <- manova(cbind(weight, height) ~ group, data = mv_data) 
+  
+ # or   group all target dependent Variables
+ y<-cbind(weight, height)
+ #
+  manova1_model <- manova(y ~ group, data = mv_data)
+  summary(manova1_model)
+  #View results
+  summary(manova_model, test = "Wilks")
+  or
+  summary(manova_model, test = "Pillai")
+  summary(manova_model, test = "Hotelling-Lawley")
+  summary(manova_model, test = "Roy")
+  
+  #run anova 
+  summary.aov(manova_model)
+  
+  #View plots
+  par(mfrow=c(1,2))
+  
+  boxplot(weight ~ group,
+          data=mv_data,
+          col="lightblue",
+          main="Weight Across Groups",
+          xlab="Group",
+          ylab="Weight")
+  
+  boxplot(height ~ group,
+          data=mv_data,
+          col="lightgreen",
+          main="Height Across Groups",
+          xlab="Group",
+          ylab="Height")
   
   #----------------------- Correlation and Linear Regression ---------------------
   Correlation
@@ -761,7 +834,7 @@ if(!require(FSA)){install.packages("FSA")
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
 ======================
-    library(ggpubr)
+  library(ggpubr)
   #CorrelationPlot----------ggscatter() 
   Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
   str(Hanisah90)
