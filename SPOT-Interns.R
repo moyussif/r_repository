@@ -1,5 +1,6 @@
 rm(list=ls())
 gc(reset = TRUE)
+
 #--------------------------- required package
 install.packages("readxl")
 install.packages("readr")
@@ -13,8 +14,9 @@ install.packages("plotrix")
 install.packages("ggfortify")
 install.packages("epitools")
 install.packages("FSA")
+install.packages("PMCMRplus")
 
-=====================================
+#-------------------------- Load packages
 library(readxl)
 library(readr)
 library(tidyverse)
@@ -29,14 +31,37 @@ library(ggfortify)
 library(FSA)
 library(Hmisc)
 library(stats)
+library(caTools)
 library(epitools)
-#---------------------------
+library(PMCMRplus)
 library(VGAM)
 library(mlogit)
 library(nnet)
 
-#---------------------------- Import functions ------------------------------------------------------- 
-#set directorate 
+#----------------- Generate a hypothetical dataset ----------------------------#
+library(caTools)
+
+set.seed(123)
+control.data<-rnorm(25,10,2)
+treatment.data<-rnorm(25,13,2.2)
+dat<-c(control.data,treatment.data)
+groups<-c(rep("control",25),rep("treatment",25))
+data.frame(groups=groups,dat=dat)
+
+# Generate a hypothetical dataset
+set.seed(123)
+subject <- rep(1:30, times = 3)  # 30 subjects
+group <- rep(c("A", "B", "C"), each = 30)
+outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
+data <- data.frame(subject, group, outcome)
+
+
+#--------------------------- set directorate -----------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
+
+
+#-------------------------- Import functions -----------------------------------
 Hanisah <- read_excel("C:/Users/User/Desktop/TrainingData.xlsx")                #.xlsx format
 str(Hanisah)
 
@@ -44,12 +69,14 @@ Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            
 View(Neonate)
 str(Neonate)
 
-#------------------------ Data Manipulation with Dplyr ----------------------------------------------
+library(rio)
+import("C:/Users/User/Desktop/repos/NNJ.csv")
+
+#------------------------ Data Manipulation with Dplyr -------------------------
 library(dplyr)
 #---------Selecting column
-columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,
-                                       Baby_sex,Baby_age_days,Baby_gestational_age,Baby_Weight,Baby_bloodgroup,Baby_G6PD,
-                            Babyfood,Diagnosis2,Diagnosis3))
+columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
+                                       Baby_age_days,Diagnosis3))
 str(columns_needed)
 #----------Remove a column
 remove_one <- columns_needed %>% select(-Syphilis)
@@ -60,8 +87,8 @@ remove_more <- remove_one %>% select(-c(HBV, HIV))
 str(remove_more)
 
 #---------filter rows ?filter()
-Hanisah <- remove_more %>% select(c(Motherage,Mother_bloodgroup,Mother_G6PD,Mode_of_delivery,Baby_sex,Baby_age_days,
-                                    Baby_gestational_age,Baby_Weight,Baby_bloodgroup,Baby_G6PD,Babyfood,Diagnosis2,Diagnosis3)) %>% 
+Hanisah <- remove_more %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
+                                    Baby_age_days,Diagnosis3)) %>% 
                             filter(Motherage < 40)
 print(Hanisah)
 str(Hanisah)
@@ -70,14 +97,11 @@ Hanisah1 <- Hanisah %>% summarise(sum_MotherAge=sum(Motherage))
 print(Hanisah1)
 Hanisah2 <- Hanisah %>% summarise(mean_Age=mean(Motherage))
 print(Hanisah2)
-Hanisah3 <- Hanisah %>% summarise(sum_BabyWt=sum(Baby_Weight),Mean_BabyWt=mean(Baby_Weight))
+Hanisah3 <- Hanisah %>% summarise(sum_BabyWt=sum(Baby_age_days),Mean_BabyWt=mean(Baby_age_days))
 print(Hanisah3)
 
 #---------group_by()
-AverageWeightbyGender <-Hanisah %>%
-               group_by(Baby_sex) %>%
-               summarise(mean = mean(Baby_Weight))
-
+AverageWeightbyGender <-Hanisah %>% group_by(Baby_sex) %>% summarise(mean = mean(Baby_Weight))
 print(AverageWeightbyGender)
 
 #---------rename a column
@@ -119,7 +143,7 @@ unite_data <- separate_data %>%
 unite_data
 
 
-#-------------------------- Data Conversion ------------------------------------ Option 1
+#-------------------------- Data Conversion ----------------------------------- Option 1
 str(Hanisah)
 
 #-------Continuous data
@@ -173,8 +197,6 @@ print(Hanisah)
 print(Hanisah$Baby_G6PD)
 #==============================Reverse conversion ----------------------------- Option 2
 
-
-
 Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
                                  levels = c("delta", "omicron"),
                                  labels = c(1, 2))
@@ -183,9 +205,10 @@ Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
                                    levels = c("mild", "moderate", "severe"),
                                    labels = c(1,2,3))
 
-==============================================
+
 # #  #
-#--------------------------- Handling Missing Data --------------------------------------------------
+#--------------------------- Handling Missing Data -----------------------------
+
 # Count missing values in each column
 missing_per_column <- colSums(is.na(Hanisah))
 print(missing_per_column)
@@ -783,9 +806,7 @@ stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coef
 
 #==========================  
  
-  
-  
-  
+
   #plot
   plot(Hanisah17$Noofsymptoms,Hanisah17$Durationdays,
        main = "Age by duration",
@@ -905,9 +926,9 @@ logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
 
 #   #   #
-=================================================================================
+================================================================================
                       Chisquare - Fisher Exact
-_________________________________________________________________________________
+________________________________________________________________________________
 
 cngTB <- read_excel("C:/Users/User/Desktop/MTB only_ Lineage.xlsx")
 str(cngTB)
@@ -920,9 +941,9 @@ chisq.test(cngTB$Lineage,cngTB$Gender, simulate.p.value = TRUE)
 
 
 
-=================================================================================
-+                            Multinomial regression                             +
-================================================================================= 
+================================================================================
++                     Multinomial regression                                   +
+================================================================================ 
 library(VGAM)
 cngTB <- read_excel("C:/Users/User/Desktop/All_lineages.xlsx")
 str(cngTB)

@@ -1,30 +1,6 @@
 
 rm(list=ls())
 gc(reset = TRUE)
-#set directorate
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-#-------------------------------------------------------------------------------
-Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
-  
-  
-#------------------------------ Simulate Data ---------------------------------#  
-library(caTools)
-# Generate a hypothetical dataset
-set.seed(2)
-control.data<-rnorm(25,10,2)
-treatment.data<-rnorm(25,13,2.2)
-dat<-c(control.data,treatment.data)
-groups<-c(rep("control",25),rep("treatment",25))
-data.frame(groups=groups,dat=dat)
-
-#-----------------------------------------------   
-# Generate a hypothetical dataset
-set.seed(123)
-subject <- rep(1:30, times = 3)  # 30 subjects
-group <- rep(c("A", "B", "C"), each = 30)
-outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
-data <- data.frame(subject, group, outcome)
-  
   
 #---------------------------- Import functions ---------------------------------
 child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
@@ -758,7 +734,6 @@ if(!require(FSA)){install.packages("FSA")
   
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #------------------------------ Friedman test -------------------------------#
-  install.packages("PMCMRplus") 
   library(PMCMRplus)
   
   result <- friedman.test(outcome ~ group, data = your_data)

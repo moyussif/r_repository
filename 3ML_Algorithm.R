@@ -169,7 +169,7 @@ library(caret)
 ######### 1. LOAD DATASET #############
 
 
-######### 2. CLEAN DATASET ##############
+######### 2. CLEAN DATASET #############
 #rows with na values
 sum(apply(is.na(doro1), 1, any))
 
