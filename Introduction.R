@@ -198,8 +198,10 @@ print(Cleaned_Hanisah)
 Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
 print(Check_Clean_Hanisah)
 
-
-#-------------------------- Data Conversion ----------------------------------- Option 1
+--------------------------------------------------------------------------------
+                         Data Conversion _(CODING)                              Option 1
+--------------------------------------------------------------------------------
+  
 str(Hanisah)
 
 #-------Continuous data
@@ -233,9 +235,12 @@ Hanisah$Baby_Gest_Age <-factor(Hanisah$Baby_Gest_Age,
 str(Hanisah)
 print(Hanisah)
 print(Hanisah$Baby_G6PD)
-#----------------------------- Reverse conversion ----------------------------- Option 2
 
-Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
+--------------------------------------------------------------------------------
+                                 Reverse Coding                                 Option 2
+--------------------------------------------------------------------------------
+
+  Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
                                  levels = c("delta", "omicron"),
                                  labels = c(1, 2))
 
@@ -244,14 +249,14 @@ Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
                                    labels = c(1,2,3))
 
 
-# #  #
 
 library(writexl)
-write_xlsx(Cleaned_Hanisah, "Aziz.xlsx")
+write_xlsx(Hanisah77, "Aziz.xlsx")
+# #  #
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#---------------------------- Data Normality ----------------------------------- 
-
+--------------------------------------------------------------------------------
+                            CHECKING FOR DATA NORMALITY
+--------------------------------------------------------------------------------
 #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
 #                                                                               HIGH = Q3+1.5(IQR)
 library(psych)
@@ -264,9 +269,10 @@ skew(Hanisah30$mum_Age)
 kurtosi(Hanisah30$Baby_Age, na.rm = TRUE)
 mardia(Hanisah30$Baby_Age)
 
-
-#---------------------------Transforming skewed data----------------------------
-
+--------------------------------------------------------------------------------
+                            Transforming skewed data
+--------------------------------------------------------------------------------
+  
 #Square root Transformation-------------------------moderately skewed (-1 to -0.5//0.5 to 1)
 sq_data <-sqrt(Hanisah$Baby_Weight)
 hist(sq_data)
