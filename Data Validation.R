@@ -48,7 +48,27 @@
   # The 'Differences detected' section will show the old and new values, and row numbers.    
   
 
-
+--------------------------------------------------------------------------------
+                        HANDLING  DUPLICATE DATA
+--------------------------------------------------------------------------------
+    
+    BF_data=data.frame(name=c("Daniel","Gabriella","John","Paul",
+                              "Julius","Gabriella","Paul"),
+                       maths=c(7,8,8,9,10,8,9),
+                       science=c(5,7,6,8,9,7,8),
+                       history=c(7,7,7,7,7,7,7))
+  
+  BF_data
+  
+  #base functions
+  duplicated(BF_data)
+  sum(duplicated(BF_data))  
+  
+  unique(BF_data) 
+  
+  #Dplyr package
+  library(dplyr)
+  distinct(BF_data) 
 
 
 

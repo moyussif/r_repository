@@ -75,12 +75,34 @@ import("C:/Users/User/Desktop/repos/NNJ.csv")
 library(writexl)
 write_xlsx(table1, "eigentable.xlsx")
 
-#------------------------------- Understand Data ------------------------------#
+--------------------------------------------------------------------------------
+                               Understand Data                              
+--------------------------------------------------------------------------------  
 str(data)   #data structure
 print(data) #view data in console
+--------------------------------------------------------------------------------
+                  Reshaping Data-(LONG.data / WIDE.data)
+--------------------------------------------------------------------------------  
+library(tidyr) 
+print(HTdata)
+# use gather()function to make data longer
+long <- HTdata %>%  
+  gather(fullName, Frequency, 
+         first_trimester, second_trimester, third_trimester)
+print(long)
+# use separate()function 
+separate_data <- long %>%  
+  separate(fullName, c("firstName","secondName"))
+separate_data
+# use unite() function 
+unite_data <- separate_data %>%  
+  unite(fullName, firstName, secondName, sep = " ") 
+unite_data
 
 
-#------------------------ Data Manipulation with Dplyr ------------------------#
+-------------------------------------------------------------------------------
+                        Data Manipulation with Dplyr 
+-------------------------------------------------------------------------------
 library(dplyr)
 #---------Selecting column
 columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
@@ -98,8 +120,29 @@ str(remove_more)
 Hanisah <- remove_more %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
                                     Baby_age_days,Diagnosis3)) %>% 
                             filter(Motherage < 40)
+
+#---------Create New column (mutate)
+mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
+
+#---------show only New column (transmute)
+transmutate_col <- mutate_colmn %>% transmute(bmi)
+
 print(Hanisah)
 str(Hanisah)
+
+#---------Change character type(rename_with)
+Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
+Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
+
+#---------rename a column
+#Data %>% rename(NewColumn=OldColumn)
+
+names(Hanisah)[1]<- "mum_Age"
+names(Hanisah)[4]<- "Delivery_mode"
+names(Hanisah)[6]<- "Baby_Age"
+names(Hanisah)[7]<- "Baby_Gest_Age"
+str(Hanisah)
+
 #---------summarise()
 Hanisah1 <- Hanisah %>% summarise(sum_MotherAge=sum(Motherage))
 print(Hanisah1)
@@ -112,47 +155,38 @@ print(Hanisah3)
 AverageWeightbyGender <-Hanisah %>% group_by(Baby_sex) %>% summarise(mean = mean(Baby_Weight))
 print(AverageWeightbyGender)
 
-#---------rename a column
-#Data %>% rename(NewColumn=OldColumn)
 
-names(Hanisah)[1]<- "mum_Age"
-names(Hanisah)[4]<- "Delivery_mode"
-names(Hanisah)[6]<- "Baby_Age"
-names(Hanisah)[7]<- "Baby_Gest_Age"
-str(Hanisah)
-
-
-#---------Create New column (mutate)--------------------------------------------
-mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
-
-#---------show only New column (transmute)
-transmutate_col <- mutate_colmn %>% transmute(bmi)
-
-#---------Change character type(rename_with)
-Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
-Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
 # # #
 
-#-------------------- Reshaping Data-(LONG.data / WIDE.data) -------------------
-library(tidyr) 
-print(HTdata)
-# use gather()function to make data longer
-long <- HTdata %>%  
-  gather(fullName, Frequency, 
-         first_trimester, second_trimester, third_trimester)
-print(long)
-# use separate()function 
-separate_data <- long %>%  
-  separate(fullName, c("firstName","secondName"))
-separate_data
-# use unite() function 
-unite_data <- separate_data %>%  
-  unite(fullName, firstName, secondName, sep = " ") 
-unite_data
+--------------------------------------------------------------------------------
+                         HANDLING  DUPLICATE DATA
+--------------------------------------------------------------------------------
 
-#--------------------------- Handling Missing Data -----------------------------
+  BF_data=data.frame(name=c("Daniel","Gabriella","John","Paul",
+                        "Julius","Gabriella","Paul"),
+                 maths=c(7,8,8,9,10,8,9),
+                 science=c(5,7,6,8,9,7,8),
+                 history=c(7,7,7,7,7,7,7))
 
+BF_data
+
+#base functions
+duplicated(BF_data)
+sum(duplicated(BF_data))  
+
+unique(BF_data) 
+
+#Dplyr package
+library(dplyr)
+distinct(BF_data)  
+  
+  
+  
+  
+--------------------------------------------------------------------------------
+                          HANDLING MISSING DATA
+--------------------------------------------------------------------------------
 # Count missing values in each column
 missing_per_column <- colSums(is.na(Hanisah))
 print(missing_per_column)
