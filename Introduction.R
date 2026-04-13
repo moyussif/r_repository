@@ -66,40 +66,23 @@ write_xlsx(mparasite, "falciparum.xlsx")
 --------------------------------------------------------------------------------  
 str(mparasite)   #data structure
 print(mparasite) #view data in console
---------------------------------------------------------------------------------
-                  Reshaping Data-(LONG.data / WIDE.data)
---------------------------------------------------------------------------------  
-library(tidyr) 
-print(mparasite)
-# use gather()function to make data longer
-long <- HTdata %>%  
-  gather(fullName, Frequency, 
-         first_trimester, second_trimester, third_trimester)
-print(long)
-# use separate()function 
-separate_data <- long %>%  
-  separate(fullName, c("firstName","secondName"))
-separate_data
-# use unite() function 
-unite_data <- separate_data %>%  
-  unite(fullName, firstName, secondName, sep = " ") 
-unite_data
 
+str(covid02)
 
 -------------------------------------------------------------------------------
                         DATA MANIPULATION (Dplyr) 
 -------------------------------------------------------------------------------
 library(dplyr)
 #---------Selecting column
-columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
-                                       Baby_age_days,Diagnosis3))
+columns_needed <- covid02 %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
+                                       categoryofcases,TreatmentOUTCOME,Noofsymptoms,Coinfection,NoofResistance,Numberoforganism))
 str(columns_needed)
 #----------Remove a column
-remove_one <- columns_needed %>% select(-Syphilis)
+remove_one <- columns_needed %>% select(-Numberoforganism)
 str(remove_one)
 
 #--Remove multiple columns
-remove_more <- remove_one %>% select(-c(HBV, HIV))
+remove_more <- remove_one %>% select(-c(Coinfection,NoofResistance))
 str(remove_more)
 
 #---------filter rows ?filter()
