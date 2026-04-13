@@ -22,7 +22,32 @@ BMI <- function(weight,height){
   BMI <- weight/height*2
   return(BMI)
 }  
-BMI(62,58)  
+BMI(62,58)
+
+
+#----------------- Generate a hypothetical dataset ----------------------------#
+library(caTools)
+
+set.seed(123)
+control.data<-rnorm(25,10,2)
+treatment.data<-rnorm(25,13,2.2)
+dat<-c(control.data,treatment.data)
+groups<-c(rep("control",25),rep("treatment",25))
+data.frame(groups=groups,dat=dat)
+
+# Generate a hypothetical dataset
+set.seed(123)
+subject <- rep(1:30, times = 3)  # 30 subjects
+group <- rep(c("A", "B", "C"), each = 30)
+outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
+data <- data.frame(subject, group, outcome)
+
+
+
+
+
+
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                     Data flow Dplyr                                                  +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  

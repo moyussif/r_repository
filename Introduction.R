@@ -19,6 +19,7 @@ install.packages("PMCMRplus")
 #-------------------------- Load packages
 library(readxl)
 library(readr)
+library(rio)
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
@@ -34,36 +35,19 @@ library(stats)
 library(caTools)
 library(epitools)
 library(PMCMRplus)
-library(VGAM)
-library(mlogit)
-library(nnet)
-
-#----------------- Generate a hypothetical dataset ----------------------------#
-library(caTools)
-
-set.seed(123)
-control.data<-rnorm(25,10,2)
-treatment.data<-rnorm(25,13,2.2)
-dat<-c(control.data,treatment.data)
-groups<-c(rep("control",25),rep("treatment",25))
-data.frame(groups=groups,dat=dat)
-
-# Generate a hypothetical dataset
-set.seed(123)
-subject <- rep(1:30, times = 3)  # 30 subjects
-group <- rep(c("A", "B", "C"), each = 30)
-outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
-data <- data.frame(subject, group, outcome)
-
 
 #--------------------------- set directorate ----------------------------------#
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
+setwd("C:/Users/User/Desktop")
+
+mpData <- read_excel("mparasite.xlsx")
 
 
 #-------------------------- Import functions 
-Hanisah <- read_excel("C:/Users/User/Desktop/TrainingData.xlsx")                #.xlsx format
-str(Hanisah)
+
+mparasite <- read_excel("C:/Users/User/Desktop/mparasite.xlsx")
+View(mparasite)
+str(mparasite)
+
 
 Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            #.csv format
 View(Neonate)
@@ -73,18 +57,18 @@ import("C:/Users/User/Desktop/repos/NNJ.csv")
 
 #--------------------------- EXport function  
 library(writexl)
-write_xlsx(table1, "eigentable.xlsx")
+write_xlsx(mparasite, "falciparum.xlsx")
 
 --------------------------------------------------------------------------------
                                Understand Data                              
 --------------------------------------------------------------------------------  
-str(data)   #data structure
-print(data) #view data in console
+str(mparasite)   #data structure
+print(mparasite) #view data in console
 --------------------------------------------------------------------------------
                   Reshaping Data-(LONG.data / WIDE.data)
 --------------------------------------------------------------------------------  
 library(tidyr) 
-print(HTdata)
+print(mparasite)
 # use gather()function to make data longer
 long <- HTdata %>%  
   gather(fullName, Frequency, 
