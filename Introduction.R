@@ -101,7 +101,7 @@ unite_data
 
 
 -------------------------------------------------------------------------------
-                        Data Manipulation with Dplyr 
+                        DATA MANIPULATION (Dplyr) 
 -------------------------------------------------------------------------------
 library(dplyr)
 #---------Selecting column
@@ -273,66 +273,60 @@ mardia(Hanisah30$Baby_Age)
                             Transforming skewed data
 --------------------------------------------------------------------------------
   
-#Square root Transformation-------------------------moderately skewed (-1 to -0.5//0.5 to 1)
+#Square root Transformation------------------------moderately skewed (-1 to -0.5//0.5 to 1)
 sq_data <-sqrt(Hanisah$Baby_Weight)
 hist(sq_data)
-#Cube root Transformation---------------------------moderately Right skewed(Negative//Zero)
+#Cube root Transformation--------------------------moderately Right skewed(Negative//Zero)
 cb_data <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)
 hist(cb_data)
-#Log Transformation---------------------------------Highly skewed(above1),But not (Negative//Zero)
+#Log Transformation--------------------------------Highly skewed(above1),But not (Negative//Zero)
 Hanisah30$lg_mum_age <-log(Hanisah30$mum_Age)
 hist(lg_data)
 
 #     #     #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#                            Descriptive statistics                            
-library(skimr)
-str(Hanisah)
-skim_without_charts(Hanisah)
 
-library(psych)
-describeBy(Hanisah)
-
-#   #   #
-
-#---------------------------- Data Visualization -------------------------------
-
-#-----------------Pie Chart 
+--------------------------------------------------------------------------------
+                             DATA VISUALISATION
+--------------------------------------------------------------------------------
+#---------------- PieChart 
 library(plotrix)
-slices <- c(13, 262, 597)
-lbls <- c( "Assisted", "Caesarean", "Vaginal")
-pct <- round(slices/sum(slices)*100)
-lbls <- paste(lbls, pct)
-lbls <- paste(lbls,"%",sep="")
-pie(slices,labels=lbls, main="Baby's Weight by Mode of Delivery")
-#3D
-pie3D(slices,labels=lbls,explode=0.1, main="Baby's Weight by Mode of Delivery")
 
-Hanisah100 <- data.frame(Hanisah)
+score <- c(23, 56, 20, 63)
+labels <- c("Accra", "Kumasi", "Tamale", "Sunyani")
 
-#---------------Barchart
+piepercent<- round(100 * geeks / sum(geeks), 1)
+
+
+pie(score, labels = piepercent,
+      main = "City pie chart", col = rainbow(length(score)),border = "lightgrey")
+legend("topright", c("Accra", "Kumasi", "Tamale", "Sunyani"),
+       cex = 0.4, fill = rainbow(length(score)))
+
+
+
+#-------------- Barchart
 Hanisah100 <- as.data.frame(Hanisah)
 BarChart(Hanisah100, Delivery_mode)
 
-#----------------Histogram:
+
+#---------------- Histogram:
 Histogram
 hist(Hanisah$mum_Age, col= "turquoise", main="Maternal Age", xlab="Age")
 
 # # #
 
-#-------------plotting points---------------------------------GGPLOT2
-Hanisah25 <- read_excel("C:/Users/User/Desktop/Aziz.xlsx")
-
+#---------------- Using GGPLOT2
+library(ggplot2)
 
 ggplot(data = DATASET,
        mapping = aes(x = COLUMN, y = COLUMN, colour, fill, alpha))+
-?geom()
+  ?geom()
 
 
-library(ggplot2)
+
 
 Hanis1 <- ggplot(data = Hanisah25,
-               mapping = aes(x = Baby_Weight, y = Baby_Age))+
+                 mapping = aes(x = Baby_Weight, y = Baby_Age))+
   geom_point()+
   geom_smooth() +
   theme_minimal() 
@@ -418,7 +412,7 @@ immu
 
 # Facet wrap 
 immwrp <- ggplot(data = Hanisah25,
-               mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Diagnosis3))+
+                 mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Diagnosis3))+
   geom_violin()+
   facet_wrap(~Diagnosis3)
 immwrp
@@ -445,20 +439,20 @@ immuLAB
 library(RColorBrewer)
 par()
 
- 
+
 p <- ggplot(data = Hanisah25,
             mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Baby_sex))+
-      geom_boxplot()+
-      theme_update()
+  geom_boxplot()+
+  theme_update()
 p
 p1 <- ggplot(data = Hanisah25,
              mapping = aes(x = Baby_sex, fill = Diagnosis3))+
-        geom_bar()+
-        theme_test()
+  geom_bar()+
+  theme_test()
 p1
 p2 <- ggplot(data = Hanisah25,
              mapping = aes(x = mum_Age, fill = Delivery_mode))+
-        geom_histogram(bins = 5, position = "dodge")+theme_update()
+  geom_histogram(bins = 5, position = "dodge")+theme_update()
 p2
 
 
@@ -469,6 +463,25 @@ ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nr
 
 # Save plot 
 ggsave("p.png")
+
+
+
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                            Descriptive statistics                            
+library(skimr)
+str(Hanisah)
+skim_without_charts(Hanisah)
+
+library(psych)
+describeBy(Hanisah)
+
+#   #   #
+
 
 
   #   #    #
