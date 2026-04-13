@@ -56,23 +56,31 @@ outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
 data <- data.frame(subject, group, outcome)
 
 
-#--------------------------- set directorate -----------------------------------
+#--------------------------- set directorate ----------------------------------#
 setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 imdata <- read_excel("immunoData.xlsx")
 
 
-#-------------------------- Import functions -----------------------------------
+#-------------------------- Import functions 
 Hanisah <- read_excel("C:/Users/User/Desktop/TrainingData.xlsx")                #.xlsx format
 str(Hanisah)
 
 Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            #.csv format
 View(Neonate)
-str(Neonate)
 
 library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
 
-#------------------------ Data Manipulation with Dplyr -------------------------
+#--------------------------- EXport function  
+library(writexl)
+write_xlsx(table1, "eigentable.xlsx")
+
+#------------------------------- Understand Data ------------------------------#
+str(data)   #data structure
+print(data) #view data in console
+
+
+#------------------------ Data Manipulation with Dplyr ------------------------#
 library(dplyr)
 #---------Selecting column
 columns_needed <- Neonate %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
@@ -107,7 +115,6 @@ print(AverageWeightbyGender)
 #---------rename a column
 #Data %>% rename(NewColumn=OldColumn)
 
-
 names(Hanisah)[1]<- "mum_Age"
 names(Hanisah)[4]<- "Delivery_mode"
 names(Hanisah)[6]<- "Baby_Age"
@@ -117,13 +124,15 @@ str(Hanisah)
 
 #---------Create New column (mutate)--------------------------------------------
 mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
+
 #---------show only New column (transmute)
 transmutate_col <- mutate_colmn %>% transmute(bmi)
+
 #---------Change character type(rename_with)
 Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
 Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
-###
+# # #
 
 #-------------------- Reshaping Data-(LONG.data / WIDE.data) -------------------
 library(tidyr) 
@@ -141,6 +150,19 @@ separate_data
 unite_data <- separate_data %>%  
   unite(fullName, firstName, secondName, sep = " ") 
 unite_data
+
+#--------------------------- Handling Missing Data -----------------------------
+
+# Count missing values in each column
+missing_per_column <- colSums(is.na(Hanisah))
+print(missing_per_column)
+
+# Remove rows with any missing values 
+Cleaned_Hanisah <- na.omit(Hanisah)
+print(Cleaned_Hanisah)
+
+Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
+print(Check_Clean_Hanisah)
 
 
 #-------------------------- Data Conversion ----------------------------------- Option 1
@@ -164,38 +186,20 @@ Hanisah$Baby_G6PD <-factor(Hanisah$Baby_G6PD,
                            levels = c(0,1,2,3),
                            labels = c("No defect","Full defect","Partial defect","Not done"))
 
-Hanisah$Mother_bloodgroup <-factor(Hanisah$Mother_bloodgroup,
-                                   levels = c(0,1,2,3,4,5,6,7),
-                                   labels = c("Notdone", "A-","A+", "B-","B+","AB+", "AB-","O+"))
-
-Hanisah$Mother_G6PD <-factor(Hanisah$Mother_G6PD,
-                             levels = c(0,1,2,3),
-                             labels = c("No defect","Full defect","Partial defect","Not done"))
-
 
 Hanisah$Delivery_mode <-factor(Hanisah$Delivery_mode,
                         levels = c(0,1,2),
                         labels = c("Vaginal", "Caesarean", "Assisted"))
 
-Hanisah$Babyfood <-factor(Hanisah$Babyfood,
-                            levels = c(0,1,2),
-                            labels = c("No feeding", "Breastfeeding", "Mixedfeeding"))
 Hanisah$Baby_Gest_Age <-factor(Hanisah$Baby_Gest_Age,
                                levels = c(0,1),
                                labels = c("Pretern", "Fullterm"))
 
 
-Hanisah$Diagnosis2 <-factor(Hanisah$Diagnosis2,
-                          levels = c(0,1),
-                          labels = c("No NNJ", "NNJ"))
-
-Hanisah$Diagnosis3 <-factor(Hanisah$Diagnosis3,
-                            levels = c(0,1,2),
-                            labels = c("No NNJ", "NNJ", "NNJ & Others"))
 str(Hanisah)
 print(Hanisah)
 print(Hanisah$Baby_G6PD)
-#==============================Reverse conversion ----------------------------- Option 2
+#----------------------------- Reverse conversion ----------------------------- Option 2
 
 Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
                                  levels = c("delta", "omicron"),
@@ -207,45 +211,27 @@ Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
 
 
 # #  #
-#--------------------------- Handling Missing Data -----------------------------
-
-# Count missing values in each column
-missing_per_column <- colSums(is.na(Hanisah))
-print(missing_per_column)
-
-# Remove rows with any missing values 
-Cleaned_Hanisah <- na.omit(Hanisah)
-print(Cleaned_Hanisah)
-
-Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
-print(Check_Clean_Hanisah)
-
-# # 
 
 library(writexl)
 write_xlsx(Cleaned_Hanisah, "Aziz.xlsx")
 
-#--------------------------- Data Normality ----------------------------------- Skewness=Mean - Median -----------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#---------------------------- Data Normality ----------------------------------- 
+
+#POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
+#                                                                               HIGH = Q3+1.5(IQR)
 library(psych)
 library(readxl) 
-
 Hanisah <- read_excel("C:/Users/User/Desktop/Aziz.xlsx") 
 
 #  #  #
-
-
--------------
-skewness(-1+1)---- statistic + 1.96   |   Kurtosis(0-3)---- statistic + 1.96    #             Sd
---------                                  ---------                                       
- SE                                         SE                                                  
-#POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
-#                                                                               HIGH = Q3+1.5(IQR)
-
+                      
 skew(Hanisah30$mum_Age)
 kurtosi(Hanisah30$Baby_Age, na.rm = TRUE)
 mardia(Hanisah30$Baby_Age)
 
-#---------------------------Transforming skewed data--------------------------------------------------------------
+
+#---------------------------Transforming skewed data----------------------------
 
 #Square root Transformation-------------------------moderately skewed (-1 to -0.5//0.5 to 1)
 sq_data <-sqrt(Hanisah$Baby_Weight)
@@ -258,7 +244,7 @@ Hanisah30$lg_mum_age <-log(Hanisah30$mum_Age)
 hist(lg_data)
 
 #     #     #
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                            Descriptive statistics                            
 library(skimr)
 str(Hanisah)
@@ -267,43 +253,23 @@ skim_without_charts(Hanisah)
 library(psych)
 describeBy(Hanisah)
 
-
-#-----------------Confidence interval of the mean
-t.test(Hanisah$Baby_Weight,
-       conf.level=0.95)
-
 #   #   #
 
 #---------------------------- Data Visualization -------------------------------
 
-#---------group_by()
-Tablehanisah <-Hanisah %>%
-  group_by(Delivery_mode) %>%
-  summarise(sum = sum(Baby_Weight))
-print(Tablehanisah)
-
 #-----------------Pie Chart 
-library(lessR)
-slices <- c(13, 262, 597)
-lbls <- c( "Assisted", "Caesarean", "Vaginal")
-pct <- round(slices/sum(slices)*100)
-lbls <- paste(lbls, pct)
-# add percents to labels
-lbls <- paste(lbls,"%",sep="") # ad % to labels
-pie(slices,labels = lbls, col=rainbow(length(lbls)),
-    main="Baby's Weight by Mode of Delivery")
-
-# 3D Exploded Pie Chart - Done by Hanisah
 library(plotrix)
 slices <- c(13, 262, 597)
 lbls <- c( "Assisted", "Caesarean", "Vaginal")
 pct <- round(slices/sum(slices)*100)
 lbls <- paste(lbls, pct)
 lbls <- paste(lbls,"%",sep="")
-pie3D(slices,labels=lbls,explode=0.1,
-      main="Baby's Weight by Mode of Delivery")
+pie(slices,labels=lbls, main="Baby's Weight by Mode of Delivery")
+#3D
+pie3D(slices,labels=lbls,explode=0.1, main="Baby's Weight by Mode of Delivery")
 
 Hanisah100 <- data.frame(Hanisah)
+
 #---------------Barchart
 Hanisah100 <- as.data.frame(Hanisah)
 BarChart(Hanisah100, Delivery_mode)
@@ -311,25 +277,6 @@ BarChart(Hanisah100, Delivery_mode)
 #----------------Histogram:
 Histogram
 hist(Hanisah$mum_Age, col= "turquoise", main="Maternal Age", xlab="Age")
-
-#----------------Donut chart
-install.packages("webr")
-
-install.packages(                                                
-  "webr",
-  repos = c("http://rstudio.org/_packages",                      
-            "http://cran.rstudio.com")                           
-)
-
-library(webr)
-# Pie-Donut chart
-PieDonut(Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender")
-#Explode Pie
-PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 2, explodeDonut=FALSE)
-#Explode Donut for Control
-PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 2, explodeDonut=TRUE)
-#Explode Donut for Case
-PieDonut(Cleaned_Hanisah, aes(Baby_sex, Delivery_mode ), title = "DeliverybyGender", explode = 1, explodeDonut=TRUE)
 
 # # #
 
@@ -428,16 +375,13 @@ immu <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight))+
   geom_boxplot(aes(fill = factor(Babyfood)))
 immu
-=======================================================================================
+
 # Facet wrap 
 immwrp <- ggplot(data = Hanisah25,
                mapping = aes(x = Baby_sex, y = Baby_Weight, fill = Diagnosis3))+
   geom_violin()+
   facet_wrap(~Diagnosis3)
 immwrp
-======================================================================================
-
-facet
 
 # Facet grid
 immwrp <- ggplot(data = Hanisah25,
@@ -446,6 +390,14 @@ immwrp <- ggplot(data = Hanisah25,
   facet_grid(~Diagnosis3)
 immwrp
 
+#----------------------Viridis ---
+immuLAB <- ggplot(data = imdata)+
+  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)+
+  theme_classic()+scale_colour_viridis_d()
+immuLAB
 
 
 
@@ -474,88 +426,12 @@ p2
 ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
           common.legend = TRUE, legend = "bottom")
 
--------------------------------------------------------------------------------------
-  
-  
-  
-  # Facet grid
-  immgrd <- ggplot(data = amdata,
-                   mapping = aes(x = gender, y =age, colour = estimated_parasitemia))+
-  geom_violin()+
-  facet_grid(estimated_parasitemia~age)
-immgrd
-
-#-------------------Label & Annotation
-immuLAB <- ggplot(data = imdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)
-immuLAB
-#  Alternative
-immuLAB <- ggplot(data = imdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = CaseControl, shape = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()
-immuLAB
-
-#----------------------Viridis ---
-immuLAB <- ggplot(data = imdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy                              ", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()+scale_colour_viridis_d()
-immuLAB
-#--------------viridis(City\nCenter)
-immuLAB <- ggplot(data = ARMdata)+
-  geom_point(mapping = aes(x = systol1, y = diastol1, colour = expose))+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 145,y = 90, label ="Malaria in pregnancy", color ="purple",
-            fontface ="bold", size =4.0,angle = 30)+
-  theme_classic()+scale_colour_viridis_d(option = "City\nCenter")
-immuLAB
-
-#------------------- Error Bars 
-
-install.packages(
-  "DMwR",
-  repos = c("http://rstudio.org/_packages",
-            "http://cran.rstudio.com")
-)
-
-library(magrittr)
-library(readxl)
-library(tidyverse)
-library(ggplot2)
-library(ggsci)
-library(ggpubr)
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-vkdata <- read_excel("VMB-1.xlsx")
-print(vkdata)
-
-# Default bar plot
-p<- ggplot(vkdata, aes(x=Sex_frequency, y=AGE, fill=Abnormal_discharge)) + 
-  geom_bar(stat="identity", color="grey", 
-           position=position_dodge()) +
-  geom_errorbar(aes(ymin=AGE-sd(AGE), ymax=AGE+sd(AGE)), width=.2,
-                position=position_dodge(.9))+
-  theme_light()+
-  scale_colour_aaas()+ Hanisah19 <- read_excel("C:/Users/User/Desktop/immudata.xlsx")
-
-  labs(title="number of affairs ", x="Frequency of sex", y = "Age")
-
-print(p)
 
 # Save plot 
 ggsave("p.png")
 
 
   #   #    #
-Hanisah19 <- read_excel("C:/Users/User/Desktop/immudata.xlsx")
-print(Hanisah19)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #                             Chi square                                        +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
