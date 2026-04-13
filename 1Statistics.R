@@ -58,7 +58,27 @@ install.packages(
 )                                                                
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #  #  #
+  --------------------------------------------------------------------------------
+  Reshaping Data-(LONG.data / WIDE.data)
+--------------------------------------------------------------------------------  
+  library(tidyr) 
+print(mparasite)
+# use gather()function to make data longer
+long <- HTdata %>%  
+  gather(fullName, Frequency, 
+         first_trimester, second_trimester, third_trimester)
+print(long)
+# use separate()function 
+separate_data <- long %>%  
+  separate(fullName, c("firstName","secondName"))
+separate_data
+# use unite() function 
+unite_data <- separate_data %>%  
+  unite(fullName, firstName, secondName, sep = " ") 
+unite_data
+
   
+    
   
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                                     Data flow Dplyr                                                  +

@@ -41,6 +41,7 @@ setwd("C:/Users/User/Desktop")
 
 mpData <- read_excel("mparasite.xlsx")
 
+covid01 <- read_csv("covid01.csv") 
 
 #-------------------------- Import functions 
 
@@ -49,8 +50,9 @@ View(mparasite)
 str(mparasite)
 
 
-Neonate <- read_csv("C:/Users/User/Desktop/NNJ.csv")                            #.csv format
-View(Neonate)
+covid02 <- read.csv("C:/Users/User/Desktop/MMS/covid01.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
+
+str(covid02)
 
 library(rio)
 import("C:/Users/User/Desktop/repos/NNJ.csv")
