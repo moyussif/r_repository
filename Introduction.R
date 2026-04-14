@@ -86,9 +86,9 @@ remove_more <- remove_one %>% select(-c(Coinfection,NoofResistance))
 str(remove_more)
 
 #---------filter rows ?filter()
-Hanisah <- remove_more %>% select(c(Motherage,HBV,HIV,Syphilis,Mother_bloodgroup,Mother_G6PD,Baby_sex,
-                                    Baby_age_days,Diagnosis3)) %>% 
-                            filter(Motherage < 40)
+Hanisah <- remove_more %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
+                                    categoryofcases,TreatmentOUTCOME,Noofsymptoms)) %>% 
+                            filter(Age < 30)
 
 #---------Create New column (mutate)
 mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
