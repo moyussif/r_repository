@@ -1285,12 +1285,10 @@ increase in the log mean number of age    ---- Holding other variables constant
 #    #    #
 
 
-
-
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #---------------------------- TEST OF NOMINAL VARIABLE ------------------------------------------
 -------------------------------------------------------------------------------------------------
-  Follow up with post hoc tests (optional for Chi-Square)
+Follow up with post hoc tests (optional for Chi-Square)
 #if there are more than two groups in either of the variables with p<0.05, a post hoc test is conducted.
 using bonferroni correction----/------post hoc chi square of independence.
 #----------------------------------------------------------------------------
@@ -1364,66 +1362,3 @@ ht2
  
    
 #  #  #
-  
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                              Merge Data
---------------------------------------------------------------------------------
-library(readxl)
-library(readr)
-library(writexl)
-library(tidyverse)
-library(dplyr)
-
-df2 <- read_excel("C:/Users/User/Desktop/Epid.csv")
-print(df1)
-df1 <- read_excel("C:/Users/User/Desktop/Lab.csv")
-print(df2)
-
-names(df1)
-names(df2)
-joined_df <- left_join(df1, df2, by = "SAMPLE_ID")
-View(joined_df)
-str(joined_df)
-
-write_xlsx(joined_df, "Mergedoo.xlsx")
-
-#  #  #  
-  
-  
-   
---------------------------------------------------------------------------------
-  
-setwd("C:/Users/User/Desktop")
-ayoola <- read_csv("Untitled.csv")
-print(ayoola)
-
-ayoola$Status <-factor(ayoola$Status,
-                        levels = c(1,2,3,4,5,6,7,8,9,10,11,12,13),
-                        labels = c("M.TB", "Africanm", "Bovis", "Caprae", "No.amplification", "Africanm/Intercellulare",
-                                   "M.TB/ Avium", "M.Avium","Intercellulare", "M.TB/Intercellulare", "M.TB/Mucogenicum",
-                                   "M.TB/Simae", "M.TB/Abscesses"))
-
-ayoola$Lineage <-factor(ayoola$Lineage,
-                       levels = c(1,2,3,4,5,6,7,8),
-                       labels = c("L1", "L2", "L3", "L4", "L5", "L6", "Bovis", "NTM"))
-
-str(judith)
-print(judith)
-
-
-
-p <- ggplot(ayoola, aes(x=  Status, color = Status, fill=Status,xlab="Angle"))+geom_bar(alpha = 0.8)+theme_minimal()
-p
-p1 <- ggplot(ayoola, aes(x= Status, color = Sublineage, fill=Sublineage))+geom_bar(alpha = 0.8)+theme_minimal()
-p1
-p2 <- ggplot(ayoola, aes(x=gender, color = imdata$estimated_parasitemia, fill = target))+geom_bar(alpha = 0.8)+theme_minimal()
-p2
-
-#to arrange plot for publication
-ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
-          common.legend = TRUE, legend = "bottom")
-
-
-
--------------------------------------------------------------------------------------------------------------
- 

@@ -38,7 +38,6 @@ library(PMCMRplus)
 
 #--------------------------- set directorate ----------------------------------#
 setwd("C:/Users/User/Desktop")
-
 mpData <- read_excel("mparasite.xlsx")
 
 covid01 <- read_csv("covid01.csv") 
