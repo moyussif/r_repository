@@ -378,8 +378,41 @@ library(lme4) # to create models
 library(simr) # to get Sample size
 
   
-
-
   
 #    #    #
-            
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      Sample size Estmates for Epidemiological Studies
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+install.packages("epiR")
+install.packages("survival")
+install.packages("samplesize")
+
+
+install.packages(
+  "epiR",
+  repos = c("http://rstudio.org/_packages",
+            "http://cran.rstudio.com")
+)
+
+library(survival)
+library(epiR)
+library(pwr)
+library(samplesize)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
