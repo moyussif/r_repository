@@ -1,6 +1,8 @@
 
 rm(list=ls())
 gc(reset = TRUE)
+updateR()
+library(installr)
 
 #-------------------------------------------------------------------------------
 Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.

@@ -1,3 +1,9 @@
+
+rm(list=ls())
+gc(reset = TRUE)
+updateR()
+library(installr)
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         Practical Guide to Statistical Power and Sample Size in R 
 ---------------------------------------------------------------------------
@@ -370,9 +376,9 @@ plot(range.sequence)
 #    #    #
 
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# -------------------------------- G L M M --------------------------------
------------ Power analysis for Generalized Linear Mixed Model ------------- 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# -------------------------------- G L M M -------------------------------------
+----------- Power analysis for Generalized Linear Mixed Model ------------------ 
 
 library(lme4) # to create models
 library(simr) # to get Sample size
@@ -384,23 +390,70 @@ library(simr) # to get Sample size
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       Sample size Estmates for Epidemiological Studies
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-install.packages("epiR")
-install.packages("survival")
-install.packages("samplesize")
-
-
-install.packages(
-  "epiR",
-  repos = c("http://rstudio.org/_packages",
-            "http://cran.rstudio.com")
-)
-
-library(survival)
 library(epiR)
 library(pwr)
 library(samplesize)
+# # #
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Comparing two means  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+  pwr.t.test(d = 0.5,        # effect size
+             power = 0.8,
+             sig.level = 0.05,
+             type = "two.sample")
+# # #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Comparing two proportions %%%%%%%%%%%%%%%%%%%%%%%
+  pwr.2p.test(h = ES.h(0.6, 0.4),  # proportions
+              power = 0.8,
+              sig.level = 0.05)
+# # #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Cross-Sectional Study (proportion) %%%%%%%%%%%%%%%
+#Formula-based approach:
+
+#Example: prevalence = 0.2, precision = 0.05, confidence = 95%
+p <- 0.2
+d <- 0.05
+z <- qnorm(0.975)
+
+n <- (z^2 * p * (1 - p)) / d^2
+n
+#Using a package:
+library(samplesize)
+
+ss <- samplesize(p = 0.2, d = 0.05, conf.level = 0.95)
+ss
+
+# # #
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Case–control study  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+library(epiR)
+
+epi.sscc(OR = 2,       # expected odds ratio
+         p0 = 0.3,     # exposure in controls
+         power = 0.8,
+         r = 1,        # ratio of controls to cases
+         conf.level = 0.95)
+# # #
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   Cohort study  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+epi.sscohortc(irexp1 = 0.2,   # incidence in exposed
+              irexp0 = 0.1,   # incidence in unexposed
+              power = 0.8,
+              r = 1,
+              conf.level = 0.95)
+# # #
+
+________________________________________________________________
+
+#Key things to specify Before calculating sample size, you need:
+•	Study design 
+•	Expected prevalence/incidence 
+•	Effect size (OR, RR, difference) 
+•	Confidence level (usually 95%) 
+•	Power (commonly 80% or 90%) 
+•	Precision (margin of error) 
 
 
 

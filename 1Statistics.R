@@ -1,7 +1,9 @@
 
 rm(list=ls())
 gc(reset = TRUE)
-  
+updateR()
+library(installr)
+ 
 #---------------------------- Import functions ---------------------------------
 child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
 library(readr)

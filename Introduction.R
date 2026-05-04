@@ -1,5 +1,8 @@
+
 rm(list=ls())
 gc(reset = TRUE)
+updateR()
+library(installr)
 
 #--------------------------- required package
 install.packages("readxl")

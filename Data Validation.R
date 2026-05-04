@@ -1,3 +1,9 @@
+
+rm(list=ls())
+gc(reset = TRUE)
+updateR()
+library(installr)
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 # Is there a data validation code in R. To check data entries by two people and see the differences   
 ===================================================================================================
