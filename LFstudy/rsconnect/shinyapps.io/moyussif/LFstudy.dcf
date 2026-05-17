@@ -1,0 +1,12 @@
+name: LFstudy
+title: LFstudy
+username: moyussif
+account: moyussif
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17364245
+bundleId: 11996147
+url: https://moyussif.shinyapps.io/LFstudy/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
