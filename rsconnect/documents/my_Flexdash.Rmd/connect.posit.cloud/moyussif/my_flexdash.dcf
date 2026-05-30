@@ -1,0 +1,12 @@
+name: my_flexdash
+title: my_Flexdash
+username: moyussif
+account: moyussif
+server: connect.posit.cloud
+hostUrl: https://api.connect.posit.cloud/v1
+appId: 019e6419-40c5-443c-20ad-d5928388296e
+bundleId:
+url: https://connect.posit.cloud/moyussif/content/019e6419-40c5-443c-20ad-d5928388296e
+version: 1
+asMultiple: FALSE
+asStatic: TRUE

@@ -1,0 +1,40 @@
+---
+title: Nasara
+format: 
+  dashboard:
+   orientation: columns
+   number_section: false
+---
+
+```{R}
+#Load packages
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(readxl,readr, tidyverse, gt, plotly, reactable, bslib, bsicons, shiny)
+```
+
+```{r}
+#Load data
+LFdata <- read_excel("LF_participant.xlsx")
+
+```
+
+# KEEA Municipal
+
+## Column {width="20%"}
+
+```{r}
+#| Content: valuabox
+#| title: "Total Number of Paticipant"
+list(
+  color = "success",
+  value = "139") 
+```
+
+### Row {.tabset}
+:::{.card title="Total Number of Participants"}
+```{r}
+record_id
+```
+
+
+

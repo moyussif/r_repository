@@ -1,9 +1,9 @@
 
 rm(list=ls())
 gc(reset = TRUE)
-updateR()
 library(installr)
- 
+
+updateR()
 #---------------------------- Import functions ---------------------------------
 child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)         # for categorical
 library(readr)
@@ -54,13 +54,13 @@ hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),freq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
 install.packages(                                                
-  "VIM",
+  "ggiraph",
   repos = c("http://rstudio.org/_packages",                      
             "http://cran.rstudio.com")                           
 )                                                                
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #  #  #
-  --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
   Reshaping Data-(LONG.data / WIDE.data)
 --------------------------------------------------------------------------------  
   library(tidyr) 
@@ -1353,14 +1353,59 @@ RR <-epitab(imdata$CaseControl,imdata$sex,
 
 RR
 --------------------------------------
-library(ggplot2)
-#stacked Barchart
-ht2 <-ggplot(data = imdata,
-             mapping = aes(x = CaseControl, fill = sex))+
-  geom_bar()
 
-ht2
----------------
- 
-   
-#  #  #
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#KEEA_Municipal
+community_table <- LF_participant %>%
+  filter(site != "Gomoa West District") %>%
+  group_by(site, keea_communities, keea_facilities) %>%
+  summarise(
+    Tested_Count = n(),
+    Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 2), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 2), "%"),
+    .groups = "drop"
+  )%>%
+  select(site, keea_communities, keea_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
+  arrange(desc(Malaria_Pct)) 
+  
+community_table
+
+print(community_table, n = Inf, width = Inf)
+
+
+#Gomoa.West_District
+community_table <- LF_participant %>%
+  filter(site != "KEEA-Municipal") %>%
+  group_by(site, gomoa_west_communities, gomoa_west_facilities) %>%
+  summarise(
+    Tested_Count = n(),
+    Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 2), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 2), "%"),
+    .groups = "drop"
+  )%>%
+  select(site, gomoa_west_communities, gomoa_west_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
+  arrange(desc(Malaria_Pct)) 
+
+community_table
+
+print(community_table, n = Inf, width = Inf)
+
+
+#################### to make it interactive =======================
+datatable(
+  community_table,
+  rownames = FALSE,
+  filter = "top",
+  options = list(
+    pageLength = 10,
+    autoWidth = TRUE,
+    scrollX = TRUE
+  ),
+  caption = "Malaria and FTS Positivity by Community and Facility"
+)
+
