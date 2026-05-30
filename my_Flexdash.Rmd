@@ -1,5 +1,5 @@
 ---
-title: "LFStudy Dashboard  -  ( Noguchi Memorial Institute for Medical Research, Department of Clinical Pathology.    University of Ghana )"
+title: "LF_Study Dashboard  - Noguchi Memorial Institute for Medical Research (NMIMR)"
 output: 
   flexdashboard::flex_dashboard:
     theme:
@@ -53,31 +53,44 @@ Row
 library(gtsummary)
 # Basic Info
 
-KEEA_table <- 
+basic_table <- 
   LF_participant %>%
-  tbl_summary(include = c(consent,site, sex, malaria_test_done, malaria_t_results, fts_test_done, fts_test_result)) %>%   
+  tbl_summary(include = c(consent, sex, site)) %>%   
   # add table captions
   as_gt() %>%
-  gt::tab_header(title = "Table1. Aggregate level",
-                 subtitle = " Since May,2026")
-
-KEEA_table 
-
-#Donut chart
-
-plot_ly(LF_participant, labels = ~consent, values = ~record_id, type = "pie",
-        hole = 0.5)%>%
-  layout(title = " Consented  Vs Not consented")
-
-
-#Pie chart
-
-plot_ly(LF_participant, labels = ~sex, values = ~record_id, type = "pie",
-        hole = 0.0)%>%
-  layout(title = " Male  Vs Female")
-
+  gt::tab_header(title = "Basic Summary")
+basic_table
 
 ```
+
+###
+
+```{r}
+Malaria <- 
+  LF_participant %>%
+  tbl_summary(include = c(malaria_test_done, malaria_t_results)) %>%   
+  # add table captions
+  as_gt() %>%
+  gt::tab_header(title = "Malaria Results")
+Malaria
+
+```
+
+###
+
+```{r}
+FTS <- 
+  LF_participant %>%
+  tbl_summary(include = c(fts_test_done, fts_test_result)) %>%   
+  # add table captions
+  as_gt() %>%
+  gt::tab_header(title = "FTS Results")
+FTS
+
+```
+
+
+
 
 Row
 -------------------------------------------------------------------------------

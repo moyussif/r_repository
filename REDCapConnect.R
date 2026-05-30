@@ -254,11 +254,11 @@ Row
   ### Malaria Test Results 
   
   ```{r}
-#KEEA_Malaria Results
+#site
 kee_Malaria <- ggplot(
   data = LF_participant,
   aes(
-    x = keea_facilities,
+    x = site,
     fill = malaria_t_results
   )
 ) +
