@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
- LF_participant <- read_excel("LF_participant.xlsx")
+ LFdata <- read_excel("LF_study.xlsx")
 
 ```
 
@@ -54,7 +54,7 @@ library(gtsummary)
 # Basic Info
 
 basic_table <- 
-  LF_participant %>%
+  LFdata %>%
   tbl_summary(include = c(consent, sex, site)) %>%   
   # add table captions
   as_gt() %>%
@@ -67,7 +67,7 @@ basic_table
 
 ```{r}
 Malaria <- 
-  LF_participant %>%
+  LFdata %>%
   tbl_summary(include = c(malaria_test_done, malaria_t_results)) %>%   
   # add table captions
   as_gt() %>%
@@ -80,7 +80,7 @@ Malaria
 
 ```{r}
 FTS <- 
-  LF_participant %>%
+  LFdata %>%
   tbl_summary(include = c(fts_test_done, fts_test_result)) %>%   
   # add table captions
   as_gt() %>%
@@ -98,7 +98,7 @@ Row
  
 ```{r}
 #KEEA_Municipal
-community_table <- LF_participant %>%
+community_table <- LFdata %>%
   filter(site != "Gomoa West District") %>%
   group_by(site, keea_communities, keea_facilities) %>%
   summarise(
@@ -122,7 +122,7 @@ Row
 
 ```{r}
 #Gomoa.West_District
-community_table <- LF_participant %>%
+community_table <- LFdata %>%
   filter(site != "KEEA-Municipal") %>%
   group_by(site, gomoa_west_communities, gomoa_west_facilities) %>%
   summarise(

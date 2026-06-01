@@ -30,7 +30,7 @@ write_xlsx(redcap, "LF_study.xlsx")
 ###
 #===============================================================================
 setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4NMIMRdocumnt/mod_r/modibo")
-LFparticipants <- read_excel("LF_study.xlsx")
+LFdata <- read_excel("LF_study.xlsx")
 ###
 library(readxl)
 library(tidyverse)
@@ -44,7 +44,7 @@ library(plotrix)
 library(ggfortify)
 library(plotly)
 ##
-LFdata <- read_excel("LF_participant.xlsx")
+#LFdata <- read_excel("LF_participant.xlsx")
 
 print(LFdata)
 #------------------------------------------------------------------------------
