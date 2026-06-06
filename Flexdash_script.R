@@ -1,16 +1,16 @@
 ---
-  title: "yussif dashboard"
+  title: "LF_Study Dashboard  - Noguchi Memorial Institute for Medical Research (NMIMR)"
 output: 
   flexdashboard::flex_dashboard:
   theme:
-  bg: "#101010"
-fg: "#FDF7F7" 
-primary: "#ED79F9"
+  bg: "#FFF5EE"
+fg: "#104E8B" 
+primary: "#1874CD"
 base_font:
   google: Prompt
 code_font:
   google: JetBrains Mono
-orientation: columns
+orientation: rows
 vertical_layout: fill
 ---
   
@@ -41,128 +41,101 @@ library(gt)
 ```{r}
 #Import Data
 
-LF_participant <- read_excel("LF_participant.xlsx")
+LFdata <- read_excel("LF_study.xlsx")
 
 ```
 
 Row 
 ---------------------------------
-  ##Test by Community and Facility
+  ##
   
   ```{r}
 library(gtsummary)
-# KEEA_table
+# Basic Info
 
-
-KEEA_table <- 
-  LF_participant %>%
-  tbl_summary(include = c(consent,site, sex, keea_communities, keea_facilities, malaria_t_results, fts_test_result)) %>%   
+basic_table <- 
+  LFdata %>%
+  tbl_summary(include = c(consent, sex, site)) %>%   
   # add table captions
   as_gt() %>%
-  gt::tab_header(title = "Table 1. Test Results by Community and CHPs",
-                 subtitle = " Since May,2026")
-
-KEEA_table
+  gt::tab_header(title = "Basic Summary")
+basic_table
 
 ```
 
+###
 
 ```{r}
-#GomoaWest_table
-
-GomoaWest_table <- 
-  LF_participant %>%
-  tbl_summary(include = c(gomoa_west_communities, gomoa_west_facilities, malaria_t_results, fts_test_result)) %>%   
+Malaria <- 
+  LFdata %>%
+  tbl_summary(include = c(malaria_test_done, malaria_t_results)) %>%   
   # add table captions
   as_gt() %>%
-  gt::tab_header(title = "Table 1. Test Results by Community and CHPs",
-                 subtitle = " Since May,2026")
-
-GomoaWest_table
+  gt::tab_header(title = "Malaria Results")
+Malaria
 
 ```
+
+###
+
+```{r}
+FTS <- 
+  LFdata %>%
+  tbl_summary(include = c(fts_test_done, fts_test_result)) %>%   
+  # add table captions
+  as_gt() %>%
+  gt::tab_header(title = "FTS Results")
+FTS
+
+```
+
+
+
 
 Row
 -------------------------------------------------------------------------------
-  ### Malaria Test Results 
+  ## KEEA_Municipal - Malaria & QFAT {width = 100%}
   
   ```{r}
-#KEEA_Malaria Results
-kee_Malaria <- ggplot(
-  data = LF_participant,
-  aes(
-    x = keea_facilities,
-    fill = malaria_t_results
-  )
-) +
-  geom_bar(na.rm = TRUE) +
-  scale_fill_manual(
-    values = c("#4682B4", "#EE7600")
-  ) +
-  theme_classic() +
-  coord_flip()
+#KEEA_Municipal
+community_table <- LFdata %>%
+  filter(site != "Gomoa West District") %>%
+  group_by(site, keea_communities, keea_facilities) %>%
+  summarise(
+    Tested_Count = n(),
+    Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 1), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 1), "%"),
+    .groups = "drop"
+  )%>%
+  select(site, keea_communities, keea_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
+  arrange(desc(Malaria_Pct)) 
 
-kee_Malaria
-
-#GomoaWest_malaria
-
-GomoaWest_malaria <- ggplot(
-  data = LF_participant,
-  aes(
-    x = gomoa_west_facilities,
-    fill = malaria_t_results
-  )
-) +
-  geom_bar(na.rm = TRUE) +
-  scale_fill_manual(
-    values = c("#4682B4", "#EE7600")
-  ) +
-  theme_classic() +
-  coord_flip()
-
-GomoaWest_malaria
+kable(community_table, align = "c")
 
 ```        
 
 Row
 ------------------------------------------------------------------------------
-  ### QFAT Test Results
+  ## Gomoa.West_District-Malaria & QFAT {width = 100%}
   
   ```{r}
-#KEEA_QFAT
-kee_QFAT <- ggplot(
-  data = LF_participant,
-  aes(
-    x = keea_facilities,
-    fill = fts_test_result
-  )
-) +
-  geom_bar(na.rm = TRUE) +
-  scale_fill_manual(
-    values = c("#4682B4", "#EE7600")
-  ) +
-  theme_classic() +
-  coord_flip()
+#Gomoa.West_District
+community_table <- LFdata %>%
+  filter(site != "KEEA-Municipal") %>%
+  group_by(site, gomoa_west_communities, gomoa_west_facilities) %>%
+  summarise(
+    Tested_Count = n(),
+    Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 1), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 1), "%"),
+    .groups = "drop"
+  )%>%
+  select(site, gomoa_west_communities, gomoa_west_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
+  arrange(desc(Malaria_Pct)) 
 
-kee_QFAT
-
-
-#GomoaWest_QFAT
-
-GomoaWest_QFAT <- ggplot(
-  data = LF_participant,
-  aes(
-    x = gomoa_west_facilities,
-    fill = fts_test_result
-  )
-) +
-  geom_bar(na.rm = TRUE) +
-  scale_fill_manual(
-    values = c("#4682B4", "#EE7600")
-  ) +
-  theme_classic() +
-  coord_flip()
-
-GomoaWest_QFAT
+kable(community_table, align = "c")
 
 ```
