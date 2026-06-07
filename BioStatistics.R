@@ -1,58 +1,131 @@
-
+#
 rm(list=ls())
 gc(reset = TRUE)
+ls()
+search()
 library(installr)
 updateR()
+#--------------------------- required packages ---------------------------------
+library(XLConnect)
 library(readxl)
 library(readr)
 library(writexl)
+library(lubridate)
+library(skimr)
 library(tidyverse)
-library(ggplot2)
+library(dbplyr)
 library(RColorBrewer)
+library(gganimate)
 library(ggpubr)
-library(psych)
-library(car)
-library(lessR)
-library(plotrix)
 library(ggfortify)
+library(ggrepel)
+library(plotrix)
+library(psych)
+library(lessR)
+library(car)
 library(FSA)
 library(Hmisc)
 library(stats)
 library(epitools)
 library(PMCMRplus)
+#------------------
+library(stringr)
+library(gtools)
+library(zoo)
+library(mvtnorm)
+library(devtools)
+library(rvest)
+library(dslabs)
+library(weights)
+library(VennDiagram)
+library(rafalib)
+library(MASS)
+library(broom)
+library(matrixStats)
+library(gridExtra)
+library(randomForest)
+library(tree)
+library(splitstackshape)
+library(egg)
+library(rpart)
+library(rpart.plot)
+library(testthat)
+library(scales)
+library(survival)
+library(epiDisplay)
+library(htmlwidgets)
+library(pdftools)
+library(joineR)
+library(lattice)
+library(latticeExtra)
+library(zscorer)
+library(COUNT)
+library(reshape2)
+library(ggExtra)
+library(systemfonts)
+library(forcats)
+objects(grep("forcats", search()))
+library(finalfit)
+Sys.time()
+Sys.setenv(TZ='GMT')
+Sys.time()
 
+#------ Directory Functions
+                   getwd()#-------------Checks your current active folder path.
+                   setwd("path")#-------Changes your working directory.
+                   dir.create("name")#--Creates a brand new folder.
+                   dir.exists("path")#--Checks if specific folder already exists.
+                   
 #--------------------------- set directorate -----------------------------------Option.1
 setwd("C:/Users/User/Desktop")
 mpData <- read_excel("mparasite.xlsx")
 
 covid01 <- read_csv("covid01.csv") 
+# # #
+dir()
+data.read<-loadWorkbook(file.choose(), create=T) # from XLConnect package
+data.read
+DATA<-readWorksheet(data.read, sheet = "Sheet1")
+str(DATA)
+##
+summary(DATA[,"Age"])
 
-#-------------------------- Import functions                                    Option.2
-mparasite <- read_excel("C:/Users/User/Desktop/mparasite.xlsx") #.xlsx format
+subset(DataTraining,GADX_Oncho=="Negative"&DDTD_Ocho=="Negative", select=c("BARCODES","Age","Sex","District","DDTD_Ocho","GADX_Oncho")) %>%  
+  
+summarise(count = n())
 
-str(mparasite)
+#-------------------------- Import functions------------------------------------Option.2
+#.xlsx format
+mparasite <- read_excel("C:/Users/User/Desktop/mparasite.xlsx")
 
-covid02 <- read.csv("C:/Users/User/Desktop/MMS/covid01.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
+# import comma delimited files
+all_data2 <- read_csv(file = 'children_data.csv')
+#If you want your variables to be factors
+child_data1 <- read.csv("children_data.csv", stringsAsFactors = TRUE)
+# import white space delimited files
+all_data1 <- read_table(file = 'children_data.txt', col_names = TRUE)
+# import tab delimited files
+all_data3 <- read_delim(file = 'children_data.txt', delim = "\t")
+# or use
+all_data4 <- read_tsv(file = 'children_data.txt' )
 
-str(covid02)
-
-#--------------------------- EXport function  
+#--------------------------- EXport function------------------------------------  
 library(writexl)
 write_xlsx(mparasite, "falciparum.xlsx")
 
 
 --------------------------------------------------------------------------------
-  Understand Data Structures                            
+                     Understand Data Structures                            
 --------------------------------------------------------------------------------  
-  str(mparasite)   #data structure
+str(mparasite)   #data structure
 print(mparasite) #view data in console
 
-
 -------------------------------------------------------------------------------
-  DATA MANIPULATION (Dplyr) 
+                          Data Wrangling                        #The pipe: `%>%`
+#The processes of *transforming* or *manipulating* raw data into a useful format 
 -------------------------------------------------------------------------------
-  library(dplyr)
-#---------Selecting column
+library(dplyr)
+#---------Selecting column 
 columns_needed <- covid02 %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
                                        categoryofcases,TreatmentOUTCOME,Noofsymptoms,Coinfection,NoofResistance,Numberoforganism))
 str(columns_needed)
@@ -68,9 +141,13 @@ str(remove_more)
 Hanisah <- remove_more %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
                                     categoryofcases,TreatmentOUTCOME,Noofsymptoms)) %>% 
   filter(Age < 30)
+#
+filter(Hanisah, Age <= 30)
 
 #---------Create New column (mutate)
 mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
+#
+Hanisah1 <- mutate(Hansiah, mortality_rate = total / population * 100000)
 
 #---------show only New column (transmute)
 transmutate_col <- mutate_colmn %>% transmute(bmi)
@@ -83,8 +160,9 @@ Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
 Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
 #---------rename a column
+Hanisah1 <- Hanisah %>% rename(mum_Age = motherAge)
+names(Hanisah1)
 #Data %>% rename(NewColumn=OldColumn)
-
 names(Hanisah)[1]<- "mum_Age"
 names(Hanisah)[4]<- "Delivery_mode"
 names(Hanisah)[6]<- "Baby_Age"
@@ -102,6 +180,39 @@ print(Hanisah3)
 #---------group_by()
 AverageWeightbyGender <-Hanisah %>% group_by(Baby_sex) %>% summarise(mean = mean(Baby_Weight))
 print(AverageWeightbyGender)
+#--------Arrange()
+Hanisah1 %>% 
+  arrange(Durationinweeks) %>% 
+  head()
+#--------Sorting descending order
+Hanisah1 %>% 
+  arrange(desc(Durationinweeks)) %>% 
+  head()
+
+#-------Descriptive statistics using`dplyr` 
+basic_stats<-Hanisah1%>%
+  group_by(sex)%>%
+  summarise(mean_age=mean(age),mean_bmi=mean(BMI),sd_age=sd(age),sd_bmi=sd(BMI))
+
+basi_stats
+
+#Basic plots
+
+#----------Scatter plots
+Hanisah_plt<-Hanisah1%>%filter(Age>25)
+age25<-Hanisah$Age
+bmi25<-Hanisah$BMI
+
+plot(age25, bmi25)
+
+#For a quick plot that avoids accessing variables twice, we can use the `with` function
+with(Hanisah_plt, plot(Age, bmi25))
+# Histograms
+hist(Hanisah_plt$Age)
+
+# Boxplot
+boxplot(Age~ sex, data = Hanisah_plt)
+
 
 # # #
 --------------------------------------------------------------------------------
@@ -250,7 +361,11 @@ install.packages("Rmisc")
 library(Rmisc)
 summarySE(data=covid01, measurevar="Age", groupvars="AgeCategory", conf.interval = 0.95)
 
-#   #   #
+# categorical
+coronary %>% dplyr::select(race, gender) %>% tbl_summary() %>% as_gt()
+
+
+# # #
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Data Visualizations
@@ -624,6 +739,7 @@ theoretical = 46
 t.test(observed, mu = theoretical, conf.int=0.95)                      #Option.1
 
 t.test(covid01$Age, mu = 46, conf.int=0.95)                            #Option.2
+t.test(covid01$Age, mu = 46, conf.int=0.95, alternative="greater")
 
 
 hist(covid01$Age, col="green", main="Histogram of values", xlab="Age")
@@ -637,9 +753,11 @@ bartlett.test(Value ~ Group, data=Data) #If p-value >= 0.05, use var.equal=TRUE 
 
 #paired t.test  
 t.test(Age ~ SEX, data=covid01, var.equal=TRUE, conf.level=0.95)
+t.test(Age ~ SEX, data=covid01, var.equal=TRUE, conf.level=0.95, alternative="less")
 
 #independent t.test
 t.test(Age ~ SEX, data=covid01, var.equal=FALSE, conf.level=0.95)
+t.test(Age ~ SEX, data=covid01, var.equal=FALSE, conf.level=0.95, alternative="less")
 
 # Boxplot
 boxplot(Age ~ SEX, data = covid01, names=c("Female","Male"), ylab="Age")
@@ -903,13 +1021,12 @@ if(!require(FSA)){install.packages("FSA")
   
   #   #   #
   
-  
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     +                            Regression analysis                                                 +
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     #       Regression analysis study the relationship between variables:
     
-    1-By identifying (Linear, Curvilinear, or Quadratic).
+  1-By identifying (Linear, Curvilinear, or Quadratic).
   2-By estimating parameters of the relationships(intercept(B0) and slope(B1)).
   3-By validating the relationship (The  assumptions for regression).
   
@@ -932,14 +1049,22 @@ if(!require(FSA)){install.packages("FSA")
     #                                        SSR                        SST                 
     
     
-    R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
+  R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
   thus it tells us the amount of variables explain in the reponse(y) after fitting the model.
   
   #R squared = explain variation of model-y
   ----------------------------
     #              Total variation of model                                         df =n-2
     
+  The **broom** package has a function called `augment()` which can calculate:
     
+  1. estimated log odds 
+  2. probabilities
+  2. residuals
+  3. hat values
+  4. Cooks distance
+  5. standardized residuals
+      
     #---------------------- Checking assumptions of the model ------------------------------------
   Assumptions
   #----------y is a random variable and normally distributed with mean(u) and variance(Q)squared.
@@ -1322,3 +1447,358 @@ The parameter indicates that one unit increase in the bmi is associated with a 0
 increase in the log mean number of age    ---- Holding other variables constant
 
 #  #  #
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Multinomial Logistic Regression                                       +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Introduction
+Some data come with multinomial outcomes in which case, the outcome variable is a nominal or
+polychotomous variable with more than two levels. In multinomial outcome data, 
+the outcome has no natural ordering. if it has, then it is best treated as a ordinal outcome data. 
+
+Variables with more than two levels are known as either:
+1.  multinomial data
+2.  polychotomous data
+3.  polytomous data
+
+If we employ logistic regression to such data, then the analysis is known as polytomous or
+multinomial logistic regression. Again, the polychotomous outcome does not have any natural order. 
+When the categories of the outcome variable do have a natural order, ordinal logistic regression is preferred. 
+
+## Examples of multinomial outcome variables
+Examples of data with polychotomous outcome variables (with more than two levels) include:
+  
+  - disease symptoms that have been classified by subjects as being absent, mild, moderate,or severe,
+- tumour invasiveness  classified as in situ, locally invasive, ormetastatic, or
+- patient preferred treatment regimen,selected from among three or 
+more options for example oral medication only, oral medication plus 
+injection medication or injection only.
+
+A numerical outcome can be categorized based on different cut-off points. 
+The newly created categorical variable is now either treated as a nominal or 
+polychotomous or multinomial outcome  or as a ordinal outcome. 
+That justifies the use of multinomial logistic regression. 
+
+## Models for multinomial outcome data
+With a multinomial outcome data, an extension of logistic regression known as multinomial logit or 
+multinomial logistic regression can be performed. 
+In multinomial logistic regression, one of the categories of the outcome variable is designated 
+as the reference category and each of the other levels is compared with this reference.
+
+The choice of reference category can be arbitrary and is at the discretion of the researcher. 
+Most software set the first category as the reference (also known as the baseline category) by default.
+
+Other models that can analyze data with polychotomous outcome include:
+  
+1. Stereotype logistic regression - each independent variable has one value for each individual
+2. Alternative-specific variables  
+
+
+# Estimation for Multinomial logit model
+Remember, interpreting and assessing the significance of the estimated coefficients 
+are the main objectives in regression analysis. In multinomial logistic regression, 
+we would like to model the relationship between covariates with the outcome variable 
+that has more than two categories but without ordering or ranking. 
+
+The actual values taken by the dependent variable are irrelevant. 
+In Stata, the **exponentiated beta** $\exp^{\beta}$ 
+  will generate the so-called the **relative-risk ratio**. The dependent variable again, 
+is a discrete variable and the model is estimated using maximum likelihood.
+
+In multinomial logistic regression for example in data with three categories of the outcome, 
+the sum of the probabilities for the three outcome categories must be equal to 1 (the total probability).
+The comparison is done between two categories each time. 
+Because of that, each comparison considers only two probabilities, 
+and the probabilities in the ratio do not sum to 1. 
+Thus, the two odds-like expressions in multinomial logistic regression are not true odds.
+
+Multinomial logistic regression can be thought as of simultenously fitting binary logits 
+for all comparisons among the alternatives.
+
+### Log Odds and Odds Ratios
+In the special case where the covariate is binary, coded 0 or 1, 
+we simplify the notation to $OR_j = OR_j(1,0)$.
+Let use an example where data have 3 categories of outcome; 0,1 and 2. 
+
+Let say we have a dataset with the outcome variable, $Y$, and is coded as $0, 1,$ or $2$.
+
+In practice one should check that the software package 
+that is going to be used allows a $0$ code as the smallest category. 
+We have used packages that require that the codes begin with $1$.
+
+So the logit functions (log odds) when the outcome is a D variable with (0,1 and 2 values) 
+are as below
+1.  the log odds for comparison between 0 and 1 is
+$$g_1(x) = ln\frac{P(D=1|X_1)} {P(D=0|X_1)}=\alpha_1 + (\beta_{11}X_1)$$
+  
+  2.  and, the log odds for comparison between 0 and 2 is
+$$g_2(x) =  ln\frac{P(D=2|X_1)} {P(D=0|X_1)}=\alpha_2 + (\beta_{21}X_1)$$
+  
+  If for example, we assume that the outcome labelled with $Y=0$ is the reference outcome.
+
+The subscript on the odds ratio indicates which outcome is being compared to the reference category outcome. 
+The odds ratio of outcome $Y = j$ versus $Y = 0$ for the covariate values of $x = a$ versus $x = b$ is:
+  
+  $$OR_{j}(a,b)= \frac{Pr(Y=j|x=a)/(Pr(Y=0|x=a)} {Pr(Y=j|x=b)/Pr(Y=0|x=b)}$$
+  
+  Each odds ratio is calculated in a manner similar to that used in standard logistic regression. 
+That is:
+  
+  $$OR_1(X=1,X=0)= \frac{Pr(D=1|X=1)/(Pr(D=0|X=1)} {Pr(Y=1|X=0)/Pr(D=0|X=0)}=\exp^{\beta_{11}}$$
+  
+  $$OR_2(X=2,X=0)= \frac{Pr(D=2|X=1)/(Pr(D=0|X=1)} {Pr(D=2|X=0)/Pr(D=0|X=0)}=\exp^{\beta_{21}}$$
+  
+  ### Conditional probabilities
+  
+  The conditional probabilities for the multinomial logit model are: 
+  
+  $$Pr(D = 0 | x) = \frac{1}{1+e^{g_1(x)} + e^{g_2(x)}}$$
+  
+  $$Pr(D = 1 | x) = \frac{e^{g_1(x)}}{1+e^{g_1(x)} + e^{g_2(x)}}$$
+  
+  $$Pr(D = 2 | x) = \frac{e^{g_2(x)}}{1+e^{g_1(x)} + e^{g_2(x)}}$$
+  
+### Load libraries
+- **here -------- file referencing
+- **tidyverse---- data wrangling and plotting 
+- **haven---------read data in various statistical formats
+- **gtsummary-----produce statistical tables 
+- **VGAM----------perform multinomial logistic regression
+- **kableExtra----produce nice tables for the results 
+
+
+```{r, warning=FALSE}
+library(here)
+library(tidyverse)
+library(haven)
+library(gtsummary)
+library(VGAM)
+library(kableExtra)
+```
+
+### Dataset
+The datasets contains all variables of our interest. For the purpose of this assignment, 
+Explore association of hypertension status, weight and total cholesterol with the result of screening FBS. 
+The variables in the datasets as follow:
+  
+  1.  fbs : Fasting Blood Sugar (mmol/L). The data ranges from 2.51 mmol/L to 28.01 mmol/L.
+2.  totchol : Total Cholesterol (mmol/L). The data ranges from 0.18 mmol/L to 23.14 mmol/L.
+3.  hpt : Hypertension Status. Coded as Yes and No.
+4.  weight : Body weight measures in kilogram. The data ranges between 30kg to 187.8kg.
+
+### Read data
+We will use `haven::read_dta()` function to read stata `.dta` data into the memory.   
+
+Let read `metabolic_syndrome.dta` as the dataset into our R memory. 
+
+```{r}
+ms <- read_dta('metabolic_syndrome.dta')
+```
+Quickly glance at the number of observations and the type of variables in the `ms` dataset. 
+
+```{r}
+glimpse(ms)
+```
+
+### Data Wrangling
+We will
+
+- select only variable `fbs`, `totchol`, `hpt` and `weight`
+- convert all character variables to factor variables 
+- then take a glance of the updated `ms` dataset again
+
+
+```{r}
+ms <- ms %>% 
+  select(fbs, totchol, hpt , weight) %>% 
+  mutate(across(where(is.character), as_factor))
+glimpse(ms)
+```
+
+### Create new categorical variable from fbs
+Let us create a categorical (also known as a factor variable) based on this classification: 
+  
+  1. Normal if fbs is less than 6.1 mmol/L
+2. Impaired Fasting Glucose (IFG)  if fbs is between 6.1 mmol/L to 6.9 mmol/L
+3. Diabetis Mellitus (DM) if fbs is 7.00 mmol/L or higher 
+
+```{r}
+ms <- ms %>%
+  mutate(cat_fbs = cut(fbs, 
+                       breaks = c(2.50 , 6.10 , 6.90 , 28.01 ),
+                       labels = c("Normal","IFG", "DM")))
+ms %>% 
+  count(cat_fbs)
+```
+
+We notice that there were 251 data has no values recorded as `NA`. Thus, 
+we decide to remove observations when there are missing values for variable `cat_fbs`.
+
+
+```{r}
+ms <- ms %>%
+  filter(!is.na(cat_fbs)) 
+ms %>%
+  count(cat_fbs)
+
+
+### Exploratory data analysis
+Next, is to return the table of summary statistics 
+
+ms %>%
+  tbl_summary(by = cat_fbs,
+              statistic = list(all_continuous() ~ "{mean} ({sd})", all_categorical() ~ "{n} ({p}%)"),
+              type = list(where(is.logical) ~ "categorical"),
+              label = list(fbs ~ "Fasting Blood Sugar (mmol/L)", 
+                           totchol ~ "Total Cholesterol (mmol/L)", hpt~"Hypertension", weight ~ "Weight (kg)"),
+              missing_text = "Missing") %>% 
+  modify_caption("**Table 1. Survey Participant Characteristic**")  %>%
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2", "stat_3") ~ "**Glycemic Control Status**") %>%
+  modify_footnote(all_stat_cols() ~ "Mean (SD) or Frequency (%)") %>%
+  bold_labels() %>%
+  as_gt()
+
+### Confirm the order of cat_fbs
+```{r}
+levels(ms$cat_fbs)
+```
+However, we would like the DM as the smallest category. 
+To do that we will use the `fct_relevel()` function. 
+
+```{r}
+ms <- ms %>% 
+  mutate(cat_fbs = fct_relevel(cat_fbs, 
+                               c("DM", 'IFG', 'Normal')))
+levels(ms$cat_fbs)
+```
+## Estimation
+Our intention to investigate the relationship between totchol, hpt and weight 
+with the outcome variables `cat_fbs`. Thus, 
+we will perform multinomial logistic regression model to estimate the relation for 2 models:
+  
+  - Model 1: DM vs Normal
+- Model 2: IFG vs Normal
+
+In both models, the reference group is Normal
+
+### Single Independent Variable 
+For independent variable totchol 
+
+```{r}
+log_chol <- vglm(cat_fbs ~ totchol, 
+                 multinomial, data = ms)
+summary(log_chol)
+```
+This is the model where hpt is the independent variable
+
+```{r}
+log_hpt <- vglm(cat_fbs ~ hpt, 
+                multinomial, data = ms)
+summary(log_hpt)
+```
+
+And lastly, the independent variable is weight
+
+```{r}
+log_wt <- vglm(cat_fbs ~ weight, 
+               multinomial, data = ms)
+summary(log_wt)
+```
+
+### Multiple Independent Variables
+We feel that totchol, hpt and weight are all important independent variables. 
+Hence, we want to fit a model with the three independent variables as the covariates. 
+
+```{r}
+mlog <- vglm(cat_fbs ~ totchol + hpt + weight, 
+             multinomial, data = ms)
+summary(mlog)
+```
+### Model with interaction term between independent variables 
+Then, we hypothesize that there could be a significant interaction between totchol and weight. 
+And to test the hypothesis, 
+we extend the multivariable logistic regression model by adding an interaction term. 
+This interaction term is a product between variable weight and totchol.
+
+```{r}
+mlogi <- vglm(cat_fbs ~ totchol + hpt + weight + totchol*weight, 
+              multinomial, data = ms)
+summary(mlogi)
+```
+
+The interaction term in our model showed p-values above 0.05 (p-values of 0.80 and  0.07, respectively). 
+As the p-value is bigger than the level of significance at $5\%$ and 
+the value of regression parameters for the interaction terms are likely not clinically meaningful, 
+we have decided not to use the model with an interaction term. 
+
+## Inferences
+For the inference, we will
+- calculate the $95\%$ CI (interval estimates)
+- calculate the p-values (hypothesis testing)
+
+There is no facility inside the`broom::tidy()` function to generate confidence intervals for object with class `vglm`.
+Because of that we will use the `coef()`, `confint()` and `cind()` unctions to produce a rather nice table of inferences. 
+
+#We are going to follow these steps:
+- set the number of digits equal to 2 to limit the decimal numbers
+- return the regression coefficents for all $\hat\beta$ as an object named `b_fitmlog2`
+- return the the confidence intervals for all $\hat\beta$ as an object named `ci_fitmlog2` 
+- combine the $\hat\beta$ and the corresponding $95\%$ CIs
+
+
+#```{r, warning=FALSE}
+b_mlog <- coef(mlog)
+ci_mlog <- confint(mlog) 
+b_ci_mlog <- data.frame(b_mlog,ci_mlog) %>%
+  rename("log odds" = b_mlog, "Lower CI" = X2.5.., "Upper CI" = X97.5..)
+b_ci_mlog %>% 
+  kbl(digits = 2, booktabs = T, caption = "Log odds from multinomial logistic regression") %>%
+  kable_styling(position = "center")
+
+Afterwards, we will *exponentiate* the coefficients to obtain the **relative-risk ratio**.
+We then combine the results to the previous table. 
+Finally, we will name the columns of the object `tab_fitmlog2`. 
+
+{r, warning=FALSE}
+rrr_mlog <- exp(b_ci_mlog)
+tab_mlog <- cbind(b_ci_mlog, rrr_mlog)
+colnames(tab_mlog) <- c('b', 'lower b', 'upper b',
+                        'RRR', 'lower RRR', 'upper RRR')
+tab_mlog %>%
+  kbl(digits = 2, booktabs = T, caption = "Log odds and RRR from multinomial logistic regression") %>%
+  kable_styling(position = "center")
+
+## Interpretation
+The result from our multivariable logistic regression models can be interpreted as below: 
+  
+-Every increment 1 mmol/L of totchol (Total cholesterol) when controlling for hypertension status and weight; a) 
+the odds of being in DM group (in comparison to Normal) change by 0.277 (Adjusted RRR = 1.32, $95\%$ CI : 1.232, 1.413, p-value \<0.001) and b) 
+the odds of being in IFG group (in comparison to being in Normal) change by 0.239 (Adjusted RRR = 1.27, $95\%$ CI : 1.169,1.381, p-value \<0.001).
+    
+-Every increment 1 kg of weight when controlling for hypertension status and total cholesterol; a) 
+the odds of being in DM group (in comparison to being in Normal) increase by 0.023 (Adjusted RRR = 1.02, $95\%$ CI : 1.017,1.029, p-value \<0.001), and b) 
+the odds of being in IFG group (in comparison being in Normal) increase by 0.022 (Adjusted RRR = 1.02, $95\%$ CI : 1.015,1.030, p-value \<0.001). 
+
+-In the population with hypertension (as compared with participant without hypertension) when controlling for weight and total cholesterol; a) 
+their odds of being in DM group (in comparison to being in Normal) change by 0.900 (Adjusted RRR = 2.5, $95\%$ CI : 1.942, 3.114, p-value \<0.001).
+
+When repeated research on this population, the odds ranging between reduced the odds by 0.481 to 0.677, and b) 
+and their odds of being in IFG group (in comparison to being Normal) change by 0.867 (Adjusted RRR = 2.38, 95% CI : 1.789, 3.166, p-value \<0.001).  
+
+## Prediction
+We can calculate the predicted probability of each category of outcome by using the `predict()` function. 
+Below are the result for the top 10 observations. 
+#
+predict.vgam(mlog, type = 'response') %>% head(10)
+
+# Presentation of multinomial regression model  
+We can make a *better* table using `knitr` and `kableExtra` packages, or 
+we can save the results as a `.csv` file so we can edit it using spreadsheets.  
+
+tab_mlog %>%
+  write_csv("results_multinomial.csv")
+
+
+
+

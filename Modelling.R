@@ -1,4 +1,4 @@
-
+#
 rm(list=ls())
 gc(reset = TRUE)
 updateR()
@@ -1463,8 +1463,6 @@ Using the last model above, fit a similar model for the scenarios below separate
 (1) vary the value of β between the start and end of a period of lockdown as 0.5 and 0.2 respectively.
 (2) vary the value of β between the start and end of a period of lockdown as 0.6 and 0.2 respectively.
 (3) vary the value of γ to 0.4 and β between the start and end of a period of lockdown as 0.5 and 0.1 respectively.                        
-
-#   #   #
 
 
 # # #

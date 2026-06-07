@@ -1,3 +1,4 @@
+#
 rm(list=ls())
 gc(reset = TRUE)
 #--------------------------- required package
@@ -12,7 +13,7 @@ install.packages("lessR")
 install.packages("plotrix")
 install.packages("ggfortify")
 install.packages("epitools")
-install.packages("FSA")
+install.packages("ggExtra")
 install.packages("PMCMRplus")
 if(!require(XNomial)){install.packages("XNomial")}
 #-------------------------- Load packages
@@ -45,27 +46,26 @@ mparasite <- read_excel("C:/Users/User/Desktop/mparasite.xlsx") #.xlsx format
 
 str(mparasite)
 
-covid02 <- read.csv("C:/Users/User/Desktop/MMS/covid01.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
+covid02 <- read.csv("covid01.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
 
 str(covid02)
 
-#--------------------------- EXport function  
+#------------------------- EXport function  
 library(writexl)
 write_xlsx(mparasite, "falciparum.xlsx")
 
 
---------------------------------------------------------------------------------
-                        Understand Data Structures                            
---------------------------------------------------------------------------------  
-  str(mparasite)   #data structure
+#------------------- Understand Data Structures---------------------------------                            
+
+str(mparasite)   #data structure
 print(mparasite) #view data in console
 
-
--------------------------------------------------------------------------------
-                       DATA MANIPULATION (Dplyr) 
--------------------------------------------------------------------------------
-  library(dplyr)
-#---------Selecting column
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                           Data Wrangling                        
+#The processes of *transforming* or *manipulating* raw data into a useful format 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+library(dplyr)                                                 
+#---------Selecting column 
 columns_needed <- covid02 %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
                                        categoryofcases,TreatmentOUTCOME,Noofsymptoms,Coinfection,NoofResistance,Numberoforganism))
 str(columns_needed)
@@ -81,9 +81,13 @@ str(remove_more)
 Hanisah <- remove_more %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
                                     categoryofcases,TreatmentOUTCOME,Noofsymptoms)) %>% 
   filter(Age < 30)
+#
+filter(Hanisah, Age <= 30)
 
 #---------Create New column (mutate)
 mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
+#
+Hanisah1 <- mutate(Hansiah, mortality_rate = total / population * 100000)
 
 #---------show only New column (transmute)
 transmutate_col <- mutate_colmn %>% transmute(bmi)
@@ -96,8 +100,9 @@ Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
 Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
 #---------rename a column
+Hanisah1 <- Hanisah %>% rename(mum_Age = motherAge)
+names(Hanisah1)
 #Data %>% rename(NewColumn=OldColumn)
-
 names(Hanisah)[1]<- "mum_Age"
 names(Hanisah)[4]<- "Delivery_mode"
 names(Hanisah)[6]<- "Baby_Age"
@@ -115,26 +120,21 @@ print(Hanisah3)
 #---------group_by()
 AverageWeightbyGender <-Hanisah %>% group_by(Baby_sex) %>% summarise(mean = mean(Baby_Weight))
 print(AverageWeightbyGender)
+#--------Arrange()
+Hanisah1 %>% 
+  arrange(Durationinweeks) %>% 
+  head()
+#--------Sorting descending order
+Hanisah1 %>% 
+  arrange(desc(Durationinweeks)) %>% 
+  head()
 
-# # #
---------------------------------------------------------------------------------
-                  Reshaping Data -(LONG.data / WIDE.data) 
---------------------------------------------------------------------------------
-library(tidyr) 
-print(HTdata)
-# use gather()function to make data longer
-long <- HTdata %>%  
-  gather(fullName, Frequency, 
-         first_trimester, second_trimester, third_trimester)
-print(long)
-# use separate()function 
-separate_data <- long %>%  
-  separate(fullName, c("firstName","secondName"))
-separate_data
-# use unite() function 
-unite_data <- separate_data %>%  
-  unite(fullName, firstName, secondName, sep = " ") 
-unite_data
+#-------Descriptive statistics using`dplyr` 
+basic_stats<-Hanisah1%>%
+  group_by(sex)%>%
+  summarise(mean_age=mean(age),mean_bmi=mean(BMI),sd_age=sd(age),sd_bmi=sd(BMI))
+
+basi_stats
 
 # # #
 --------------------------------------------------------------------------------
@@ -162,61 +162,6 @@ print(Cleaned_Hanisah)
 #
 Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
 print(Check_Clean_Hanisah)
-
-# # #
---------------------------------------------------------------------------------
-                     Data Conversion _(CODING)                          Option 1
---------------------------------------------------------------------------------
-str(Hanisah)
-#Date to time series
-tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
-hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
-
-#-------Continuous data
-Hanisah$mum_Age <-as.integer(Hanisah$mum_Age)
-Hanisah$Baby_Age <-as.integer(Hanisah$Baby_Age)
-Hanisah$Baby_Weight <-as.integer(Hanisah$Baby_Weight)
-
-salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
-SES <- as.factor(data$salary)
-
-#-------Categorical data
-Hanisah$Baby_sex <-factor(Hanisah$Baby_sex,
-                          levels = c(0,1),
-                          labels = c("Female", "Male"))
-
-Hanisah$Baby_bloodgroup <-factor(Hanisah$Baby_bloodgroup,
-                                 levels = c(0,1,2,3,4,5,6,7),
-                                 labels = c("Notdone", "A-","A+", "B-","B+","AB+", "AB-","O+"))
-
-Hanisah$Baby_G6PD <-factor(Hanisah$Baby_G6PD,
-                           levels = c(0,1,2,3),
-                           labels = c("No defect","Full defect","Partial defect","Not done"))
-
-
-Hanisah$Delivery_mode <-factor(Hanisah$Delivery_mode,
-                               levels = c(0,1,2),
-                               labels = c("Vaginal", "Caesarean", "Assisted"))
-
-Hanisah$Baby_Gest_Age <-factor(Hanisah$Baby_Gest_Age,
-                               levels = c(0,1),
-                               labels = c("Pretern", "Fullterm"))
-
-
-str(Hanisah)
-print(Hanisah)
-# # #
---------------------------------------------------------------------------------
-                         Reverse Coding                                 Option 2
---------------------------------------------------------------------------------
-  
-  Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
-                                   levels = c("delta", "omicron"),
-                                   labels = c(1, 2))
-
-Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
-                                   levels = c("mild", "moderate", "severe"),
-                                   labels = c(1,2,3))
 
 # # #
 --------------------------------------------------------------------------------
@@ -253,24 +198,33 @@ describeBy(Hanisah30)
 library(skimr)
 str(Hanisah30)
 skim_without_charts(Hanisah30)
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                           Data Visualizations                                +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+#------------------------- Basic Visualizations --------------------------------Option.1
+# Histograms
+hist(Hanisah_plt$Age)
+# Boxplot
+boxplot(Age~ sex, data = Hanisah_plt)
+#Scatter plots
+Hanisah_plt<-Hanisah1%>%filter(Age>25)
 
-#=========================== CONFIDENCE INTERVALS ==============================
+                  age25<-Hanisah$Age
+                  bmi25<-Hanisah$BMI
 
-#-----------------Confidence interval of the mean
+plot(age25, bmi25)
+
+#we can use the `with` function
+with(Hanisah_plt, plot(Age, bmi25))
+
+
+#Confidence interval of the mean
 t.test(Hanisah$Baby_Weight,
        conf.level=0.95)       
 
-#-----------------confidence intervals for groups defined by a variable
-install.packages("Rmisc")
-library(Rmisc)
-summarySE(data=covid01, measurevar="Age", groupvars="AgeCategory", conf.interval = 0.95)
-
-#   #   #
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                            Data Visualizations
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#-------------------------- #charts with LessR --------------------------Option.1
+#-------------------------- charts with LessR ----------------------------------Option.2
 library(lessR)
 
 covid01 <- read_excel("C:/Users/User/Desktop/covid01.xlsx")
@@ -299,7 +253,7 @@ summary(covid01$Age)
 boxplot(Age ~ SEX, data = covid01)
 
 # # #
-#------------------------- Using GGPLOT2 ---------------------------------Option.2
+#---------------------------- Using GGPLOT2 ------------------------------------Option.2
 library(ggplot2)
 
 #============================= Barchart  =======================================
@@ -471,51 +425,9 @@ library(BSDA)
 library(stats)
 library(RVAideMemoire)
 library(grid)
+# # #
+======================= ONE/TWO SAMPLE  PROPORTION ============================
 
-#======================= ONE/TWO SAMPLE  PROPORTION ============================
-
-0-Chi-square for proportions---------------------prop.test()    #for one or more proportions
-1-Exact Goodness-of-fit-------------------------binom.test()#whether difference to hypothised value
-2-Chi-Square Goodness-of -fit-----------------------G.test()#Differecnes between observed and expected value
-3-Chi-Square test of independence---------------chisq.test()   #Test of association independence      
-4-Fisher exact test----------------------------fisher.test() #N < 100, cell count<5 // Likelihood ratio chi-square
-5-McNemars chisquare test---------------------mcnemar.test() #Paired categorical data
-6-Mantel-Haenszel chisquare test-----------mantelhaen.test() #for stratified 2×2 tables (confounders)
-8-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
-#post hoc tests
-Follow up with post hoc tests (optional for Chi-Square)if there are more than two groups in
-either of the variables with p<0.05, a post hoc test is conducted.using bonferroni correction.
-# # #  
-  
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--------------------------- Exact Test of Goodness-of-Fit -----------------------# Performed with the binom.test.
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Binomial test <-----#Used to determine if the proportion of successes in a binary experiment differs from a hypothesized probability.
---------------------------------------------------------------------------------
-#Where:
-       2 is the number of successes
-       10 is the number of trials
-       0.5 is the hypothesized probability of success
-#-----------------------------------------------------
-
-dbinom(2, 10, 0.5)   
-#One.sided
-binom.test(2, 10, 0.5, alternative="less", conf.level=0.95) 
-#two.sided
-binom.test(2, 10, 0.5, alternative="two.sided", conf.level=0.95)               # In most circumstances, the two-sided test is used.
-
-#Probability Density plot-(binomial distribution)                  #You can change the values for trials & prob // for xlab & ylab.
-trials = 10
-prob = 0.5                                                         
-
-x = seq(0, trials)                                                              # x is a sequence, 1 to trials
-y = dbinom(x, size=trials, p=prob)                                              # y is the vector of heights
-#
-barplot (height=y, names.arg=x,
-         xlab="Number of uses of right paw",
-         ylab="Probability under null hypothesis")
-
-# # # 
 #------------------- G–test of Goodness-of-Fit --------------------------------
 
 observed = c(1752, 1895)    # observed frequencies
@@ -543,94 +455,44 @@ table(cngTB$Lineage,cngTB$AgeCategory)
 
 fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
     
-
 # # #
 mcnemar.test(Matriz, correct=FALSE) 
 mcnemar.test(Data.xtabs, correct=FALSE)
 
-================================================================================
-+                         ODDRATIO - RISKRATIO                                  +
-================================================================================
+#======================== OddRatio - Riskratio =================================
 library(epitools)
 #chisquare
 table(imdata$CaseControl,imdata$sex)
 chisq.test(imdata$CaseControl,imdata$sex)
 
-odds ratio // Risk ratio
-# method = c("oddsratio", "riskratio", "rateratio"),
-#rev = c("neither", "rows", "columns", "both"),           
-#oddsratio = c("wald", "fisher", "midp", "small"),
-#riskratio = c("wald", "boot", "small"),
-#rateratio = c("wald", "midp"),
-#pvalue = c("fisher.exact", "midp.exact", "chi2"),
-#correction = FALSE, verbose = FALSE)
----------------------------------------
-oddsratio(imdata$CaseControl,imdata$sex)       #or
+################################################################################
+odds ratio // Risk ratio                                                       #
+                         method = c("oddsratio", "riskratio", "rateratio"),    #
+                            rev = c("neither", "rows", "columns", "both"),     #         
+                      oddsratio = c("wald", "fisher", "midp", "small"),        #
+                      riskratio = c("wald", "boot", "small"),                  #
+                      rateratio = c("wald", "midp"),                           #
+                         pvalue = c("fisher.exact", "midp.exact", "chi2"),     #
+                     correction = FALSE, verbose = FALSE)                      #
+################################################################################
 
+#--------------------------------------- Odd ratio
+oddsratio(imdata$CaseControl,imdata$sex)       
+#                   or 
 OR <-epitab(imdata$CaseControl,imdata$sex,
             method = "oddsratio",
             conf.level = 0.95)
 OR
---------------------------------------
-riskratio(imdata$CaseControl,imdata$sex)  #or
-
+#--------------------------------------- risk ratio
+riskratio(imdata$CaseControl,imdata$sex)  
+#                  or
 RR <-epitab(imdata$CaseControl,imdata$sex,
             method = "riskratio",
             conf.level = 0.95)
-
 RR
 
-#Post-hoc test with manual pairwise tests
-#-------------------------------------------------------------------------------
-              Post-hoc with multinomial and binomial test
---------------------------------------------------------------------------------
-  
-observed = c(72, 38, 20, 18)
-expected = c(9, 3, 3, 1)
-
-library(XNomial)
-xmulti(observed, expected, detail = 2)         
-
-# Reports three types of p-value
-P value  (LLR)  =  0.003404  # log-likelihood ratio
-P value (Prob)  =  0.002255  # exact probability
-P value (Chisq) =  0.001608  # Chi-square probability
-# # #
-
-# Note last p-value below agrees with Handbook--------------------------
-successes   = 72
-total       = 148
-numerator   = 9
-denominator = 16
-
-binom.test(successes, total, numerator/denominator, alternative="two.sided", conf.level=0.95) 
-
-#Binomial test examples
-#-----------------------------------------------------------------------
-Parasitoid examples, exact binomial test
-------------------------------------------------------------------------
-binom.test(10, (17+10), 0.5, alternative="two.sided", conf.level=0.95)
-# # #
-#-----------------------------------------------------------------------
-Drosophila example, exact binomial test
-------------------------------------------------------------------------
-binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
 
 # # #
-#--------------------- multinomial exact test ---------------------------------
-
-observed = c(315, 108, 101, 32)
-expected = c(9, 3, 3, 1)
-
-library(XNomial)
-xmulti(observed, expected, detail = 2)              
-# reports three types of p-value      
-P value  (LLR)  =  0.9261    # log-likelihood ratio
-P value (Prob)  =  0.9382    # exact probability
-P value (Chisq) =  0.9272    # Chi-square probability
-
-# # #
-
 +++++++++++++++++++++++++ One sample test of Mean ++++++++++++++++++++++++++++++
 #-------------------------------------------------------------------------------
 observed    = covid01$Age
@@ -677,12 +539,11 @@ abline(0,1, col="blue", lwd=2)
 # # #
 
 +++++++++++++++++++++++++++++ANOVA Between Groups ++++++++++++++++++++++++++++++
-#-------------------------- One_Way ANOVA (LessR) ------------------------------
-
-#visualise statistical assumptions
+#----------------------------- One_Way ANOVA  ----------------------------------Parametric
 library(lessR)
 library(readxl)
 
+# Visualise statistical assumptions
 print(covid01)
 #normality assumption
 tapply(imdata$estimated_parasitemia, imdata$age, shapiro.test)
@@ -696,17 +557,16 @@ cohen.d(age ~ expose, data=subset(imdata, expose!= "non exposed"), paired=FALSE)
 cohen.d(age ~ expose, data=subset(imdata, expose!= "singleexposed"),paired=FALSE)        
 #Bar charts 
 age_means <- tapply(imdata$estimated_parasitemia, imdata$age,mean)
-
+#
 BarChart(age_means)
 BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
 
-#   #   # 
-#==============================  Factorial Anova ==============================# 
+# # # 
+#---------------------------  Factorial Anova ----------------------------------Parametric
 library(psych)
 library(ggplot2)
 library(ggpubr)
 library(readxl)
-
 describe(amdata)
 
 #residuals
@@ -767,20 +627,20 @@ tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
 tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 
-#   #   #
+# # #
 ----------------------------------------------------------
-  Tukey and LSD mean separation tests (pairwise comparisons)
+Tukey and LSD mean separation tests (pairwise comparisons)
 TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
 though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ----------------------------------------------------------
   
   
-  #  #  #
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-  #----------------Kruskal–Wallis Test-------------------------------------------
-if(!require(FSA)){install.packages("FSA")
+# # #
   
-  #-------------------------------------- kruskal.test(Value ~ Group, data = Data)
+++++++++++++++++++++++ Kruskal–Wallis Test +++++++++++++++++++++++++++++++++++++
+#------------------------------------------------------------------------------- Nonparametric
+if(!require(FSA)){install.packages("FSA")
+#-------------------------------------- kruskal.test(Value ~ Group, data = Data)
   library(psych)
   describe(imdata)
   
@@ -804,9 +664,9 @@ if(!require(FSA)){install.packages("FSA")
   #   #   #
   
   ++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
-    #------------------------- Repeated Measures ANOVA --------------------------#
-    # Create a data frame
-    wgdata <- data.frame(subject, time, response)
+  #------------------------- Repeated Measures ANOVA ---------------------------Parametric
+  # Create a data frame
+  wgdata <- data.frame(subject, time, response)
   
   # Perform Repeated-Measures ANOVA
   aov_model <- aov(response ~ time + Error(subject/time), data = wgdata)
@@ -815,21 +675,20 @@ if(!require(FSA)){install.packages("FSA")
   summary(aov_model) 
   
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #------------------------------ Friedman test -------------------------------#
-    library(PMCMRplus)
+  #------------------------------ Friedman test --------------------------------Nonparametric
+  library(PMCMRplus)
   
   result <- friedman.test(outcome ~ group, data = your_data)
   
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #-------------------------------- ANCOVA ------------------------------------#
-    library(car)
+  #-------------------------------- ANCOVA ------------------------------------#
+  library(car)
   ancova_model <-aov(finalscore~group + initialscore, data=score)
   Anova(ancova_model,type="III")                           
   
-  
   +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #------------------------------- MANOVA --------------------------------------#   
-    mv_data <- data.frame(group, weight, height)
+  #------------------------------- MANOVA --------------------------------------#   
+  mv_data <- data.frame(group, weight, height)
   head(mv_data)
   
   #fit Manova Model
@@ -867,8 +726,12 @@ if(!require(FSA)){install.packages("FSA")
           xlab="Group",
           ylab="Height")
   
-  #----------------------- Correlation and Linear Regression ---------------------
-  Correlation
+ 
+   # # #
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  +                               Correlation                                  +
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
   Correlation can be performed with the cor.test function in the native stats package.  
   It can perform Pearson, Kendall, and Spearman correlation procedures.  
   
@@ -883,48 +746,31 @@ if(!require(FSA)){install.packages("FSA")
   It ranks the data to determine the degree of correlation.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
-  ======================
-    library(ggpubr)
-  #CorrelationPlot----------ggscatter() 
-  Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-  str(Hanisah90)
   
+  library(ggpubr)
+  #CorrelationPlot----------ggscatter() 
+ 
   ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
             add = "reg.line",                                 # Add regression line
             conf.int = TRUE,                                  # Add confidence interval
             add.params = list(color = "blue",
                               fill = "lightgray"))+
     stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coefficient   
-  
-  ==================================================================================
-    install.packages("GGally")
-  
-  library(psych)
-  library(ggplot2)
-  library(GGally)   
-  library(readxl)
-  EGF01 <- read_excel("C:/Users/User/Desktop/EGF01.xlsx")
-  print(EGF01)
-  GGally::ggcorr(ARMdata1)
-  GGally::ggpairs(ARMdata1)
-  psych::pairs.panels(ARMdata1)
-  ================================================================================== 
-    
-    #Spearman correlation (Non-parametric / ordinals)
+ 
+  #Spearman correlation (Non-parametric / ordinals)
     Spearman rank correlation is a non-parametric test that does not assume a distribution of the data.
   It ranks the data to determine the degree of correlation, and is appropriate for ordinal measurements.
   --------
     cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
   
-  #   #   #
   
-  
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    +                            Regression analysis                                                 +
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# # #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Regression analysis                                +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     #       Regression analysis study the relationship between variables:
     
-    1-By identifying (Linear, Curvilinear, or Quadratic).
+  1-By identifying (Linear, Curvilinear, or Quadratic).
   2-By estimating parameters of the relationships(intercept(B0) and slope(B1)).
   3-By validating the relationship (The  assumptions for regression).
   
@@ -985,94 +831,9 @@ if(!require(FSA)){install.packages("FSA")
   plot(Species ~ Latitude, data = Data, pch=16, xlab = "Latitude", ylab = "Species")
   abline(int, slope, lty=1, lwd=2, col="blue")     #  style and color of line 
   
-  #    #    #   
-  
-  #------------------------ Curvilinear Regression -------------------------------
-  How to fit models to curvilinear data using three methods:
-    
-    1) Polynomial regression;  
-2) B-spline regression with polynomial splines;  
-3) Nonlinear regression with the nls function.  
-
-Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
-
-# create sample data 
-sample_data <- data.frame(x=1:10, 
-                          y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
-View(sample_data)
-
-#------------ fit linear -----------------
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y)
-# define x-axis values 
-x_axis <- seq(1, 10, length=10)
-#fit model
-linear_model1 <- lm(y~x, data=sample_data)
-
-lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
-
-summary(linear_model1)
-
-
-
-#---- fit polynomial regression models up to degree 4 -------
--------------------------------------------------------------
-  #----------- Curvilinear ------------------------------------
-
-linear_model2 <- lm(y~poly(x,2,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model2, data.frame(x=x_axis)), col='red')
-
-# add curve of each model to plot----------------------------
-linear_model3 <- lm(y~poly(x,3,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model3, data.frame(x=x_axis)), col='purple')
-
-# multiple curve to plot-------------------------------------
-linear_model4 <- lm(y~poly(x,4,raw=TRUE), data=sample_data)
-linear_model5 <- lm(y~poly(x,5,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
-lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
-
-================================================================================
-  
-  #---------------------- Polynomial regression -----------------------------
-Polynomial regression is really just a special case of multiple regression, 
-
-#Simple plot of model
-library(ggplot2)
-ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Black")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,3), colour = "Green")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,2), colour = "Red")
-
-#    #    #
-
-===================================
-  View(imdata)  
-Data = imdata
-plot(imdata$age,imdata$bmi)
-
-model <- lm(bmi~poly(age,1,raw=TRUE), data=imdata)
-plot(model)
-
-lines(x_axis, predict(model, data.frame(age=x_axis)), col='blue')
-
-plot(bwgt ~ age, data = imdata, pch=16, xlab = "Age", ylab = "Babywt") 
-i = seq(min(imdata$age), max(imdata$age), len=100)          #  x-values for line
-predy = predict(model, data.frame(age=i))                   #  fitted values
-lines(i, predy, lty=1, lwd=2, col="blue")                   #  style and color
-
-#---------------------------- Multiple Regression ------------------------------ 
+# # #   
+#------------------------------------------------------------------------------ 
+---------------------------- Multiple Regression ------------------------------ 
 library(psych)
 corr.test(Data.num, use = "pairwise", method="pearson", adjust="none", alpha=.05)
 
@@ -1092,8 +853,8 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 #-------------------------------------------------------------------------------
 ---------------------------- Model Building ------------------------------------  
   
-  # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+# methods for evaluating subset regression models:
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)
@@ -1144,15 +905,14 @@ plot(pred)
 
 dev.off()
 
-#   #   #
 
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                              LOGISTIC REGRESSION                                               +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #A binary variable is a categorical outcome that has two categories or levels. 
-  #The logistic model (or logit model) is used to model the probability of a particular 
-  #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                              LOGISTIC REGRESSION                             +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#A binary variable is a categorical outcome that has two categories or levels. 
+#The logistic model (or logit model) is used to model the probability of a particular 
+#class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
   Note----the function is glm, y is categorical, x can be (categorical or continuous).
 Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
 Probability is 0  - 1
@@ -1206,7 +966,8 @@ parity0 is used as reference
 
 #odd ratio only
 exp(coef(logist1))
-------parity-1 is 1.96 more likely to have case compared to parity-0
+
+parity-1 is 1.96 more likely to have case compared to parity-0
 parity-2 is 8.62 more likely to have case compared to parity-0
 parity-3 is 6.46 more likely to have case compared to parity-0
 parity-4 is 1.37 more likely to have case compared to parity-0
@@ -1233,10 +994,52 @@ logist2
 
 # # #
 
-==================================================================================
-+                            Multinomial regression                              +
-==================================================================================  
-  library(VGAM)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                           Poisson  Regression                                +#Log-linear model
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Assumptions ---- y
+# should not be negative
+# Should be discrete
+# should involve time
+# Mean = Variance------Variance > Mean or > 1 (Over-dispersion)----quasi poisson
+# ---------------------Variance < Mean or < 1 (Under-dispersion)----other models
+library(readxl)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+library(Hmisc)
+#------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+imdata <- read_excel("immunoData.xlsx")
+str(imdata)
+#histogram
+hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
+#boxplot
+boxplot(imdata$age, main = "Age Distribution")
+#fit model
+poisson1 <- glm(age ~ hb+bmi+expose, data = imdata, family = poisson())
+summary(poisson1)
+
+#fitting only variables with Significant p value
+fit.onlySignificant <- glm(age ~ bmi, data = imdata, family = poisson())
+summary(fit.onlySignificant)
+
+#--------------------------------
+The reg paramter for bmi is 0.0124      
+#In poisson reg, y is modeled as the log of the conditional mean(l).
+
+#interpret
+The parameter indicates that one unit increase in the bmi is associated with a 0.0124 
+increase in the log mean number of age    ---- Holding other variables constant
+
+
+#  #  #
+
+#-------------------------------------------------------------------------------
+++++++++++++++++++++++++ Multinomial regression ++++++++++++++++++++++++++++++++
+library(VGAM)
 data(cngTB)
 # Original factor
 lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
@@ -1294,49 +1097,5 @@ predict(model, newdata = new_data, type = "class")
 
 data$outcome_var <- relevel(data$outcome_var, ref = "BaselineCategory")
 
-#   #   #
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Poisson  Regression                                #Log-linear model
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Assumptions ---- y
-# should not be negative
-# Should be discrete
-# should involve time
-# Mean = Variance------Variance > Mean or > 1 (Over-dispersion)----quasi poisson
-# ---------------------Variance < Mean or < 1 (Under-dispersion)----other models
-library(readxl)
-library(readr)
-library(tidyverse)
-library(ggplot2)
-library(ggpubr)
-library(dplyr)
-library(Hmisc)
-#------
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
-str(imdata)
-#histogram
-hist(imdata$age, breaks = 10, xlab = "Age count", main = "Age Distribution", Prob=TRUE)
-#boxplot
-boxplot(imdata$age, main = "Age Distribution")
-#fit model
-poisson1 <- glm(age ~ hb+bmi+expose, data = imdata, family = poisson())
-summary(poisson1)
-
-#fitting only variables with Significant p value
-fit.onlySignificant <- glm(age ~ bmi, data = imdata, family = poisson())
-summary(fit.onlySignificant)
-
-#--------------------------------
-The reg paramter for bmi is 0.0124      
-#In poisson reg, y is modeled as the log of the conditional mean(l).
-
-#interpret
-The parameter indicates that one unit increase in the bmi is associated with a 0.0124 
-increase in the log mean number of age    ---- Holding other variables constant
-
-#  #  #
-
-
-
+# # #
