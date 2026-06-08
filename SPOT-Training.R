@@ -36,29 +36,47 @@ library(epitools)
 library(PMCMRplus)
 
 #--------------------------- set directorate -----------------------------------Option.1
-setwd("C:/Users/User/Desktop")
-mpData <- read_excel("mparasite.xlsx")
+setwd("C:/Users/User/Downloads")
+HHdata <- read_excel("hhdata.xlsx")
 
-covid01 <- read_csv("covid01.csv") 
+healthData <- read_csv("health_data.csv") 
 
 #-------------------------- Import functions                                    Option.2
-mparasite <- read_excel("C:/Users/User/Desktop/mparasite.xlsx") #.xlsx format
+hhdata <- read_excel("C:/Users/User/Downloads/hhdata.xlsx") #.xlsx format
 
-str(mparasite)
 
-covid02 <- read.csv("covid01.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
-
-str(covid02)
-
-#------------------------- EXport function  
-library(writexl)
-write_xlsx(mparasite, "falciparum.xlsx")
+healthd <- read.csv("health_data.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
 
 
 #------------------- Understand Data Structures---------------------------------                            
 
-str(mparasite)   #data structure
-print(mparasite) #view data in console
+str(hhdata)   #data structure
+print(hhdata) #view data in console
+
+--------------------------------------------------------------------------------
+                       Data Conversion _(CODING)                          Option 1
+--------------------------------------------------------------------------------
+ 
+#-------Continuous data
+hhdata$age <-as.integer(hhdata$age)
+
+#-------Categorical data
+
+hhdata$sex <-factor(hhdata$sex,
+                    evels = c(0,1),
+                    labels = c("Female", "Male"))
+#
+
+hhdata$sex <- as.factor(hhdata$sex)
+
+hhdata$marital_status <- as.factor(hhdata$marital_status)
+
+hhdata$smoking <- as.factor(hhdata$smoking)
+
+
+str(hhdata)
+print(hhdata)
+
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                            Data Wrangling                        
@@ -66,98 +84,81 @@ print(mparasite) #view data in console
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 library(dplyr)                                                 
 #---------Selecting column 
-columns_needed <- covid02 %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
-                                       categoryofcases,TreatmentOUTCOME,Noofsymptoms,Coinfection,NoofResistance,Numberoforganism))
+columns_needed <- hhdata %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
+                                       BP_systolic, BP_diastolic, exercise_score_hrs, wealth_index))
 str(columns_needed)
 #----------Remove a column
-remove_one <- columns_needed %>% select(-Numberoforganism)
+remove_one <- columns_needed %>% select(-wealth_index)
 str(remove_one)
 
 #--Remove multiple columns
-remove_more <- remove_one %>% select(-c(Coinfection,NoofResistance))
+remove_more <- remove_one %>% select(-c(BP_systolic, BP_diastolic))
 str(remove_more)
 
 #---------filter rows ?filter()
-Hanisah <- remove_more %>% select(c(Age,AgeCategory,SEX,SarsCovStrain,Hospitalstatus,Durationdays,Durationweeks,
-                                    categoryofcases,TreatmentOUTCOME,Noofsymptoms)) %>% 
-  filter(Age < 30)
+hhdata2 <- remove_more %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
+                                    exercise_score_hrs)) %>% 
+  filter(age > 30) 
+                                                                                #  or   filter(hhdata2, age <= 30)
+View(hhdata2)
+
 #
-filter(Hanisah, Age <= 30)
+
+hhdata2 %>% count(marital_status) %>% filter(marital_status == "Married")
+
+
 
 #---------Create New column (mutate)
-mutate_colmn <- rename_colmns %>% mutate(bmi=weight/height*2)
+hhdata2$BMI <- hhdata2 %>% mutate(bmi=weight/height*2)
+
+str(hhdata2)
 #
-Hanisah1 <- mutate(Hansiah, mortality_rate = total / population * 100000)
-
-#---------show only New column (transmute)
-transmutate_col <- mutate_colmn %>% transmute(bmi)
-
-print(Hanisah)
-str(Hanisah)
-
-#---------Change character type(rename_with)
-Upper_caps <- rename_colmns %>% rename_with(Mother_group,toupper)
-Lower_caps <- rename_colmns %>% rename_with(DeliveryMode,tolower)
 
 #---------rename a column
-Hanisah1 <- Hanisah %>% rename(mum_Age = motherAge)
-names(Hanisah1)
-#Data %>% rename(NewColumn=OldColumn)
-names(Hanisah)[1]<- "mum_Age"
-names(Hanisah)[4]<- "Delivery_mode"
-names(Hanisah)[6]<- "Baby_Age"
-names(Hanisah)[7]<- "Baby_Gest_Age"
-str(Hanisah)
+
+names(hhdata2)[1]<- "Age"
+names(hhdata2)[2]<- "Gender"
+
+str(hhdata2)
 
 #---------summarise()
-Hanisah1 <- Hanisah %>% summarise(sum_MotherAge=sum(Motherage))
-print(Hanisah1)
-Hanisah2 <- Hanisah %>% summarise(mean_Age=mean(Motherage))
+
+hhdata2 %>% count(marital_status)
+
+Hanisah2 <- hhdata2 %>% summarise(mean_Age=mean(Age))
 print(Hanisah2)
-Hanisah3 <- Hanisah %>% summarise(sum_BabyWt=sum(Baby_age_days),Mean_BabyWt=mean(Baby_age_days))
+Hanisah3 <- hhdata2 %>% summarise(median_Age=median(Age), mean_Age=mean(Age))
 print(Hanisah3)
 
 #---------group_by()
-AverageWeightbyGender <-Hanisah %>% group_by(Baby_sex) %>% summarise(mean = mean(Baby_Weight))
+AverageWeightbyGender <-hhdata2 %>% group_by(Gender) %>% summarise(mean = mean(weight))
 print(AverageWeightbyGender)
 #--------Arrange()
-Hanisah1 %>% 
-  arrange(Durationinweeks) %>% 
+hhdata2 %>% 
+  arrange(cholesterol) %>% 
   head()
 #--------Sorting descending order
-Hanisah1 %>% 
-  arrange(desc(Durationinweeks)) %>% 
+hhdata2 %>% 
+  arrange(desc(cholesterol)) %>% 
   head()
 
 #-------Descriptive statistics using`dplyr` 
-basic_stats<-Hanisah1%>%
-  group_by(sex)%>%
-  summarise(mean_age=mean(age),mean_bmi=mean(BMI),sd_age=sd(age),sd_bmi=sd(BMI))
+basic_stats<-hhdata2%>%
+  group_by(Gender)%>%
+  summarise(mean_age=mean(Age),mean_bmi=mean(cholesterol),sd_age=sd(Age),sd_bmi=sd(cholesterol))
 
-basi_stats
-
-# # #
---------------------------------------------------------------------------------
-                      HANDLING  DUPLICATE DATA
---------------------------------------------------------------------------------
-BF_data = data.frame#Data
-#
-duplicated(BF_data)#base functions
-sum(duplicated(BF_data))  
-#
-unique(BF_data) #base functions
-#
-distinct(BF_data)#Dplyr package  
+basic_stats
 
 # # #
+
 --------------------------------------------------------------------------------
                       HANDLING MISSING DATA
 --------------------------------------------------------------------------------
 # Count missing values in each column
-missing_per_column <- colSums(is.na(Hanisah))
+missing_per_column <- colSums(is.na(hhdata2))
 print(missing_per_column)
 # Remove rows with any missing values 
-Cleaned_Hanisah <- na.omit(Hanisah)
+Cleaned_Hanisah <- na.omit(hhdata2)
 print(Cleaned_Hanisah)
 #
 Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
@@ -170,24 +171,27 @@ print(Check_Clean_Hanisah)
 #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
 #                                                                               HIGH = Q3+1.5(IQR)
 library(psych)
-skew(Hanisah30$mum_Age)
-kurtosi(Hanisah30$Baby_Age, na.rm = TRUE)
-mardia(Hanisah30$Baby_Age)
-describeBy(Hanisah30)
+skew(hhdata$age)
+kurtosi(hhdata$age, na.rm = TRUE)
+mardia(hhdata$age)
+describeBy(hhdata)
+
+hist(hhdata$age)
+
 
 #  #  #
 --------------------------------------------------------------------------------
                      Transforming skewed data
 --------------------------------------------------------------------------------
 #Square root Transformation---------------------------------------moderately skewed (-1 to -0.5//0.5 to 1)
-sq_data <-sqrt(Hanisah$Baby_Weight)
+sq_data <-sqrt(hhdata$age)
 hist(sq_data)
 #Cube root Transformation-----------------------------------------moderately Right skewed(Negative//Zero)
 cb_data <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)
 hist(cb_data)
 #Log Transformation---------------------------------------Highly skewed(above1),But not (Negative//Zero)
-Hanisah30$lg_mum_age <-log(Hanisah30$mum_Age)
-hist(lg_data)
+hhdata$age <-log(hhdata$age)
+hist(hhdata$age)
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                                                        
@@ -197,7 +201,7 @@ library(psych)
 describeBy(Hanisah30)
 library(skimr)
 str(Hanisah30)
-skim_without_charts(Hanisah30)
+skim_without_charts(hhdata2)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                           Data Visualizations                                +
@@ -205,23 +209,23 @@ skim_without_charts(Hanisah30)
 #
 #------------------------- Basic Visualizations --------------------------------Option.1
 # Histograms
-hist(Hanisah_plt$Age)
+hist(hhdata2$Age)
 # Boxplot
-boxplot(Age~ sex, data = Hanisah_plt)
+boxplot(Age~ Gender, data = hhdata2)
 #Scatter plots
-Hanisah_plt<-Hanisah1%>%filter(Age>25)
+hhdata_plt<-hhdata2%>%filter(Age>30)
 
-                  age25<-Hanisah$Age
-                  bmi25<-Hanisah$BMI
+                  exercise<-hhdata2$exercise_score_hrs
+                  cholestro<-hhdata2$cholesterol
 
-plot(age25, bmi25)
+plot(exercise, cholestro)
 
 #we can use the `with` function
-with(Hanisah_plt, plot(Age, bmi25))
+with(hhdata_plt, plot( exercise, cholestro))
 
 
 #Confidence interval of the mean
-t.test(Hanisah$Baby_Weight,
+t.test(hhdata2$heart_rate,
        conf.level=0.95)       
 
 #-------------------------- charts with LessR ----------------------------------Option.2
@@ -230,55 +234,60 @@ library(lessR)
 covid01 <- read_excel("C:/Users/User/Desktop/covid01.xlsx")
 
 # Piechart
-PieChart(AgeCategory, data = covid01, hole = 0, main = NULL)
+PieChart(marital_status, data = hhdata2, hole = 0, main = NULL)
 # Donut chart
-PieChart(AgeCategory, data = covid01, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
+PieChart(marital_status, data = hhdata2, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
 
 # Barchart
-BarChart(AgeCategory, data = covid01, fill = "blues", main = NULL)
+BarChart(marital_status, data = hhdata2, fill = "blues", main = NULL)
 
 #colorviridis
-BarChart(AgeCategory, data = covid01, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+BarChart(marital_status, data = hhdata2, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
          values_color = c(rep("white", 4), 1), values_size = 0.85)
 # slant x labels (45 angle)
 BarChart(AgeCategory, data = covid01, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
          rotate_x=45, values_color = c(rep("white", 4), 1), values_size = 0.85)
 
 #Histogram
-hist(covid01$Age, col="gray", main="covid data", xlab="age")
-hist(covid01$Age, col= "turquoise", main="Covid data", xlab="Age")
-summary(covid01$Age)
+hist(hhdata2$Age, col="gray", main="covid data", xlab="age")
+hist(hhdata2$Age, col= "turquoise", main="Covid data", xlab="Age")
+summary(hhdata2$Age)
 
 # Boxplot
-boxplot(Age ~ SEX, data = covid01)
+boxplot(Age ~ Gender, data = hhdata2)
 
 # # #
 #---------------------------- Using GGPLOT2 ------------------------------------Option.2
 library(ggplot2)
 
 #============================= Barchart  =======================================
-ht <-ggplot(data = covid01,
-            mapping = aes(x = AgeCategory))+
-  geom_bar()+theme_classic()
+ht <-ggplot(data = hhdata2,
+            mapping = aes(x = marital_status))+
+  geom_bar()+
+  geom_text(stat = "count", aes(label = after_stat(count)),
+    vjust = -0.5)
+    theme_classic()
 ht
                                                                                 #covid01$SEX <- factor(covid01$SEX)
 #Stacked Barchart
-ht2 <-ggplot(data = covid01,
-             mapping = aes(x = AgeCategory, colour = SEX, fill = SEX))+
+ht2 <-ggplot(data = hhdata2,
+             mapping = aes(x = marital_status, colour = Gender, fill = Gender))+
   geom_bar()+
+  geom_text(stat = "count", aes(label = after_stat(count)),
+            vjust = -0.5)+
   theme_classic()
 ht2
 
 #Clustered Barchart
-ht3 <-ggplot(covid01,
-             mapping = aes(x = AgeCategory, y = Age,  fill = SEX)) +
+ht3 <-ggplot(hhdata2,
+             mapping = aes(x = marital_status, y = Age,  fill = Gender)) +
   geom_col(position = "dodge") +
   theme_minimal()
 ht3
 
 #flip axis
-ht4 <-ggplot(covid01,
-             mapping = aes(x = AgeCategory, y = Age,  fill = SEX)) +
+ht4 <-ggplot(hhdata2,
+             mapping = aes(x = marital_status, y = Age,  fill = Gender)) +
   geom_col(position = "dodge") +
   coord_flip()+
   theme_minimal()
@@ -286,22 +295,22 @@ ht4
 
 #=========================== Histogram =========================================
 
-ht5 <-ggplot(data = covid01,
+ht5 <-ggplot(data = hhdata2,
              mapping = aes(x = Age))+
   geom_histogram()
 
 ht5
 
 #Histogram with stacked
-ht6 <-ggplot(data = covid01,
-            mapping = aes(x = Age, fill = SEX))+
+ht6 <-ggplot(data = hhdata2,
+            mapping = aes(x = Age, fill = Gender))+
   geom_histogram(bins = 10, position = "stack")
 
 ht6
 
 #Histogram with dodge
-ht7 <-ggplot(data = covid01,
-            mapping = aes(x = Age, fill = SEX))+
+ht7 <-ggplot(data = hhdata2,
+            mapping = aes(x = Age, fill = Gender))+
   geom_histogram(bins = 10, position = "dodge")
 
 ht7
@@ -338,16 +347,15 @@ imu <- ggplot(data = covid01,
 imu
 
 #Adding labels
-imml <- ggplot(data = covid01,
-              mapping = aes(x = SEX, y = Age))+
-  geom_boxplot(aes(fill = factor(SarsCovStrain)))+
-  coord_flip()+
-  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
-  annotate( "text",x = 2,y = 70, label ="covid-19 patients", color ="purple",
+imml <- ggplot(data = hhdata2,
+              mapping = aes(x = Gender, y = Age))+
+  geom_boxplot(aes(fill = factor(smoking)))+
+  labs(title ="Patient Data", subtitle = "smoking behavior",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 5,y = 70, label ="covid-19 patients", color ="purple",
             fontface ="bold", size =4.0,angle = 30)
 imml
 
-                                                                               # covid01$categoryofcases <-factor(covid01$categoryofcases)
+                                                                             
 # Facet wrap 
 imwrp <- ggplot(data = covid01,
                  mapping = aes(x = SEX, y = Age, fill = categoryofcases))+
