@@ -414,7 +414,7 @@ ggsave("p.png")
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                          Inferential Statistics                              +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-if(!require(XNomial)){install.packages("XNomial")}
+if(!require(XNomial)){install.packages("RVAideMemoire")}
 library(tidyverse)
 library(psych)
 library(car)
@@ -434,16 +434,9 @@ library(stats)
 library(RVAideMemoire)
 library(grid)
 # # #
-======================= ONE/TWO SAMPLE  PROPORTION ============================
+======================== ONE/TWO SAMPLE  PROPORTION ============================
 
-#------------------- G–test of Goodness-of-Fit --------------------------------
-
-observed = c(1752, 1895)    # observed frequencies
-expected = c(0.5, 0.5)      # expected proportions
-
-G.test(x=observed,                              
-       p=expected)
-# # #     
+    
 #------------------ Chi-square Test of Goodness-of-Fit -------------------------
 
 observed = c(770, 230)        # observed frequencies
@@ -462,10 +455,32 @@ chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
 table(cngTB$Lineage,cngTB$AgeCategory)
 
 fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+
+#plot
+ht2 <-ggplot(data = hhdata2,
+             mapping = aes(x = smoking, colour = Gender, fill = Gender))+
+  geom_bar()+
+  theme_classic()
+ht2
     
-# # #
-mcnemar.test(Matriz, correct=FALSE) 
-mcnemar.test(Data.xtabs, correct=FALSE)
+#--------------------------- mcnemar.test --------------------------------------
+df <- data.frame(
+  before = c("Yes", "Yes", "No", "No", "Yes"),
+  after  = c("Yes", "No",  "No", "Yes", "Yes")
+)
+
+
+mcnemar.test(df$before, df$after)                   
+
+
+#-------------------------- mantelhaen.test ------------------------------------
+#exposure__ROW
+#outcome___COLUMN
+#stratum___CONFOUNDER
+
+mantelhaen.test(outcome ~ exposure + stratum, data = df)
+
+
 
 #======================== OddRatio - Riskratio =================================
 library(epitools)
