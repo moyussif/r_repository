@@ -13,13 +13,14 @@ install.packages("lessR")
 install.packages("plotrix")
 install.packages("ggfortify")
 install.packages("epitools")
-install.packages("ggExtra")
 install.packages("PMCMRplus")
-if(!require(XNomial)){install.packages("XNomial")}
+
+install.packages("stats")
+install.packages("Hmisc")
+install.packages("FSA")
 #-------------------------- Load packages
 library(readxl)
 library(readr)
-library(writexl)
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
@@ -34,15 +35,16 @@ library(Hmisc)
 library(stats)
 library(epitools)
 library(PMCMRplus)
+library(AICcmodavg)
 
 #--------------------------- set directorate -----------------------------------Option.1
 setwd("C:/Users/User/Downloads")
 HHdata <- read_excel("hhdata.xlsx")
 
 healthData <- read_csv("health_data.csv") 
-
+hhdata <- read_excel("C:/Users/User/Downloads/hhdata.xlsx")
 #-------------------------- Import functions                                    Option.2
-hhdata <- read_excel("C:/Users/User/Downloads/hhdata.xlsx") #.xlsx format
+VDdata <- read_excel("C:/Users/User/Downloads/VDDdata.xlsx") #.xlsx format
 
 
 healthd <- read.csv("health_data.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE) #.csv format
@@ -61,10 +63,6 @@ print(hhdata) #view data in console
 hhdata$age <-as.integer(hhdata$age)
 
 #-------Categorical data
-
-hhdata$sex <-factor(hhdata$sex,
-                    evels = c(0,1),
-                    labels = c("Female", "Male"))
 #
 
 hhdata$sex <- as.factor(hhdata$sex)
@@ -73,9 +71,16 @@ hhdata$marital_status <- as.factor(hhdata$marital_status)
 
 hhdata$smoking <- as.factor(hhdata$smoking)
 
-
 str(hhdata)
 print(hhdata)
+
+hhdata2 <- hhdata %>% select(-wealth_index)
+
+#---------Create New column (mutate)
+hhdata2$BMI <- hhdata2 %>% mutate(bmi=weight/height*2)
+
+str(hhdata2)
+
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -84,30 +89,30 @@ print(hhdata)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 library(dplyr)                                                 
 #---------Selecting column 
-columns_needed <- hhdata %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
-                                       BP_systolic, BP_diastolic, exercise_score_hrs, wealth_index))
-str(columns_needed)
+#columns_needed <- hhdata %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
+ #                                      BP_systolic, BP_diastolic, exercise_score_hrs, wealth_index))
+#str(columns_needed)
 #----------Remove a column
-remove_one <- columns_needed %>% select(-wealth_index)
-str(remove_one)
+#hhdata2 <- hhdata %>% select(-wealth_index)
+#str(hhdata2)
 
 #--Remove multiple columns
-remove_more <- remove_one %>% select(-c(BP_systolic, BP_diastolic))
-str(remove_more)
+#remove_more <- remove_one %>% select(-c(BP_systolic, BP_diastolic))
+#str(remove_more)
 
 #---------filter rows ?filter()
-hhdata2 <- remove_more %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
-                                    exercise_score_hrs)) %>% 
-  filter(age > 30) 
+#hhdata2 <- remove_more %>% select(c(age, sex, marital_status, height, weight, heart_rate, smoking, cholesterol, sugar_level,
+#                                    exercise_score_hrs)) %>% 
+ # filter(age > 30) 
                                                                                 #  or   filter(hhdata2, age <= 30)
-View(hhdata2)
+#View(hhdata2)
 
 #
+#hhdata2 %>% count(marital_status) %>% filter(marital_status == "Married")
 
-hhdata2 %>% count(marital_status) %>% filter(marital_status == "Married")
-
-
-
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+hhdata2 <- hhdata %>% select(-wealth_index)
+str(hhdata2)
 #---------Create New column (mutate)
 hhdata2$BMI <- hhdata2 %>% mutate(bmi=weight/height*2)
 
@@ -116,8 +121,8 @@ str(hhdata2)
 
 #---------rename a column
 
-names(hhdata2)[1]<- "Age"
-names(hhdata2)[2]<- "Gender"
+names(VDdata)[1]<- "Age"
+names(VDdata)[2]<- "Gender"
 
 str(hhdata2)
 
@@ -131,7 +136,7 @@ Hanisah3 <- hhdata2 %>% summarise(median_Age=median(Age), mean_Age=mean(Age))
 print(Hanisah3)
 
 #---------group_by()
-AverageWeightbyGender <-hhdata2 %>% group_by(Gender) %>% summarise(mean = mean(weight))
+AverageWeightbyGender <-VDdata %>% group_by(Gender) %>% summarise(mean = mean(Age))
 print(AverageWeightbyGender)
 #--------Arrange()
 hhdata2 %>% 
@@ -155,14 +160,14 @@ basic_stats
                       HANDLING MISSING DATA
 --------------------------------------------------------------------------------
 # Count missing values in each column
-missing_per_column <- colSums(is.na(hhdata2))
-print(missing_per_column)
+majorie <- colSums(is.na(VDdata))
+print(majorie)
 # Remove rows with any missing values 
-Cleaned_Hanisah <- na.omit(hhdata2)
-print(Cleaned_Hanisah)
+Julius <- na.omit(VDdata)
+(Julius)
 #
-Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
-print(Check_Clean_Hanisah)
+Check_Clean_data <- colSums(is.na(Julius))
+print(Check_Clean_data)
 
 # # #
 --------------------------------------------------------------------------------
@@ -171,12 +176,10 @@ print(Check_Clean_Hanisah)
 #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
 #                                                                               HIGH = Q3+1.5(IQR)
 library(psych)
-skew(hhdata$age)
-kurtosi(hhdata$age, na.rm = TRUE)
-mardia(hhdata$age)
-describeBy(hhdata)
 
-hist(hhdata$age)
+describeBy(Julius)
+
+hist(Julius$Age, margin = FALSE)
 
 
 #  #  #
@@ -211,7 +214,7 @@ skim_without_charts(hhdata2)
 # Histograms
 hist(hhdata2$Age)
 # Boxplot
-boxplot(Age~ Gender, data = hhdata2)
+boxplot(age~ sex, data = VDdata)
 #Scatter plots
 hhdata_plt<-hhdata2%>%filter(Age>30)
 
@@ -234,15 +237,15 @@ library(lessR)
 covid01 <- read_excel("C:/Users/User/Desktop/covid01.xlsx")
 
 # Piechart
-PieChart(marital_status, data = hhdata2, hole = 0, main = NULL)
+PieChart(marital_status, data = VDdata, hole = 0.5, main = NULL)
 # Donut chart
-PieChart(marital_status, data = hhdata2, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
+PieChart(marital_status, data = VDdata, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
 
 # Barchart
-BarChart(marital_status, data = hhdata2, fill = "blues", main = NULL)
+BarChart(marital_status, data = VDdata, fill = "blues", main = NULL)
 
 #colorviridis
-BarChart(marital_status, data = hhdata2, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+BarChart(marital_status, data = VDdata, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
          values_color = c(rep("white", 4), 1), values_size = 0.85)
 # slant x labels (45 angle)
 BarChart(AgeCategory, data = covid01, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
@@ -261,7 +264,7 @@ boxplot(Age ~ Gender, data = hhdata2)
 library(ggplot2)
 
 #============================= Barchart  =======================================
-ht <-ggplot(data = hhdata2,
+ht <-ggplot(data = VDdata,
             mapping = aes(x = marital_status))+
   geom_bar()+
   geom_text(stat = "count", aes(label = after_stat(count)),
@@ -270,8 +273,8 @@ ht <-ggplot(data = hhdata2,
 ht
                                                                                 #covid01$SEX <- factor(covid01$SEX)
 #Stacked Barchart
-ht2 <-ggplot(data = hhdata2,
-             mapping = aes(x = marital_status, colour = Gender, fill = Gender))+
+ht2 <-ggplot(data = VDdata,
+             mapping = aes(x = smoking, colour = Gender, fill = Gender))+
   geom_bar()+
   geom_text(stat = "count", aes(label = after_stat(count)),
             vjust = -0.5)+
@@ -279,7 +282,7 @@ ht2 <-ggplot(data = hhdata2,
 ht2
 
 #Clustered Barchart
-ht3 <-ggplot(hhdata2,
+ht3 <-ggplot(VDdata,
              mapping = aes(x = marital_status, y = Age,  fill = Gender)) +
   geom_col(position = "dodge") +
   theme_minimal()
@@ -302,14 +305,14 @@ ht5 <-ggplot(data = hhdata2,
 ht5
 
 #Histogram with stacked
-ht6 <-ggplot(data = hhdata2,
+ht6 <-ggplot(data = VDdata,
             mapping = aes(x = Age, fill = Gender))+
   geom_histogram(bins = 10, position = "stack")
 
 ht6
 
 #Histogram with dodge
-ht7 <-ggplot(data = hhdata2,
+ht7 <-ggplot(data = VDdata,
             mapping = aes(x = Age, fill = Gender))+
   geom_histogram(bins = 10, position = "dodge")
 
@@ -347,7 +350,7 @@ imu <- ggplot(data = covid01,
 imu
 
 #Adding labels
-imml <- ggplot(data = hhdata2,
+imml <- ggplot(data = VDdata,
               mapping = aes(x = Gender, y = Age))+
   geom_boxplot(aes(fill = factor(smoking)))+
   labs(title ="Patient Data", subtitle = "smoking behavior",caption = "Data collection by Mohammed")+
@@ -414,7 +417,6 @@ ggsave("p.png")
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                          Inferential Statistics                              +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-if(!require(XNomial)){install.packages("RVAideMemoire")}
 library(tidyverse)
 library(psych)
 library(car)
@@ -431,133 +433,50 @@ library(XNomial)
 library(pwr)
 library(BSDA)
 library(stats)
-library(RVAideMemoire)
-library(grid)
-# # #
-======================== ONE/TWO SAMPLE  PROPORTION ============================
-
-    
-#------------------ Chi-square Test of Goodness-of-Fit -------------------------
-
-observed = c(770, 230)        # observed frequencies
-expected = c(0.75, 0.25)      # expected proportions
-
-chisq.test(x = observed, p = expected)
-
-# # #
-#---------------------- Chisquare of Independence ------------------------------
-# 
-table(cngTB$Lineage,cngTB$AgeCategory)
-
-chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
-
-#------------------------ Fisher's Exact Test ----------------------------------
-table(cngTB$Lineage,cngTB$AgeCategory)
-
-fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
-
-#plot
-ht2 <-ggplot(data = hhdata2,
-             mapping = aes(x = smoking, colour = Gender, fill = Gender))+
-  geom_bar()+
-  theme_classic()
-ht2
-    
-#--------------------------- mcnemar.test --------------------------------------
-df <- data.frame(
-  before = c("Yes", "Yes", "No", "No", "Yes"),
-  after  = c("Yes", "No",  "No", "Yes", "Yes")
-)
-
-
-mcnemar.test(df$before, df$after)                   
-
-
-#-------------------------- mantelhaen.test ------------------------------------
-#exposure__ROW
-#outcome___COLUMN
-#stratum___CONFOUNDER
-
-mantelhaen.test(outcome ~ exposure + stratum, data = df)
-
-
-
-#======================== OddRatio - Riskratio =================================
-library(epitools)
-#chisquare
-table(imdata$CaseControl,imdata$sex)
-chisq.test(imdata$CaseControl,imdata$sex)
-
-################################################################################
-odds ratio // Risk ratio                                                       #
-                         method = c("oddsratio", "riskratio", "rateratio"),    #
-                            rev = c("neither", "rows", "columns", "both"),     #         
-                      oddsratio = c("wald", "fisher", "midp", "small"),        #
-                      riskratio = c("wald", "boot", "small"),                  #
-                      rateratio = c("wald", "midp"),                           #
-                         pvalue = c("fisher.exact", "midp.exact", "chi2"),     #
-                     correction = FALSE, verbose = FALSE)                      #
-################################################################################
-
-#--------------------------------------- Odd ratio
-oddsratio(imdata$CaseControl,imdata$sex)       
-#                   or 
-OR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "oddsratio",
-            conf.level = 0.95)
-OR
-#--------------------------------------- risk ratio
-riskratio(imdata$CaseControl,imdata$sex)  
-#                  or
-RR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "riskratio",
-            conf.level = 0.95)
-RR
-
+library(AICcmodavg)
+library(DescTools)
 
 # # #
 +++++++++++++++++++++++++ One sample test of Mean ++++++++++++++++++++++++++++++
 #-------------------------------------------------------------------------------
-observed    = covid01$Age
+observed    = VDdata$age
 theoretical = 46
 
 t.test(observed, mu = theoretical, conf.int=0.95)                      #Option.1
 
-t.test(covid01$Age, mu = 46, conf.int=0.95)                            #Option.2
+t.test(VDdata$age, mu = 46, conf.int=0.95)                            #Option.2
 
-
-hist(covid01$Age, col="green", main="Histogram of values", xlab="Age")
-
+#plots
+hist(VDdata$age, col="green", main="Histogram of values", xlab="Age")
+#
+boxplot(VDdata$age, col="green", main="Histogram of values", xlab="Age")
 #  #  #
 
 +++++++++++++++++++++++++++ Two Samples Mean +++++++++++++++++++++++++++++++++++
 #-------------------------------------------------------------------------------
-Two-sample t-test, independent (unpaired) observations
-bartlett.test(Value ~ Group, data=Data) #If p-value >= 0.05, use var.equal=TRUE below.
-
-#paired t.test  
-t.test(Age ~ SEX, data=covid01, var.equal=TRUE, conf.level=0.95)
 
 #independent t.test
-t.test(Age ~ SEX, data=covid01, var.equal=FALSE, conf.level=0.95)
+t.test(age ~ sex, data=VDdata, var.equal=FALSE, conf.level=0.95)
 
+#paired t.test  
+t.test(age ~ sex, data=VDdata, var.equal=TRUE, conf.level=0.95)
+
+#Histogram
+hist(age ~ sex, data=VDdata, names=c("Female","Male"), ylab="Age")
 # Boxplot
-boxplot(Age ~ SEX, data = covid01, names=c("Female","Male"), ylab="Age")
+boxplot(age ~ sex, data=VDdata, names=c("Female","Male"), ylab="Age")
 #
 
 #========================= Non parametric ======================================
 #------- Mann–Whitney Test
-wilcox.test(Age ~ SEX, data=covid01, exact = FALSE)
-#Box plots
-boxplot(Age ~ SEX, data = covid01, names=c("Female","Male"), ylab="Age")
-
-# # #
+wilcox.test(age ~ sex, data=VDdata, exact = FALSE)
 
 #------ Wilcoxon Signed-rank Test
 wilcox.test(Data$August, Data$November, paired=TRUE)
-#Simple 1-to-1 plot of values
-plot(Data$August, Data$November, pch = 16, xlab="August", ylab="November")
-abline(0,1, col="blue", lwd=2)  
+
+#Box plots
+boxplot(age ~ sex, data=VDdata, names=c("Female","Male"), ylab="Age")
+
 
 # # #
 
@@ -567,22 +486,18 @@ library(lessR)
 library(readxl)
 
 # Visualise statistical assumptions
-print(covid01)
+Plot(age,data=VDdata, by1 = marital_status)
+print(VDdata)
 #normality assumption
-tapply(imdata$estimated_parasitemia, imdata$age, shapiro.test)
+tapply(VDdata$age, VDdata$marital_status, shapiro.test)
 library(car)
-leveneTest(estimated_parasitemia ~ age, data=imdata)
+leveneTest(age ~ marital_status, data=VDdata)
 #One-way ANOVA
-ANOVA(estimated_parasitemia ~ site_name, data=imdata)
-#effect size(for groups with significant)
-library(effsize)
-cohen.d(age ~ expose, data=subset(imdata, expose!= "non exposed"), paired=FALSE)        
-cohen.d(age ~ expose, data=subset(imdata, expose!= "singleexposed"),paired=FALSE)        
-#Bar charts 
-age_means <- tapply(imdata$estimated_parasitemia, imdata$age,mean)
+ANOVA(age ~ marital_status, data=VDdata)
+
+age_means <- tapply(VDdata$age, VDdata$marital_status,mean)
 #
 BarChart(age_means)
-BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
 
 # # # 
 #---------------------------  Factorial Anova ----------------------------------Parametric
@@ -590,42 +505,38 @@ library(psych)
 library(ggplot2)
 library(ggpubr)
 library(readxl)
-describe(amdata)
+describeBy(VDdata)
 
 #residuals
-res_aov <- aov(bmi ~ expose, data = imdata)
-res_aov
-
+res_marital <- aov(age ~ marital_status, data = VDdata)
+res_marital
+summary(res_marital)
 #combine plots
 par(mfrow = c(1,2))
 #histogram
-hist(res_aov$residuals)
+hist(res_marital$residuals)
 #QQ-plot
 library(car)
-QQ <- qqPlot(res_aov$residuals, id = TRUE)  #id=TRUE to remove point identification
-shapiro.test(res_aov$residuals) #normality
+QQ <- qqPlot(res_marital$residuals, id = TRUE)  #id=TRUE to remove point identification
+#
+shapiro.test(res_marital$residuals) 
 
-#Bartlett’s test and Levene’s test to check the homoscedasticity of groups from a one-way anova.
-#Levene-test------------------------------  is less sensitive to deviation from normality
 #homogeneity of variance one variable
-leveneTest(bmi ~ grvdty, data = imdata)
+leveneTest(sugar_level ~ marital_status, data = VDdata)
 #homogeneity of variance multiple variable
-leveneTest(bmi ~ expose*CaseControl*sex*mode*grvdty, data = imdata) 
+leveneTest(sugar_level ~ marital_status*sex*smoking, data = VDdata) 
 
-#Bartlett test----------------------------
-bartlett.test(bmi ~ grvdty, data = imdata)
-bartlett.test(bmi ~ interaction(grvdty,sex,expose), data = imdata)
 #One_way Anova
-one <- aov(estimated_parasitemia ~ age, data = imdata)
+one <- aov(sugar_level ~ marital_status, data = VDdata)
 summary(one)
 #Two_way Anova
-two <- aov(bmi ~ expose + grvdty, data = imdata)
+two <- aov(sugar_level ~ marital_status + sex, data = VDdata)
 summary(two)
 #three_way Anova
-three <- aov(bmi ~ expose + grvdty + sex, data = imdata)
+three <- aov(sugar_level ~ marital_status + sex + smoking, data = VDdata)
 summary(three)
 #interaction
-interaction <- aov(bmi ~ expose + grvdty + sex + expose*grvdty, data = imdata)
+interaction <- aov(sugar_level ~ marital_status + sex + smoking*heart_rate, data = VDdata)
 summary(interaction)
 
 #model fit----------------------------------
@@ -635,18 +546,13 @@ model.names <- c("one", "two","three", "interaction")
 aictab(model.set, modnames = model.names, sort = TRUE)
 bictab(model.set, modnames = model.names, sort = TRUE)
 
-#effect size--------------------------------
-library(effectsize)
-eta_squared(interaction, partial = TRUE)
-eta_squared(interaction, partial = FALSE)
-omega_squared(interaction, partial = TRUE)
-epsilon_squared(interaction, partial = TRUE)
 
 #post hoc analysis-------------------------
+library(DescTools)
 tukey.interaction <- TukeyHSD(interaction)
 tukey.interaction
 
-tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
+tukey.plot.aov <- aov(sugar_level ~ marital_status + sex + smoking, data = VDdata)
 tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 
@@ -672,7 +578,7 @@ if(!require(FSA)){install.packages("FSA")
   Summarize(age ~ expose, data = imdata)
   
   #-Kruskal–Wallis test
-  kruskal.test(age ~ expose, data = imdata)
+  kruskal.test(sugar_level ~ marital_status, data = VDdata)
   
   #-Dunn test for multiple comparisons(Post Hoc)
   The Dunn test is performed with the dunnTest function in the FSA package.  
@@ -681,7 +587,7 @@ if(!require(FSA)){install.packages("FSA")
   # Dunn test methods--------“bonferroni”, “holm”,“sidak”, “hs”, “hochberg”, “bh”(Benjamini-Hochberg),“none”, “by”,  
   
   library(FSA)
-  PT = dunnTest(bmi ~ expose, data=imdata, method="bh")           
+  PT = dunnTest(sugar_level ~ marital_status, data = VDdata, method="bh")           
   PT
   
   #   #   #
@@ -748,7 +654,85 @@ if(!require(FSA)){install.packages("FSA")
           main="Height Across Groups",
           xlab="Group",
           ylab="Height")
+
+# # #  
   
+======================== ONE/TWO SAMPLE  PROPORTION ============================
+    
+    
+#------------------ Chi-square Test of Goodness-of-Fit -------------------------
+  
+  
+# # #
+#---------------------- Chisquare of Independence ------------------------------
+# 
+table(VDdata$sex,VDdata$smoking)
+  
+chisq.test(VDdata$sex,VDdata$smoking, simulate.p.value = TRUE)
+  
+  #------------------------ Fisher's Exact Test ----------------------------------
+  table(cngTB$Lineage,cngTB$AgeCategory)
+  
+  fisher.test(VDdata$sex,VDdata$smoking, simulate.p.value = TRUE)
+  
+  #plot
+  ht2 <-ggplot(data = VDdata,
+               mapping = aes(x = smoking, colour = sex, fill = sex))+
+    geom_bar()+
+    theme_classic()
+  ht2
+  
+  #--------------------------- mcnemar.test --------------------------------------
+  #mcnemar.test(df$before, df$after)                   
+  
+  mcnemar.test(VDdata$sex,VDdata$smoking)
+  
+  
+  #-------------------------- mantelhaen.test ------------------------------------
+  #exposure__ROW
+  #outcome___COLUMN
+  #stratum___CONFOUNDER
+  
+  mantelhaen.test(outcome ~ exposure + stratum, data = df)
+  
+  
+  
+  #======================== OddRatio - Riskratio =================================
+  library(epitools)
+  #chisquare
+  table(imdata$CaseControl,imdata$sex)
+  chisq.test(imdata$CaseControl,imdata$sex)
+  
+  ################################################################################
+  odds ratio // Risk ratio                                                       #
+  method = c("oddsratio", "riskratio", "rateratio"),    #
+  rev = c("neither", "rows", "columns", "both"),     #         
+  oddsratio = c("wald", "fisher", "midp", "small"),        #
+  riskratio = c("wald", "boot", "small"),                  #
+  rateratio = c("wald", "midp"),                           #
+  pvalue = c("fisher.exact", "midp.exact", "chi2"),     #
+  correction = FALSE, verbose = FALSE)                      #
+################################################################################
+
+#--------------------------------------- Odd ratio
+oddsratio(imdata$CaseControl,imdata$sex)       
+#                   or 
+OR <-epitab(imdata$CaseControl,imdata$sex,
+            method = "oddsratio",
+            conf.level = 0.95)
+OR
+#--------------------------------------- risk ratio
+riskratio(imdata$CaseControl,imdata$sex)  
+#                  or
+RR <-epitab(imdata$CaseControl,imdata$sex,
+            method = "riskratio",
+            conf.level = 0.95)
+RR
+
+  
+  
+  
+    
  
    # # #
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
