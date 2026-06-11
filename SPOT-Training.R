@@ -485,11 +485,9 @@ boxplot(age ~ sex, data=VDdata, names=c("Female","Male"), ylab="Age")
 library(lessR)
 library(readxl)
 
-# Visualise statistical assumptions
-Plot(age,data=VDdata, by1 = marital_status)
-print(VDdata)
 #normality assumption
-tapply(VDdata$age, VDdata$marital_status, shapiro.test)
+tapply(SarsCoV$Duration_days, SarsCoV$categoryofcases, shapiro.test)
+
 library(car)
 leveneTest(age ~ marital_status, data=VDdata)
 #One-way ANOVA
