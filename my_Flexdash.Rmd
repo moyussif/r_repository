@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
- LFdata <- read_excel("LF_study.xlsx")
+ LFdata <- read_excel("LF_Jun13.xlsx")
 
 ```
 

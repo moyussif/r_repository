@@ -14,7 +14,6 @@ install.packages("plotrix")
 install.packages("ggfortify")
 install.packages("epitools")
 install.packages("PMCMRplus")
-
 install.packages("stats")
 install.packages("Hmisc")
 install.packages("FSA")
@@ -264,6 +263,12 @@ boxplot(Age ~ Gender, data = hhdata2)
 library(ggplot2)
 
 #============================= Barchart  =======================================
+#ggbarplot
+ggbarplot(data=VDdata, x="marital Status", y="Age", fill ="sex", add = c("mean_sd"), 
+          position = position_dodge(0.7), width = 0.5)+
+  scale_fill_brewer(palette = "Blues")
+
+#
 ht <-ggplot(data = VDdata,
             mapping = aes(x = marital_status))+
   geom_bar()+

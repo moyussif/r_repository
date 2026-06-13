@@ -106,17 +106,16 @@ t.test(Sars_2$systolic1,Sars_2$systolic2,paired = TRUE,conf.level = 0.95)
 
 # # #
 ++++++++++++++++++++ More than Two sample (ANOVA) ++++++++++++++++++++++++++++++    
+library(readxl)
 library(lessR)
 library(car)
 library(psych)
 library(ggplot2)
 library(ggpubr)
-library(readxl)
 library(AICcmodavg) 
 library(DescTools)  
 #==============================================================================
-library(lessR)
-library(readxl)
+#--------------------- One_Way ANOVA (Between group )---------------------------LessR
 print(Sars_2)
 #
 Plot(Duration_days, data=SarsCoV, facet1 = categoryofcases)
@@ -129,15 +128,14 @@ ANOVA(Duration_days ~ categoryofcases, data=Sars_2)
 #Bar charts 
 Duration_mean <- tapply(Sars_2$Duration_days, Sars_2$categoryofcases,mean)
 BarChart(Duration_mean)
-
-#==============================================================================
-#--------------------- One_Way ANOVA (Between group )---------------------------
+#
+#===============================================================================
+#--------------------- One_Way ANOVA (Between group )---------------------------Car
 #
 #Step1-----fit model for residuals
 redd <- aov(Age ~ categoryofcases, data = SarsCoV) 
 redd 
 summary(redd)
-
 #step2-----Check Normality
 shapiro.test(redd$residuals)
 
@@ -152,7 +150,8 @@ par(mfrow = c(1,2))
   QQ <- qqPlot(redd$residuals, id = TRUE)             
 
 # # # 
-#--------------------- Factorial ANOVA ---------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#----------------------- Factorial ANOVA ---------------------------------------
   #
   #homogeneity of variance multiple variable
   leveneTest(Age ~ categoryofcases*SEX*smoking*TreatmentOUTCOME*SarsCov_Strain, data = SarsCoV) 
@@ -169,7 +168,7 @@ par(mfrow = c(1,2))
   #interaction
   interaction <- aov(sugar_level ~ marital_status + sex + smoking*heart_rate, data = VDdata)
   summary(interaction)
-  
+
   #model fit----------------------------------
   library(AICcmodavg)
   model.set <- list(one,two,three,interaction)
@@ -177,28 +176,25 @@ par(mfrow = c(1,2))
   aictab(model.set, modnames = model.names, sort = TRUE)
   bictab(model.set, modnames = model.names, sort = TRUE)
   
-  
   #post hoc analysis-------------------------
   library(DescTools)
   tukey.interaction <- TukeyHSD(interaction)
   tukey.interaction
-  
+  #
   tukey.plot.aov <- aov(sugar_level ~ marital_status + sex + smoking, data = VDdata)
   tukey.plot.test <-TukeyHSD(tukey.plot.aov)
   plot(tukey.plot.test,las = 2)
-  
   # # #
-  ----------------------------------------------------------
-    Tukey and LSD mean separation tests (pairwise comparisons)
+  ------------------------------------------------------------------------------
+  Tukey and LSD mean separation tests (pairwise comparisons)
   TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
   though TukeyHSD does make an adjustment for mildly unequal sample sizes.
-  ----------------------------------------------------------
+  ------------------------------------------------------------------------------
+   
     
-    
-    # # #
-    
-    ++++++++++++++++++++++ Kruskal–Wallis Test +++++++++++++++++++++++++++++++++++++
-    #------------------------------------------------------------------------------- Nonparametric
+  # # #
+  ++++++++++++++++++++++ Kruskal–Wallis Test +++++++++++++++++++++++++++++++++++++
+  #------------------------------------------------------------------------------- Nonparametric
     if(!require(FSA)){install.packages("FSA")
       #-------------------------------------- kruskal.test(Value ~ Group, data = Data)
       library(psych)
@@ -223,10 +219,10 @@ par(mfrow = c(1,2))
       
       #   #   #
       
-      ++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
-        #------------------------- Repeated Measures ANOVA ---------------------------Parametric
-        # Create a data frame
-        wgdata <- data.frame(subject, time, response)
+ ++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
+#------------------------- Repeated Measures ANOVA ---------------------------Parametric
+      # Create a data frame
+      wgdata <- data.frame(subject, time, response)
       
       # Perform Repeated-Measures ANOVA
       aov_model <- aov(response ~ time + Error(subject/time), data = wgdata)
@@ -287,18 +283,6 @@ par(mfrow = c(1,2))
               ylab="Height")
       
       # # #  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
      
 #Repeated measure ANOVA(Within group)

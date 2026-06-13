@@ -1,0 +1,60 @@
+---
+title: "packages"
+author: "Mohammed Yussif -Data Manager"
+date: "2026-06-10"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+rm(list=ls())
+gc(reset = TRUE)
+#--------------------------- required package
+install.packages("AICcmodavg")
+install.packages("DescTools")
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                          Inferential Statistics                              +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+library(tidyverse)
+library(psych)
+library(car)
+library(lessR)
+library(FSA)
+library(Hmisc)
+library(stats)
+library(epitools)
+library(RColorBrewer)
+library(ggfortify)
+library(ggpubr)
+library(plotrix)
+library(XNomial)
+library(pwr)
+library(BSDA)
+library(stats)
+library(AICcmodavg)
+library(DescTools)
+
+```
+
+
+```{r}
+#-------------------------- Import functions                                  
+SarsCoV <- read_excel("C:/Users/User/Desktop/SarsCoV.xlsx") #.xlsx format
+print(SarsCoV)
+
+
+```
+
+```{r}
+
+install.packages("AICcmodavg")
+install.packages("DescTools")
+```
+
+
