@@ -257,7 +257,7 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 + ------------------------------ Model Building -------------------------------------------- + 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
   # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)

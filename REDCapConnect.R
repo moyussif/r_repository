@@ -1,7 +1,6 @@
 #
 rm(list=ls())
 gc(reset = TRUE)
-
 #-------------------------------------------------------------------------------
 library(pak)
 library(tidyREDCap)
@@ -9,7 +8,6 @@ library(redcapAPI)
 library(readxl)
 library(readr)
 library(writexl)
-
 #Connect to Import Instrument---------------------------------------------------
 pak::pak("keyring")
 keyring::key_set("lfstudy_key")
@@ -28,12 +26,12 @@ rcon <- redcapAPI::redcapConnection(
 redcap <- redcapAPI::exportRecords(rcon)
 
 #save RDS(redcap, file = "LF_study.rds")
-write_xlsx(redcap, "LF_study.xlsx")
+write_xlsx(redcap, "LF_Jun13.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
 setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4NMIMRdocumnt/mod_r/modibo")
 
-LFdata <- read_excel("LF_study.xlsx")
+LFdata <- read_excel("LF_Jun13.xlsx")
 
 # # #
 

@@ -114,6 +114,32 @@ library(writexl)
 write_xlsx(mparasite, "falciparum.xlsx")
 
 
+#-------------Direct Console Output to file Using sink()------------------------
+setwd("C:/Users/User/Desktop")
+# Begin with sink ()                                      
+sink("mparasite.xlsx")
+sink(file ="mparasite.xlsx", append = F)
+
+print(mparasite)
+
+# Piechart
+PieChart(marital_status, data = mparasite, hole = 0.5, main = NULL)
+# Donut chart
+PieChart(marital_status, data = mparasite, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
+# Barchart
+BarChart(marital_status, data = mparasite, fill = "blues", main = NULL)
+#Histogram
+hist(mparasite$Age, col="gray", main="covid data", xlab="age")
+hist(mparasite$Age, col= "turquoise", main="Covid data", xlab="Age")
+summary(mparasite$Age)
+#
+#++++++++++++++++++++ To end export outside the console ++++++++++++++++++++++++
+sink()
+#To show text file in the console
+file.show("mparasite.txt")                                       # Other Options
+#To show excel file
+read.table("mparasite.xlsx")
+
 --------------------------------------------------------------------------------
                      Understand Data Structures                            
 --------------------------------------------------------------------------------  
@@ -266,19 +292,23 @@ print(Check_Clean_Hanisah)
   Data Conversion _(CODING)                          Option 1
 --------------------------------------------------------------------------------
   str(Hanisah)
-#Date to time series
+#Date to time series.........................................
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
 hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
 
-#-------Continuous data
+#-------Continuous data......................................
 Hanisah$mum_Age <-as.integer(Hanisah$mum_Age)
 Hanisah$Baby_Age <-as.integer(Hanisah$Baby_Age)
 Hanisah$Baby_Weight <-as.integer(Hanisah$Baby_Weight)
-
+#
 salarylevel <-if else(data$salary < 5000,c("Low"),c("High"))
 SES <- as.factor(data$salary)
+# or creating new variable with coded values
+Incomelevel <-if else(data$salary == "LowIncome",0,1)
+SES <- as.factor(data$salary)
 
-#-------Categorical data
+
+#-------Categorical data.....................................
 Hanisah$Baby_sex <-factor(Hanisah$Baby_sex,
                           levels = c(0,1),
                           labels = c("Female", "Male"))
@@ -368,10 +398,21 @@ coronary %>% dplyr::select(race, gender) %>% tbl_summary() %>% as_gt()
 # # #
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Data Visualizations
+                             Data Visualizations
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #-------------------------- #charts with LessR --------------------------Option.1
-  library(lessR)
+#------------------------------ Simple plots -----------------------------------  
+#Barplot
+plot(SarsCoV$SEX)
+#pie
+pie(table(data$SES))
+pie(table(data$SES), col = c("white","gray90","gray60"))
+#boxplot
+plot(x= SarsCoV$SEX,y = SarsCoV$Age)
+#scatterplot
+plot(x= SarsCoV$systolic1, y= SarsCoV$sugar_level)
+# 
+#-------------------------- #charts with LessR --------------------------Option.1
+library(lessR)
 
 covid01 <- read_excel("C:/Users/User/Desktop/covid01.xlsx")
 
@@ -379,10 +420,8 @@ covid01 <- read_excel("C:/Users/User/Desktop/covid01.xlsx")
 PieChart(AgeCategory, data = covid01, hole = 0, main = NULL)
 # Donut chart
 PieChart(AgeCategory, data = covid01, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
-
 # Barchart
 BarChart(AgeCategory, data = covid01, fill = "blues", main = NULL)
-
 #colorviridis
 BarChart(AgeCategory, data = covid01, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
          values_color = c(rep("white", 4), 1), values_size = 0.85)
@@ -550,9 +589,9 @@ ggsave("p.png")
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                          Inferential Statistics                              +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  if(!require(XNomial)){install.packages("XNomial")}
++                          Inferential Statistics                              +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+if(!require(XNomial)){install.packages("XNomial")}
 library(tidyverse)
 library(psych)
 library(car)
@@ -588,12 +627,12 @@ either of the variables with p<0.05, a post hoc test is conducted.using bonferro
 # # #  
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -------------------------- Exact Test of Goodness-of-Fit -----------------------# Performed with the binom.test.
-  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Binomial test <-----#Used to determine if the proportion of successes in a binary experiment differs from a hypothesized probability.
-  --------------------------------------------------------------------------------
-  #Where:
-  2 is the number of successes
+-------------------------- Exact Test of Goodness-of-Fit -----------------------# Performed with the binom.test.
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Binomial test <-----#Used to determine if the proportion of successes in a binary experiment differs from a hypothesized probability.
+--------------------------------------------------------------------------------
+#Where:
+2 is the number of successes
 10 is the number of trials
 0.5 is the hypothesized probability of success
 #-----------------------------------------------------
@@ -632,53 +671,93 @@ expected = c(0.75, 0.25)      # expected proportions
 chisq.test(x = observed, p = expected)
 
 # # #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---------------------- One Sample test of Proportion --------------------------
+#Is the proportion of HIV in female =5.2% ?
+prop1_table <-table(data$HIV)
+prop1_table                         # E.g,where the output is row.25, column.143
+prop1_table <- matrix(c(25, 143), ncol = 2)
+#Therefore
+prop.test(prop1_table, p = 0.052)
+
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------- Two Sample test of Proportion --------------------------
+#Get table of sex by HIV status
+
+table_status <- table(Gender = data$sex, HIVstatus = data$HIV) 
+table_status     # E.g,where the output is column1->15,143. column2-> 7, 23.
+# Input results
+table_status <- matrix(c(15, 143, 7, 23), ncol = 2)
+colnames(table_status)<- c("Reactive","Non reactive")
+rownames(table_status)<- C("Female","Male")
+#
+prop.test(table_status)
+
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--------------------------- Test of Association --------------------------------
+# Is gender associated with HIVstatus ?
 #---------------------- Chisquare of Independence ------------------------------
 # 
-table(cngTB$Lineage,cngTB$AgeCategory)
+chsq_table <-table(data$sex,data$HIV)
+chsq_table
+#To add marginal totals
+addmargins(chsq_table,margin = c(1,2))
+#To get proportions
+prop.table(chsq_table)
+#To get percentages
+prop.table(chsq_table)*100
+#To round off values
+round(prop.table(chsq_table)*100, 2)
+#plot
+barplot(prop.table(chsq_table)*100)
+# Perform chis-square
+chisq.test(table(data$sex,data$HIV))
+# --------------- Fisher's Exact Test ....................... for  cell count <2
+fisher.test(table(data$sex,data$HIV))
 
-chisq.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---------------------------- Oddratio & riskratio ------------------------------                                 
+library(epitools)
+#------------Oddratio
+oddsratio(data$sex,data$HIV)
+#           or
+OR <-epitab(data$sex,data$HIV,method = "oddsratio",conf.level = 0.95)
+OR
+#----------- riskratio
+riskratio(data$sex,data$HIV)
+#           or
+RR <-epitab(data$sex,data$HIV,method = "riskratio",conf.level = 0.95)
 
-#------------------------ Fisher's Exact Test ----------------------------------
-table(cngTB$Lineage,cngTB$AgeCategory)
+RR
 
-fisher.test(cngTB$Lineage,cngTB$AgeCategory, simulate.p.value = TRUE)
+# # #
 
+
+
+#Packege definitions
+#___________________________________________________
+method = c("oddsratio", "riskratio", "rateratio")
+#
+rev = c("neither", "rows", "columns", "both")
+#
+oddsratio = c("wald", "fisher", "midp", "small")
+#
+riskratio = c("wald", "boot", "small")
+#
+rateratio = c("wald", "midp")
+#
+pvalue = c("fisher.exact", "midp.exact", "chi2")
+#
+correction = FALSE, verbose = FALSE)
+#___________________________________________________
 
 # # #
 mcnemar.test(Matriz, correct=FALSE) 
 mcnemar.test(Data.xtabs, correct=FALSE)
 
-================================================================================
-  +                         ODDRATIO - RISKRATIO                                  +
-  ================================================================================
-  library(epitools)
-#chisquare
-table(imdata$CaseControl,imdata$sex)
-chisq.test(imdata$CaseControl,imdata$sex)
-
-odds ratio // Risk ratio
-# method = c("oddsratio", "riskratio", "rateratio"),
-#rev = c("neither", "rows", "columns", "both"),           
-#oddsratio = c("wald", "fisher", "midp", "small"),
-#riskratio = c("wald", "boot", "small"),
-#rateratio = c("wald", "midp"),
-#pvalue = c("fisher.exact", "midp.exact", "chi2"),
-#correction = FALSE, verbose = FALSE)
----------------------------------------
-  oddsratio(imdata$CaseControl,imdata$sex)       #or
-
-OR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "oddsratio",
-            conf.level = 0.95)
-OR
---------------------------------------
-  riskratio(imdata$CaseControl,imdata$sex)  #or
-
-RR <-epitab(imdata$CaseControl,imdata$sex,
-            method = "riskratio",
-            conf.level = 0.95)
-
-RR
 
 #Post-hoc test with manual pairwise tests
 #-------------------------------------------------------------------------------
@@ -987,7 +1066,7 @@ if(!require(FSA)){install.packages("FSA")
   --------
     cor.test( ~ age + bmi, data=imdata, method = "kendall", continuity = FALSE, conf.level = 0.95)
   ======================
-    library(ggpubr)
+  library(ggpubr)
   #CorrelationPlot----------ggscatter() 
   Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
   str(Hanisah90)
@@ -1203,7 +1282,7 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 ---------------------------- Model Building ------------------------------------  
   
   # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)

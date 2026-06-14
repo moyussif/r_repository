@@ -26,15 +26,15 @@ library(BSDA)
 library(stats)
 library(AICcmodavg)
 library(DescTools)
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Import data
   Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
   View(Sars_2)
   print(Sars_2)
   str(Sars_2)
- --------------------------------------------------------------------------------
+ -------------------------------------------------------------------------------
                   Data Conversion _(CODING)  
- -------------------------------------------------------------------------------- 
+ ------------------------------------------------------------------------------- 
   Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
   Sars_2$SEX <- as.factor(Sars_2$SEX)
   Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
