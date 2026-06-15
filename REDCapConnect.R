@@ -26,7 +26,7 @@ rcon <- redcapAPI::redcapConnection(
 redcap <- redcapAPI::exportRecords(rcon)
 
 #save RDS(redcap, file = "LF_study.rds")
-write_xlsx(redcap, "LF_Jun13.xlsx")
+write_xlsx(redcap, "LF_Jun15.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
 setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4NMIMRdocumnt/mod_r/modibo")
