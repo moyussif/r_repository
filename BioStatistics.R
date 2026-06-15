@@ -222,7 +222,7 @@ basic_stats<-Hanisah1%>%
 
 basi_stats
 
-#Basic plots
+#Basic plots 
 
 #----------Scatter plots
 Hanisah_plt<-Hanisah1%>%filter(Age>25)
@@ -242,9 +242,9 @@ boxplot(Age~ sex, data = Hanisah_plt)
 
 # # #
 --------------------------------------------------------------------------------
-  Reshaping Data -(LONG.data / WIDE.data) 
+               Reshaping Data -(LONG.data / WIDE.data) 
 --------------------------------------------------------------------------------
-  library(tidyr) 
+library(tidyr) 
 print(HTdata)
 # use gather()function to make data longer
 long <- HTdata %>%  
@@ -262,9 +262,9 @@ unite_data
 
 # # #
 --------------------------------------------------------------------------------
-  HANDLING  DUPLICATE DATA
+                       HANDLING  DUPLICATE DATA
 --------------------------------------------------------------------------------
-  BF_data = data.frame#Data
+BF_data = data.frame#Data
 #
 duplicated(BF_data)#base functions
 sum(duplicated(BF_data))  
@@ -275,10 +275,10 @@ distinct(BF_data)#Dplyr package
 
 # # #
 --------------------------------------------------------------------------------
-  HANDLING MISSING DATA
+                         HANDLING MISSING DATA
 --------------------------------------------------------------------------------
-  # Count missing values in each column
-  missing_per_column <- colSums(is.na(Hanisah))
+# Count missing values in each column
+missing_per_column <- colSums(is.na(Hanisah))
 print(missing_per_column)
 # Remove rows with any missing values 
 Cleaned_Hanisah <- na.omit(Hanisah)
@@ -289,9 +289,9 @@ print(Check_Clean_Hanisah)
 
 # # #
 --------------------------------------------------------------------------------
-  Data Conversion _(CODING)                          Option 1
+                         Data Conversion _(CODING)                        Option 1
 --------------------------------------------------------------------------------
-  str(Hanisah)
+str(Hanisah)
 #Date to time series.........................................
 tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")
 hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
@@ -330,15 +330,14 @@ Hanisah$Baby_Gest_Age <-factor(Hanisah$Baby_Gest_Age,
                                levels = c(0,1),
                                labels = c("Pretern", "Fullterm"))
 
-
 str(Hanisah)
 print(Hanisah)
+
 # # #
 --------------------------------------------------------------------------------
-  Reverse Coding                                 Option 2
+                          Reverse Coding                                 Option 2
 --------------------------------------------------------------------------------
-  
-  Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
+Hanisah77$SarsCovStrain <-factor(Hanisah77$SarsCovStrain,
                                    levels = c("delta", "omicron"),
                                    labels = c(1, 2))
 
@@ -348,11 +347,11 @@ Hanisah77$categoryofcases <-factor(Hanisah77$SarsCovStrain,
 
 # # #
 --------------------------------------------------------------------------------
-  CHECKING FOR DATA NORMALITY           
+                        CHECKING FOR DATA NORMALITY           
 --------------------------------------------------------------------------------
-  #POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
-  #                                                                               HIGH = Q3+1.5(IQR)
-  library(psych)
+#POS_skewed = Mean > Median/Mode         NEG_skewed = Mean < Median/Mode        LOW  = Q1-1.5(IQR)        
+#                                                                               HIGH = Q3+1.5(IQR)
+library(psych)
 skew(Hanisah30$mum_Age)
 kurtosi(Hanisah30$Baby_Age, na.rm = TRUE)
 mardia(Hanisah30$Baby_Age)
@@ -360,10 +359,10 @@ describeBy(Hanisah30)
 
 #  #  #
 --------------------------------------------------------------------------------
-  Transforming skewed data
+                         Transforming skewed data
 --------------------------------------------------------------------------------
-  #Square root Transformation---------------------------------------moderately skewed (-1 to -0.5//0.5 to 1)
-  sq_data <-sqrt(Hanisah$Baby_Weight)
+#Square root Transformation---------------------------------------moderately skewed (-1 to -0.5//0.5 to 1)
+sq_data <-sqrt(Hanisah$Baby_Weight)
 hist(sq_data)
 #Cube root Transformation-----------------------------------------moderately Right skewed(Negative//Zero)
 cb_data <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)
@@ -396,7 +395,6 @@ coronary %>% dplyr::select(race, gender) %>% tbl_summary() %>% as_gt()
 
 
 # # #
-
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                              Data Visualizations
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -786,7 +784,7 @@ Drosophila example, exact binomial test
 binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
 
 # # #
-#--------------------- multinomial exact test ---------------------------
+#------------------------- multinomial exact test -----------------------------
 observed = c(315, 108, 101, 32)
 expected = c(9, 3, 3, 1)
 
@@ -846,9 +844,8 @@ plot(Data$August, Data$November, pch = 16, xlab="August", ylab="November")
 abline(0,1, col="blue", lwd=2)  
 
 # # #
-
 +++++++++++++++++++++++++++++ANOVA Between Groups ++++++++++++++++++++++++++++++
-  #-------------------------- One_Way ANOVA (LessR) ------------------------------
+#-------------------------- One_Way ANOVA (LessR) ------------------------------
 
 #visualise statistical assumptions
 library(lessR)
@@ -867,11 +864,11 @@ cohen.d(age ~ expose, data=subset(imdata, expose!= "non exposed"), paired=FALSE)
 cohen.d(age ~ expose, data=subset(imdata, expose!= "singleexposed"),paired=FALSE)        
 #Bar charts 
 age_means <- tapply(imdata$estimated_parasitemia, imdata$age,mean)
-
+#
 BarChart(age_means)
 BarChart(age_means, values="off", bxlab = "Malaria_exposed", ylab = "Women Age")
 
-#   #   # 
+# # # 
 #==============================  Factorial Anova ==============================# 
 library(psych)
 library(ggplot2)
@@ -938,20 +935,19 @@ tukey.plot.aov <- aov(bmi ~ expose:CaseControl, data = imdata)
 tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 
-#   #   #
+# # #
 ----------------------------------------------------------
-  Tukey and LSD mean separation tests (pairwise comparisons)
+Tukey and LSD mean separation tests (pairwise comparisons)
 TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
 though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ----------------------------------------------------------
   
-  
-  #  #  #
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-  #----------------Kruskal–Wallis Test-------------------------------------------
+# # #
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+#----------------Kruskal–Wallis Test-------------------------------------------
 if(!require(FSA)){install.packages("FSA")
-  
-  #-------------------------------------- kruskal.test(Value ~ Group, data = Data)
+ 
+#-------------------------------------- kruskal.test(Value ~ Group, data = Data)
   library(psych)
   describe(imdata)
   
@@ -972,10 +968,11 @@ if(!require(FSA)){install.packages("FSA")
   PT = dunnTest(bmi ~ expose, data=imdata, method="bh")           
   PT
   
-  #   #   #
   
-  ++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
-    #------------------------- Repeated Measures ANOVA --------------------------#
+  #  #  #
+
+++++++++++++++++++++++++++++ANOVA Within Groups +++++++++++++++++++++++++++++++
+#------------------------- Repeated Measures ANOVA --------------------------#
     # Create a data frame
     wgdata <- data.frame(subject, time, response)
   
@@ -986,13 +983,13 @@ if(!require(FSA)){install.packages("FSA")
   summary(aov_model) 
   
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #------------------------------ Friedman test -------------------------------#
+  #------------------------------ Friedman test -------------------------------#
     library(PMCMRplus)
   
   result <- friedman.test(outcome ~ group, data = your_data)
   
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #-------------------------------- ANCOVA ------------------------------------#
+  #-------------------------------- ANCOVA ------------------------------------#
     library(car)
   ancova_model <-aov(finalscore~group + initialscore, data=score)
   Anova(ancova_model,type="III")                           
