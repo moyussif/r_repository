@@ -610,70 +610,22 @@ library(BSDA)
 library(stats)
 library(RVAideMemoire)
 library(grid)
-
-#======================= ONE/TWO SAMPLE  PROPORTION ============================
-
-0-Chi-square for proportions---------------------prop.test()    #for one or more proportions
-1-Exact Goodness-of-fit-------------------------binom.test()#whether difference to hypothised value
-2-Chi-Square Goodness-of -fit-----------------------G.test()#Differecnes between observed and expected value
-3-Chi-Square test of independence---------------chisq.test()   #Test of association independence      
-4-Fisher exact test----------------------------fisher.test() #N < 100, cell count<5 // Likelihood ratio chi-square
-5-McNemars chisquare test---------------------mcnemar.test() #Paired categorical data
-6-Mantel-Haenszel chisquare test-----------mantelhaen.test() #for stratified 2×2 tables (confounders)
-8-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
-#post hoc tests
-Follow up with post hoc tests (optional for Chi-Square)if there are more than two groups in
-either of the variables with p<0.05, a post hoc test is conducted.using bonferroni correction.
-# # #  
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--------------------------- Exact Test of Goodness-of-Fit -----------------------# Performed with the binom.test.
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Binomial test <-----#Used to determine if the proportion of successes in a binary experiment differs from a hypothesized probability.
---------------------------------------------------------------------------------
-#Where:
-2 is the number of successes
-10 is the number of trials
-0.5 is the hypothesized probability of success
-#-----------------------------------------------------
-
-dbinom(2, 10, 0.5)   
-#One.sided
-binom.test(2, 10, 0.5, alternative="less", conf.level=0.95) 
-#two.sided
-binom.test(2, 10, 0.5, alternative="two.sided", conf.level=0.95)               # In most circumstances, the two-sided test is used.
-
-#Probability Density plot-(binomial distribution)                  #You can change the values for trials & prob // for xlab & ylab.
-trials = 10
-prob = 0.5                                                         
-
-x = seq(0, trials)                                                              # x is a sequence, 1 to trials
-y = dbinom(x, size=trials, p=prob)                                              # y is the vector of heights
 #
-barplot (height=y, names.arg=x,
-         xlab="Number of uses of right paw",
-         ylab="Probability under null hypothesis")
+#======================= ONE/TWO SAMPLE  PROPORTION ============================
+#
+0-Chi-square for proportions---------------------prop.test()#for one or more proportions
+1-Exact Goodness-of-fit-------------------------binom.test()#whether difference to hypothised value
+2-Chi-Square test of independence---------------chisq.test()#Test of association independence      
+3-Fisher exact test----------------------------fisher.test()#N < 100, cell count<5 // Likelihood ratio chi-square
+4-McNemars chisquare test---------------------mcnemar.test()#Paired categorical data
+5-Mantel-Haenszel chisquare test-----------mantelhaen.test()#for stratified 2×2 tables (confounders)
+6-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
 
-# # # 
-#------------------- G–test of Goodness-of-Fit --------------------------------
-
-observed = c(1752, 1895)    # observed frequencies
-expected = c(0.5, 0.5)      # expected proportions
-
-G.test(x=observed,                              
-       p=expected)
-# # #     
-#------------------ Chi-square Test of Goodness-of-Fit -------------------------
-
-observed = c(770, 230)        # observed frequencies
-expected = c(0.75, 0.25)      # expected proportions
-
-chisq.test(x = observed, p = expected)
-
-# # #
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
----------------------- One Sample test of Proportion --------------------------
+# # #  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------- One Sample test of Proportion --------------------------
 #Is the proportion of HIV in female =5.2% ?
+  
 prop1_table <-table(data$HIV)
 prop1_table                         # E.g,where the output is row.25, column.143
 prop1_table <- matrix(c(25, 143), ncol = 2)
@@ -682,11 +634,11 @@ prop.test(prop1_table, p = 0.052)
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
------------------------ Two Sample test of Proportion --------------------------
+------------------------ Two Sample test of Proportion -------------------------
 #Get table of sex by HIV status
 
 table_status <- table(Gender = data$sex, HIVstatus = data$HIV) 
-table_status     # E.g,where the output is column1->15,143. column2-> 7, 23.
+table_status                        # E.g,where the output is column1-> 15, 143.column2-> 7, 23.
 # Input results
 table_status <- matrix(c(15, 143, 7, 23), ncol = 2)
 colnames(table_status)<- c("Reactive","Non reactive")
@@ -698,7 +650,8 @@ prop.test(table_status)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --------------------------- Test of Association --------------------------------
 # Is gender associated with HIVstatus ?
-#---------------------- Chisquare of Independence ------------------------------
+  
+#---Chisquare of Independence--------
 # 
 chsq_table <-table(data$sex,data$HIV)
 chsq_table
@@ -714,6 +667,7 @@ round(prop.table(chsq_table)*100, 2)
 barplot(prop.table(chsq_table)*100)
 # Perform chis-square
 chisq.test(table(data$sex,data$HIV))
+
 # --------------- Fisher's Exact Test ....................... for  cell count <2
 fisher.test(table(data$sex,data$HIV))
 
@@ -721,7 +675,7 @@ fisher.test(table(data$sex,data$HIV))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ---------------------------- Oddratio & riskratio ------------------------------                                 
 library(epitools)
-#------------Oddratio
+#------------ Oddratio
 oddsratio(data$sex,data$HIV)
 #           or
 OR <-epitab(data$sex,data$HIV,method = "oddsratio",conf.level = 0.95)
@@ -735,9 +689,7 @@ RR
 
 # # #
 
-
-
-#Packege definitions
+#Package function specifications
 #___________________________________________________
 method = c("oddsratio", "riskratio", "rateratio")
 #
@@ -758,25 +710,64 @@ correction = FALSE, verbose = FALSE)
 mcnemar.test(Matriz, correct=FALSE) 
 mcnemar.test(Data.xtabs, correct=FALSE)
 
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------- Exact Test of Goodness-of-Fit -------------------------- 
+#To determine if the proportion of successes in a binary experiment differs from hypothesized probability.
+binom.test()
+#Where:
+      2 is the number of successes
+      10 is the number of trials
+      0.5 is the hypothesized probability of success
+#
+dbinom(2, 10, 0.5)   
+#One.sided
+binom.test(2, 10, 0.5, alternative="less", conf.level=0.95) 
+#two.sided
+binom.test(2, 10, 0.5, alternative="two.sided", conf.level=0.95)  # In most circumstances, the two-sided test is used.
 
-#Post-hoc test with manual pairwise tests
-#-------------------------------------------------------------------------------
-Post-hoc with multinomial and binomial test
---------------------------------------------------------------------------------
-  
-  observed = c(72, 38, 20, 18)
-expected = c(9, 3, 3, 1)
+#Probability Density plot-(binomial distribution)    
+trials = 10                          #You can change the values for trials & prob // for xlab & ylab.
+prob = 0.5                                                         
 
+x = seq(0, trials)                                                     # x is a sequence, 1 to trials
+y = dbinom(x, size=trials, p=prob)                                       # y is the vector of heights
+#
+barplot (height=y, names.arg=x,
+         xlab="Number of uses of right paw",
+         ylab="Probability under null hypothesis")
+
+# # #     
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------------ Chi-square Test of Goodness-of-Fit --------------------------
+#
+observed = c(770, 230)        # observed frequencies
+expected = c(0.75, 0.25)      # expected proportions
+
+chisq.test(x = observed, p = expected)
+
+
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--------------- Post-hoc with multinomial and binomial test --------------------
+#post hoc tests
+Follow up with post hoc tests (optional for Chi-Square)if there are more than two groups in
+either of the variables with p<0.05, a post hoc test is conducted.using bonferroni correction.
+#---------------
 library(XNomial)
+#
+observed = c(72, 38, 20, 18)
+expected = c(9, 3, 3, 1)
+#
 xmulti(observed, expected, detail = 2)         
 
 # Reports three types of p-value
 P value  (LLR)  =  0.003404  # log-likelihood ratio
 P value (Prob)  =  0.002255  # exact probability
 P value (Chisq) =  0.001608  # Chi-square probability
-# # #
 
-# Note last p-value below agrees with Handbook--------------------------
+# # #
+#Note last p-value below agrees with Handbook--------------------------
 successes   = 72
 total       = 148
 numerator   = 9
@@ -788,16 +779,14 @@ binom.test(successes, total, numerator/denominator, alternative="two.sided", con
 #-----------------------------------------------------------------------
 Parasitoid examples, exact binomial test
 ------------------------------------------------------------------------
-  binom.test(10, (17+10), 0.5, alternative="two.sided", conf.level=0.95)
-# # #
+binom.test(10, (17+10), 0.5, alternative="two.sided", conf.level=0.95)
 #-----------------------------------------------------------------------
 Drosophila example, exact binomial test
 ------------------------------------------------------------------------
-  binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
+binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
 
 # # #
-#--------------------- multinomial exact test ---------------------------------
-
+#--------------------- multinomial exact test ---------------------------
 observed = c(315, 108, 101, 32)
 expected = c(9, 3, 3, 1)
 
@@ -808,10 +797,10 @@ P value  (LLR)  =  0.9261    # log-likelihood ratio
 P value (Prob)  =  0.9382    # exact probability
 P value (Chisq) =  0.9272    # Chi-square probability
 
-# # #
 
+# # #
 +++++++++++++++++++++++++ One sample test of Mean ++++++++++++++++++++++++++++++
-  #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 observed    = covid01$Age
 theoretical = 46
 
@@ -825,7 +814,7 @@ hist(covid01$Age, col="green", main="Histogram of values", xlab="Age")
 
 #  #  #
 
-+++++++++++++++++++++++++++ Two Samples Mean +++++++++++++++++++++++++++++++++++
++++++++++++++++++++ Two Samples test of Mean Comparison ++++++++++++++++++++++++
   #-------------------------------------------------------------------------------
 Two-sample t-test, independent (unpaired) observations
 bartlett.test(Value ~ Group, data=Data) #If p-value >= 0.05, use var.equal=TRUE below.
@@ -1098,12 +1087,11 @@ if(!require(FSA)){install.packages("FSA")
   --------
     cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
   
-  #   #   #
-  
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    +                            Regression analysis                                                 +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    #       Regression analysis study the relationship between variables:
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Regression analysis                                                 +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#Regression analysis study the relationship between variables:
     
   1-By identifying (Linear, Curvilinear, or Quadratic).
   2-By estimating parameters of the relationships(intercept(B0) and slope(B1)).
@@ -1115,25 +1103,24 @@ if(!require(FSA)){install.packages("FSA")
   #B1(slope line)---------how much is y changes, for each unit increase in x, 
   Note,
   1,The equation gives pedicted value y-hat(y) at a given x.
-  2,Each value will not fall exactly on the line of best fit: the difference------residual/error. y(observed)-y-hat(predicted)
-  3,Least ordinary square(OLS)------------------is used to determine the slope and the intercept.
-  Thus, it tries to minimise the difference between the observed and the fitted values.
+  2,Each value will not fall exactly on the line of best fit: the difference---residual/error. y(observed)-y-hat(predicted)
+  3,Least ordinary square(OLS)--it tries to minimise the difference between the observed and the fitted values by 
+    determining the slope and the intercept.
   
   # B0 and B1 are the Least Square Estimates (LSE)
   
   # B0 = y - B1x  ---------------- where x(mean),y(mean). -------------------     B1 = Sy
   ----
-    # R squared = 0 - 1,---------R squared = SSE,        Rsquared = 1 - SSR.             Sx
+  # R squared = 0 - 1,---------R squared = SSE,        Rsquared = 1 - SSR.             Sx
     ----                       ----
-    #                                        SSR                        SST                 
+  #                                        SSR                        SST                 
     
-    
-  R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
+  R squared (coefficient of determination)-------------useful for model building___(fit model for multiple regression).  
   thus it tells us the amount of variables explain in the reponse(y) after fitting the model.
   
   #R squared = explain variation of model-y
   ----------------------------
-    #              Total variation of model                                         df =n-2
+  #              Total variation of model                                         df =n-2
     
   The **broom** package has a function called `augment()` which can calculate:
     
@@ -1143,43 +1130,44 @@ if(!require(FSA)){install.packages("FSA")
   3. hat values
   4. Cooks distance
   5. standardized residuals
-      
-    #---------------------- Checking assumptions of the model ------------------------------------
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
+#---------------------- Checking assumptions of the model ----------------------
   Assumptions
-  #----------y is a random variable and normally distributed with mean(u) and variance(Q)squared.
-  #----------The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
+  #-y is a random variable and normally distributed with mean(u) and variance(Q)squared.
+  #The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
   
   hist(residuals(model), col="darkgray")
   
   plot(fitted(model), residuals(model))
   ----------
-    A plot of residuals vs. predicted values. #The residuals should be unbiased and homoscedastic.
-  
-  #    #    #  
+  A plot of residuals vs. predicted values.  #The residuals should be unbiased & homoscedastic.
   
   #Note,
-  R squared = good for simple regression. #Adjusted R squared =for multiple regression (model building)
-  
+  R squared = good for simple regression. 
+  Adjusted R squared =for multiple regression (model building)
+  #
   model = lm(Species ~ Latitude, data = Data)
-  # shows parameter estimates, p-value for model, r-square
+  #shows parameter estimates, p-value for model, r-square
   summary(model)                    
   
   library(car)
-  # shows p-value for effects in model
+  #shows p-value for effects in model
   Anova(model, type="II")              
-  
+
   #Plot linear regression
   int = model$coefficient["(Intercept)"]
   slope = model$coefficient["Latitude"]
   plot(Species ~ Latitude, data = Data, pch=16, xlab = "Latitude", ylab = "Species")
   abline(int, slope, lty=1, lwd=2, col="blue")     #  style and color of line 
   
-  #    #    #   
-  
-  #------------------------ Curvilinear Regression -------------------------------
-  How to fit models to curvilinear data using three methods:
+# # #   
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------------------- Curvilinear Regression -------------------------------
+#
+How to fit models to curvilinear data using three methods:
     
-    1) Polynomial regression;  
+1) Polynomial regression;  
 2) B-spline regression with polynomial splines;  
 3) Nonlinear regression with the nls function.  
 
@@ -1189,6 +1177,7 @@ Each of these three will find essentially the same best-fit curve with very simi
 sample_data <- data.frame(x=1:10, 
                           y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
 View(sample_data)
+print(sample_data)
 
 #------------ fit linear -----------------
 # create a basic scatterplot 
@@ -1244,10 +1233,10 @@ ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Bl
   stat_smooth(method = lm, se = FALSE, formula = y~poly(x,3), colour = "Green")+
   stat_smooth(method = lm, se = FALSE, formula = y~poly(x,2), colour = "Red")
 
-#    #    #
+# # #
 
 ===================================
-  View(imdata)  
+View(imdata)  
 Data = imdata
 plot(imdata$age,imdata$bmi)
 
@@ -1261,6 +1250,7 @@ i = seq(min(imdata$age), max(imdata$age), len=100)          #  x-values for line
 predy = predict(model, data.frame(age=i))                   #  fitted values
 lines(i, predy, lty=1, lwd=2, col="blue")                   #  style and color
 
+# # #
 #---------------------------- Multiple Regression ------------------------------ 
 library(psych)
 corr.test(Data.num, use = "pairwise", method="pearson", adjust="none", alpha=.05)
@@ -1333,16 +1323,15 @@ plot(pred)
 
 dev.off()
 
-#   #   #
 
-
+# # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +                              LOGISTIC REGRESSION                                               +
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #A binary variable is a categorical outcome that has two categories or levels. 
-  #The logistic model (or logit model) is used to model the probability of a particular 
-  #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
-  Note----the function is glm, y is categorical, x can be (categorical or continuous).
++                              LOGISTIC REGRESSION                                               +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#A binary variable is a categorical outcome that has two categories or levels. 
+#The logistic model (or logit model) is used to model the probability of a particular 
+#class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
+Note----the function is glm, y is categorical, x can be (categorical or continuous).
 Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
 Probability is 0  - 1
 OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
@@ -1375,18 +1364,21 @@ exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
 table(imdata$CaseControl,imdata$parity)
 
 #regression model
-#------when x is continuous====
+#------when x is continuous===========================================
 logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
 summary(logistic)
+
 #log-odds=-1.92264+0.05512*age
 exp(0.05512)
+
 # oddratio only
 exp(coef(logistic))
+
 #interpret
 -----a unit increase in age,the odds of having case is increase by factor 1.06. 
 holding other factors constant(e.g multiple logistic regression).
 
-#------when x is categorical====
+#------when x is categorical============================================
 logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist1
 summary(logist1)
@@ -1395,7 +1387,7 @@ parity0 is used as reference
 
 #odd ratio only
 exp(coef(logist1))
-------parity-1 is 1.96 more likely to have case compared to parity-0
+parity-1 is 1.96 more likely to have case compared to parity-0
 parity-2 is 8.62 more likely to have case compared to parity-0
 parity-3 is 6.46 more likely to have case compared to parity-0
 parity-4 is 1.37 more likely to have case compared to parity-0
@@ -1413,7 +1405,6 @@ exp(coef(multi_logist))
 #odd ratio and 95% CI
 exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
 
-
 #Note_______in case we want to reorder /change the reference group, Use relevel
 change_ref <-relevel(imdata$parity, ref = "1")
 logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
@@ -1421,72 +1412,8 @@ logist2
 
 
 # # #
-
-==================================================================================
-  +                            Multinomial regression                              +
-  ==================================================================================  
-  library(VGAM)
-data(cngTB)
-# Original factor
-lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
-# Releveling the factor
-lineage <- relevel(lineag, ref = "Bovis")
-# Displaying the levels of the releveled factor
-levels(lineage)
-
-#fit model
-model <- vglm(lineage ~ Gender + AgeCategory + B5Marital_Status + B6Education,B13MonthlyIncome,
-              family = multinomial,
-              data = cngTB)
-summary(model)
-
-all <- exp(cbind(OR = coef(model), confint(model)))
-print(all)
-
-#_____________future predictions____________________
-predicted_probs <- predict(model, type = "response")
-predicted_classes <- colnames(predicted_probs)[apply(predicted_probs, 1, which.max)]
-
-new_sample <- data.frame(Sepal.Length = 5.1, Sepal.Width = 3.5,
-                         Petal.Length = 1.4, Petal.Width = 0.2)
-
-new_pred <- predict(model, newdata = new_sample, type = "response")
-print(new_pred)
-#______________________________________________________________________ Option 2
-library(nnet)
-data(cngTB)
-# Original factor
-lineag <- factor(c("Bovis", "Caprae", "L1", "L2", "L3", "L4","L5","L6"))
-# Releveling the factor
-lineage <- relevel(lineag, ref = "Bovis")
-# Displaying the levels of the releveled factor
-levels(lineage)
-#fit model
-model <- multinom(Lineage ~ Gender
-                  + AgeCategory,
-                  + B5Marital_Status,
-                  + B6Education,
-                  data = cngTB)
-summary(model)
-
-all <- exp(cbind(OR = coef(model), confint(model)))
-print(all)
-
-# # #
-
-#__________future predictions____________________
-new_data <- data.frame(Petal.Length = 1.5,
-                       Petal.Width = 0.3, 
-                       Sepal.Length = 4.5, 
-                       Sepal.Width = 3.1)
-predict(model, newdata = new_data, type = "class")
-
-data$outcome_var <- relevel(data$outcome_var, ref = "BaselineCategory")
-
-#   #   #
-
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Poisson  Regression                                #Log-linear model
+                             Poisson  Regression                                #Log-linear model
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Assumptions ---- y
 # should not be negative
@@ -1531,10 +1458,6 @@ increase in the log mean number of age    ---- Holding other variables constant
 +                            Multinomial Logistic Regression                                       +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Introduction
-Some data come with multinomial outcomes in which case, the outcome variable is a nominal or
-polychotomous variable with more than two levels. In multinomial outcome data, 
-the outcome has no natural ordering. if it has, then it is best treated as a ordinal outcome data. 
-
 Variables with more than two levels are known as either:
 1.  multinomial data
 2.  polychotomous data
@@ -1544,52 +1467,19 @@ If we employ logistic regression to such data, then the analysis is known as pol
 multinomial logistic regression. Again, the polychotomous outcome does not have any natural order. 
 When the categories of the outcome variable do have a natural order, ordinal logistic regression is preferred. 
 
-## Examples of multinomial outcome variables
-Examples of data with polychotomous outcome variables (with more than two levels) include:
-  
-  - disease symptoms that have been classified by subjects as being absent, mild, moderate,or severe,
-- tumour invasiveness  classified as in situ, locally invasive, ormetastatic, or
-- patient preferred treatment regimen,selected from among three or 
-more options for example oral medication only, oral medication plus 
-injection medication or injection only.
-
 A numerical outcome can be categorized based on different cut-off points. 
-The newly created categorical variable is now either treated as a nominal or 
-polychotomous or multinomial outcome  or as a ordinal outcome. 
+The newly created categorical variable is now either treated as a nominal, polychotomous, multinomial or as ordinal outcome. 
 That justifies the use of multinomial logistic regression. 
 
 ## Models for multinomial outcome data
-With a multinomial outcome data, an extension of logistic regression known as multinomial logit or 
-multinomial logistic regression can be performed. 
 In multinomial logistic regression, one of the categories of the outcome variable is designated 
 as the reference category and each of the other levels is compared with this reference.
-
 The choice of reference category can be arbitrary and is at the discretion of the researcher. 
 Most software set the first category as the reference (also known as the baseline category) by default.
 
-Other models that can analyze data with polychotomous outcome include:
-  
-1. Stereotype logistic regression - each independent variable has one value for each individual
-2. Alternative-specific variables  
-
-
 # Estimation for Multinomial logit model
-Remember, interpreting and assessing the significance of the estimated coefficients 
-are the main objectives in regression analysis. In multinomial logistic regression, 
-we would like to model the relationship between covariates with the outcome variable 
-that has more than two categories but without ordering or ranking. 
-
-The actual values taken by the dependent variable are irrelevant. 
-In Stata, the **exponentiated beta** $\exp^{\beta}$ 
-  will generate the so-called the **relative-risk ratio**. The dependent variable again, 
-is a discrete variable and the model is estimated using maximum likelihood.
-
-In multinomial logistic regression for example in data with three categories of the outcome, 
-the sum of the probabilities for the three outcome categories must be equal to 1 (the total probability).
-The comparison is done between two categories each time. 
-Because of that, each comparison considers only two probabilities, 
-and the probabilities in the ratio do not sum to 1. 
-Thus, the two odds-like expressions in multinomial logistic regression are not true odds.
+In multinomial logistic regression,we would like to model the relationship between covariates with the outcome variable 
+that has more than two categories but without ordering or ranking.
 
 Multinomial logistic regression can be thought as of simultenously fitting binary logits 
 for all comparisons among the alternatives.
@@ -1598,128 +1488,52 @@ for all comparisons among the alternatives.
 In the special case where the covariate is binary, coded 0 or 1, 
 we simplify the notation to $OR_j = OR_j(1,0)$.
 Let use an example where data have 3 categories of outcome; 0,1 and 2. 
-
-Let say we have a dataset with the outcome variable, $Y$, and is coded as $0, 1,$ or $2$.
-
-In practice one should check that the software package 
-that is going to be used allows a $0$ code as the smallest category. 
-We have used packages that require that the codes begin with $1$.
-
-So the logit functions (log odds) when the outcome is a D variable with (0,1 and 2 values) 
-are as below
-1.  the log odds for comparison between 0 and 1 is
-$$g_1(x) = ln\frac{P(D=1|X_1)} {P(D=0|X_1)}=\alpha_1 + (\beta_{11}X_1)$$
-  
-  2.  and, the log odds for comparison between 0 and 2 is
-$$g_2(x) =  ln\frac{P(D=2|X_1)} {P(D=0|X_1)}=\alpha_2 + (\beta_{21}X_1)$$
-  
-  If for example, we assume that the outcome labelled with $Y=0$ is the reference outcome.
-
-The subscript on the odds ratio indicates which outcome is being compared to the reference category outcome. 
-The odds ratio of outcome $Y = j$ versus $Y = 0$ for the covariate values of $x = a$ versus $x = b$ is:
-  
-  $$OR_{j}(a,b)= \frac{Pr(Y=j|x=a)/(Pr(Y=0|x=a)} {Pr(Y=j|x=b)/Pr(Y=0|x=b)}$$
-  
-  Each odds ratio is calculated in a manner similar to that used in standard logistic regression. 
-That is:
-  
-  $$OR_1(X=1,X=0)= \frac{Pr(D=1|X=1)/(Pr(D=0|X=1)} {Pr(Y=1|X=0)/Pr(D=0|X=0)}=\exp^{\beta_{11}}$$
-  
-  $$OR_2(X=2,X=0)= \frac{Pr(D=2|X=1)/(Pr(D=0|X=1)} {Pr(D=2|X=0)/Pr(D=0|X=0)}=\exp^{\beta_{21}}$$
-  
-  ### Conditional probabilities
-  
-  The conditional probabilities for the multinomial logit model are: 
-  
-  $$Pr(D = 0 | x) = \frac{1}{1+e^{g_1(x)} + e^{g_2(x)}}$$
-  
-  $$Pr(D = 1 | x) = \frac{e^{g_1(x)}}{1+e^{g_1(x)} + e^{g_2(x)}}$$
-  
-  $$Pr(D = 2 | x) = \frac{e^{g_2(x)}}{1+e^{g_1(x)} + e^{g_2(x)}}$$
   
 ### Load libraries
-- **here -------- file referencing
-- **tidyverse---- data wrangling and plotting 
-- **haven---------read data in various statistical formats
-- **gtsummary-----produce statistical tables 
-- **VGAM----------perform multinomial logistic regression
-- **kableExtra----produce nice tables for the results 
-
-
-```{r, warning=FALSE}
 library(here)
 library(tidyverse)
 library(haven)
 library(gtsummary)
 library(VGAM)
 library(kableExtra)
-```
-
-### Dataset
-The datasets contains all variables of our interest. For the purpose of this assignment, 
-Explore association of hypertension status, weight and total cholesterol with the result of screening FBS. 
-The variables in the datasets as follow:
-  
-  1.  fbs : Fasting Blood Sugar (mmol/L). The data ranges from 2.51 mmol/L to 28.01 mmol/L.
-2.  totchol : Total Cholesterol (mmol/L). The data ranges from 0.18 mmol/L to 23.14 mmol/L.
-3.  hpt : Hypertension Status. Coded as Yes and No.
-4.  weight : Body weight measures in kilogram. The data ranges between 30kg to 187.8kg.
-
 ### Read data
-We will use `haven::read_dta()` function to read stata `.dta` data into the memory.   
-
-Let read `metabolic_syndrome.dta` as the dataset into our R memory. 
-
-```{r}
 ms <- read_dta('metabolic_syndrome.dta')
-```
-Quickly glance at the number of observations and the type of variables in the `ms` dataset. 
 
-```{r}
 glimpse(ms)
-```
 
 ### Data Wrangling
 We will
-
 - select only variable `fbs`, `totchol`, `hpt` and `weight`
 - convert all character variables to factor variables 
 - then take a glance of the updated `ms` dataset again
 
-
-```{r}
+# That is
 ms <- ms %>% 
   select(fbs, totchol, hpt , weight) %>% 
   mutate(across(where(is.character), as_factor))
 glimpse(ms)
-```
 
 ### Create new categorical variable from fbs
 Let us create a categorical (also known as a factor variable) based on this classification: 
   
-  1. Normal if fbs is less than 6.1 mmol/L
+1. Normal if fbs is less than 6.1 mmol/L
 2. Impaired Fasting Glucose (IFG)  if fbs is between 6.1 mmol/L to 6.9 mmol/L
 3. Diabetis Mellitus (DM) if fbs is 7.00 mmol/L or higher 
-
-```{r}
+#
 ms <- ms %>%
   mutate(cat_fbs = cut(fbs, 
                        breaks = c(2.50 , 6.10 , 6.90 , 28.01 ),
-                       labels = c("Normal","IFG", "DM")))
+#                       labels = c("Normal","IFG", "DM")))
 ms %>% 
   count(cat_fbs)
-```
-
+#
 We notice that there were 251 data has no values recorded as `NA`. Thus, 
 we decide to remove observations when there are missing values for variable `cat_fbs`.
-
-
-```{r}
+#
 ms <- ms %>%
   filter(!is.na(cat_fbs)) 
 ms %>%
   count(cat_fbs)
-
 
 ### Exploratory data analysis
 Next, is to return the table of summary statistics 
@@ -1739,78 +1553,58 @@ ms %>%
   as_gt()
 
 ### Confirm the order of cat_fbs
-```{r}
 levels(ms$cat_fbs)
-```
+#
 However, we would like the DM as the smallest category. 
 To do that we will use the `fct_relevel()` function. 
-
-```{r}
+#
 ms <- ms %>% 
   mutate(cat_fbs = fct_relevel(cat_fbs, 
                                c("DM", 'IFG', 'Normal')))
 levels(ms$cat_fbs)
-```
 ## Estimation
 Our intention to investigate the relationship between totchol, hpt and weight 
 with the outcome variables `cat_fbs`. Thus, 
 we will perform multinomial logistic regression model to estimate the relation for 2 models:
-  
-  - Model 1: DM vs Normal
+#  
+- Model 1: DM vs Normal
 - Model 2: IFG vs Normal
 
 In both models, the reference group is Normal
 
-### Single Independent Variable 
+# # # Single Independent Variable 
 For independent variable totchol 
 
-```{r}
-log_chol <- vglm(cat_fbs ~ totchol, 
-                 multinomial, data = ms)
+log_chol <- vglm(cat_fbs ~ totchol, multinomial, data = ms)
 summary(log_chol)
-```
-This is the model where hpt is the independent variable
 
-```{r}
-log_hpt <- vglm(cat_fbs ~ hpt, 
-                multinomial, data = ms)
+#This is the model where hpt is the independent variable
+log_hpt <- vglm(cat_fbs ~ hpt, multinomial, data = ms)
 summary(log_hpt)
-```
 
-And lastly, the independent variable is weight
-
-```{r}
-log_wt <- vglm(cat_fbs ~ weight, 
-               multinomial, data = ms)
+#And lastly, the independent variable is weight
+log_wt <- vglm(cat_fbs ~ weight, multinomial, data = ms)
 summary(log_wt)
-```
 
 ### Multiple Independent Variables
 We feel that totchol, hpt and weight are all important independent variables. 
 Hence, we want to fit a model with the three independent variables as the covariates. 
-
-```{r}
-mlog <- vglm(cat_fbs ~ totchol + hpt + weight, 
-             multinomial, data = ms)
+#---------
+mlog <- vglm(cat_fbs ~ totchol + hpt + weight, multinomial, data = ms)
 summary(mlog)
-```
 ### Model with interaction term between independent variables 
 Then, we hypothesize that there could be a significant interaction between totchol and weight. 
 And to test the hypothesis, 
 we extend the multivariable logistic regression model by adding an interaction term. 
 This interaction term is a product between variable weight and totchol.
-
-```{r}
-mlogi <- vglm(cat_fbs ~ totchol + hpt + weight + totchol*weight, 
-              multinomial, data = ms)
+#
+mlogi <- vglm(cat_fbs ~ totchol + hpt + weight + totchol*weight, multinomial, data = ms)
 summary(mlogi)
-```
-
+#
 The interaction term in our model showed p-values above 0.05 (p-values of 0.80 and  0.07, respectively). 
 As the p-value is bigger than the level of significance at $5\%$ and 
 the value of regression parameters for the interaction terms are likely not clinically meaningful, 
 we have decided not to use the model with an interaction term. 
-
 ## Inferences
 For the inference, we will
 - calculate the $95\%$ CI (interval estimates)
@@ -1818,15 +1612,12 @@ For the inference, we will
 
 There is no facility inside the`broom::tidy()` function to generate confidence intervals for object with class `vglm`.
 Because of that we will use the `coef()`, `confint()` and `cind()` unctions to produce a rather nice table of inferences. 
-
 #We are going to follow these steps:
 - set the number of digits equal to 2 to limit the decimal numbers
 - return the regression coefficents for all $\hat\beta$ as an object named `b_fitmlog2`
 - return the the confidence intervals for all $\hat\beta$ as an object named `ci_fitmlog2` 
 - combine the $\hat\beta$ and the corresponding $95\%$ CIs
-
-
-#```{r, warning=FALSE}
+#
 b_mlog <- coef(mlog)
 ci_mlog <- confint(mlog) 
 b_ci_mlog <- data.frame(b_mlog,ci_mlog) %>%
@@ -1834,12 +1625,11 @@ b_ci_mlog <- data.frame(b_mlog,ci_mlog) %>%
 b_ci_mlog %>% 
   kbl(digits = 2, booktabs = T, caption = "Log odds from multinomial logistic regression") %>%
   kable_styling(position = "center")
-
+#
 Afterwards, we will *exponentiate* the coefficients to obtain the **relative-risk ratio**.
 We then combine the results to the previous table. 
 Finally, we will name the columns of the object `tab_fitmlog2`. 
-
-{r, warning=FALSE}
+#
 rrr_mlog <- exp(b_ci_mlog)
 tab_mlog <- cbind(b_ci_mlog, rrr_mlog)
 colnames(tab_mlog) <- c('b', 'lower b', 'upper b',
@@ -1876,7 +1666,7 @@ We can make a *better* table using `knitr` and `kableExtra` packages, or
 we can save the results as a `.csv` file so we can edit it using spreadsheets.  
 
 tab_mlog %>%
-  write_csv("results_multinomial.csv")
+write_csv("results_multinomial.csv")
 
 
 
