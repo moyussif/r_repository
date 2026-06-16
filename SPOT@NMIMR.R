@@ -655,11 +655,10 @@ if(!require(FSA)){install.packages("FSA")
             ylab="Height")
     
     
-    
 # # #  
 --------------------------------------------------------------------------------
 +++++++++++++++++++++ ONE/TWO SAMPLE  PROPORTION +++++++++++++++++++++++++++++++  
-#-------------------------------------------------------------------------------
+#...............................................................................
 #
 0-Chi-square for proportions---------------------prop.test()#for one or more proportions
 1-Exact Goodness-of-fit-------------------------binom.test()#whether difference to hypothised value
@@ -668,14 +667,52 @@ if(!require(FSA)){install.packages("FSA")
 4-McNemars chisquare test---------------------mcnemar.test()#Paired categorical data
 5-Mantel-Haenszel chisquare test-----------mantelhaen.test()#for stratified 2×2 tables (confounders)
 6-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
-    
+#
+#...............................................................................
+rm(list=ls())
+gc(reset = TRUE)
+
+#Load required packages...................................
+library(readxl)
+library(tidyverse)
+library(epitools)
+library(XNomial)
+
+#Import data.............................................
+Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
+View(Sars_2)
+print(Sars_2)
+str(Sars_2)
+
+-------------------------------------------------------------------------------
+                        Data Conversion  
+------------------------------------------------------------------------------- 
+Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
+Sars_2$SEX <- as.factor(Sars_2$SEX)
+Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
+Sars_2$Hospitalstatus <- as.factor(Sars_2$Hospitalstatus)
+Sars_2$categoryofcases <- as.factor(Sars_2$categoryofcases)
+Sars_2$TreatmentOUTCOME <- as.factor(Sars_2$TreatmentOUTCOME)
+Sars_2$infection <- as.factor(Sars_2$infection)
+Sars_2$Resistance <- as.factor(Sars_2$Resistance)
+Sars_2$organism <- as.factor(Sars_2$organism)
+Sars_2$smoking <- as.factor(Sars_2$smoking)
+
+# revisit the data structure
+str(Sars_2)
+
+#---------Selecting column 
+Sars_3 <- Sars_2 %>% select(c(SEX, SarsCov_Strain, Hospitalstatus, Resistance, organism, smoking))
+
+str(Sars_3)
+
 # # #  
 ----------------------- One Sample test of Proportion --------------------------
 #Is the proportion of HIV in female =5.2% ?
       
 prop1_table <-table(data$HIV)
 prop1_table                         # E.g,where the output is row.25, column.143
-prop1_table <- matrix(c(25, 143), ncol = 2)
+prop1_table <- matrix(c(143, 18), ncol = 2)
 #Therefore
 prop.test(prop1_table, p = 0.052)
     
@@ -684,15 +721,18 @@ prop.test(prop1_table, p = 0.052)
 ------------------------ Two Sample test of Proportion -------------------------
 #Get table of sex by HIV status
       
-table_status <- table(Gender = data$sex, HIVstatus = data$HIV) 
+table_status <- table(Gender = data$Sex, HIVstatus = data$HIV) 
 table_status                        # E.g,where the output is column1-> 15, 143.column2-> 7, 23.
 # Input results
 table_status <- matrix(c(15, 143, 7, 23), ncol = 2)
 colnames(table_status)<- c("Reactive","Non reactive")
-rownames(table_status)<- C("Female","Male")
+rownames(table_status)<- c("Female","Male")
 #
 prop.test(table_status)
-    
+# # #    
+#chisq.test(table_status)$expected
+
+#fisher.test(table_status)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --------------------------- Test of Association --------------------------------
@@ -712,6 +752,8 @@ prop.table(chsq_table)*100
 round(prop.table(chsq_table)*100, 2)
 #plot
 barplot(prop.table(chsq_table)*100)
+#
+pie(table(data$SES), col = c("white","gray90","gray60"))#for 2x3 Table
 # Perform chis-square
 chisq.test(table(data$sex,data$HIV))
     

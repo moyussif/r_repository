@@ -1,6 +1,7 @@
 #
 rm(list=ls())
 gc(reset = TRUE)
+#...............
 ls()
 search()
 library(installr)
