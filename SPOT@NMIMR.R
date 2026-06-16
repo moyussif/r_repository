@@ -668,11 +668,16 @@ if(!require(FSA)){install.packages("FSA")
 5-Mantel-Haenszel chisquare test-----------mantelhaen.test()#for stratified 2×2 tables (confounders)
 6-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
 #
-#...............................................................................
+#.................. Chisquare Data .........................
+
+Proportions-#Decimal/Percentage
+Count      -# whole number
+
+#...........................................................
 rm(list=ls())
 gc(reset = TRUE)
 
-#Load required packages...................................
+#Load required packages.....................................
 library(readxl)
 library(tidyverse)
 library(epitools)
