@@ -26,12 +26,12 @@ rcon <- redcapAPI::redcapConnection(
 redcap <- redcapAPI::exportRecords(rcon)
 
 #save RDS(redcap, file = "LF_study.rds")
-write_xlsx(redcap, "LF_Jun_16.xlsx")
+write_xlsx(redcap, "LF_Jun.16.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
 setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4NMIMRdocumnt/mod_r/modibo")
 
-LFdata <- read_excel("LF_Jun16.xlsx")
+LFdata <- read_excel("LF_Jun.16.xlsx")
 
 # # #
 
