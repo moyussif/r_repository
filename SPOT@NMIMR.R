@@ -454,7 +454,7 @@ PieChart(categoryofcases, data = SarsCoV, hole = 0.5, main = NULL)
 +++++++++++++++++ One sample test of Mean ++++++++++++++++++++++++++++++++++++++
   #One sample t.test
   
-  theorical = 35
+theorical = 35
 observed = SarsCoV$Age
 
 t.test(observed,mu=theorical, conf.int=95.0 )# Option1 
@@ -685,10 +685,8 @@ library(XNomial)
 
 #Import data.............................................
 Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
-View(Sars_2)
-print(Sars_2)
 str(Sars_2)
-
+#
 -------------------------------------------------------------------------------
                         Data Conversion  
 ------------------------------------------------------------------------------- 
@@ -710,13 +708,27 @@ str(Sars_2)
 Sars_3 <- Sars_2 %>% select(c(SEX, SarsCov_Strain, Hospitalstatus, Resistance, organism, smoking))
 
 str(Sars_3)
-
+#
+sars_4 <- Sars_2 %>% select(c(SEX, SarsCov_Strain, Hospitalstatus, Resistance, organism, smoking)) %>% 
+  filter(SEX == "Male")
+#
+print(sars_4)
+#To verify filter function.
+summary(Sars_3)
+summary(sars_4)
 # # #  
 ----------------------- One Sample test of Proportion --------------------------
-#Is the proportion of HIV in female =5.2% ?
+#Is the proportion of smoker in male =5.2% ?
       
-prop1_table <-table(data$HIV)
-prop1_table                         # E.g,where the output is row.25, column.143
+p1_table <- table(sars_4$smoking)
+p1_table
+
+p1_table <- matrix(c(35, 106), ncol = 2) 
+#
+  
+-------------------------------------------------------------------------------
+#prop1_table <-table(data$HIV)
+#prop1_table                         # E.g,where the output is row.25, column.143
 prop1_table <- matrix(c(143, 18), ncol = 2)
 #Therefore
 prop.test(prop1_table, p = 0.052)
@@ -724,8 +736,20 @@ prop.test(prop1_table, p = 0.052)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ------------------------ Two Sample test of Proportion -------------------------
-#Get table of sex by HIV status
-      
+#Get table of sex by smoking status
+smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking)      
+smoke_status
+# Re-order the columns by list the column-2 first.
+smoke_status <- matrix(c( 13,35, 62, 106), ncol = 2)
+#
+colnames(smoke_status)<- c("Yes","No")
+rownames(smoke_status)<- c("Female","Male")
+#
+prop.test(smoke_status)
+
+print(smoke_status)
+
+#-------------------------------------------------------------------------------  
 table_status <- table(Gender = data$Sex, HIVstatus = data$HIV) 
 table_status                        # E.g,where the output is column1-> 15, 143.column2-> 7, 23.
 # Input results
@@ -741,46 +765,55 @@ prop.test(table_status)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --------------------------- Test of Association --------------------------------
-# Is gender associated with HIVstatus ?
-      
-#---Chisquare of Independence--------
-# 
-chsq_table <-table(data$sex,data$HIV)
-chsq_table
+# Is gender associated with smokingstatus ?
+#  --> table_status
+smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking) 
+#
+smoke_status <- matrix(c( 13,35, 62, 106), ncol = 2)
+#
+colnames(smoke_status)<- c("Yes","No")
+rownames(smoke_status)<- c("Female","Male")
+#
+print(smoke_status)
+
+#------------------- Chisquare of Independence ---------------------------
+
 #To add marginal totals
-addmargins(chsq_table,margin = c(1,2))
+addmargins(smoke_status,margin = c(1,2))
+
 #To get proportions
-prop.table(chsq_table)
+prop.table(smoke_status)
+
 #To get percentages
-prop.table(chsq_table)*100
+prop.table(smoke_status)*100
 #To round off values
-round(prop.table(chsq_table)*100, 2)
+round(prop.table(smoke_status)*100, 2)
 #plot
-barplot(prop.table(chsq_table)*100)
+barplot(prop.table(smoke_status)*100)
 #
 pie(table(data$SES), col = c("white","gray90","gray60"))#for 2x3 Table
 # Perform chis-square
-chisq.test(table(data$sex,data$HIV))
+chisq.test(table(Sars_3$SEX, Sars_3$smoking))
     
 # --------------- Fisher's Exact Test ....................... for  cell count <2
-fisher.test(table(data$sex,data$HIV))
+fisher.test(table(Sars_3$SEX, Sars_3$smoking))
     
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ---------------------------- Oddratio & riskratio ------------------------------                                 
 library(epitools)
 #------------ Oddratio
-oddsratio(data$sex,data$HIV)
+oddsratio(Sars_3$SEX, Sars_3$smoking)
 #           or
-OR <-epitab(data$sex,data$HIV,method = "oddsratio",conf.level = 0.95)
+OR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "oddsratio",conf.level = 0.95)
 OR
 #----------- riskratio
-riskratio(data$sex,data$HIV)
+riskratio(Sars_3$SEX, Sars_3$smoking)
 #           or
-RR <-epitab(data$sex,data$HIV,method = "riskratio",conf.level = 0.95)
+RR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "riskratio",conf.level = 0.95)
 RR
     
-# # #
+# # #.........................................................................
 mcnemar.test(Matriz, correct=FALSE) 
 
 # # #

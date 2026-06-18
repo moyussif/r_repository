@@ -1665,7 +1665,17 @@ we can save the results as a `.csv` file so we can edit it using spreadsheets.
 
 tab_mlog %>%
 write_csv("results_multinomial.csv")
+===============================
 
+  Sars_3$SEX <- factor(
+    Sars_3$SEX,
+    levels = rev(levels(factor(Sars_3$SEX)))
+  )
 
+Sars_3$smoking <- factor(
+  Sars_3$smoking,
+  levels = rev(levels(factor(Sars_3$smoking)))
+)
 
+table(Sars_3$SEX, Sars_3$smoking)
 
