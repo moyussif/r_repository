@@ -3,7 +3,7 @@ title: "LF_Study Dashboard  - Noguchi Memorial Institute for Medical Research (N
 output: 
   flexdashboard::flex_dashboard:
     theme:
-      bg: "#FFF5EE"
+      bg: "#E0EEEE"
       fg: "#104E8B" 
       primary: "#1874CD"
       base_font:
@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
- LFdata <- read_excel("LF_Jun18.xlsx")
+ LFdata <- read_excel("LF_Jun19.xlsx")
 
 ```
 

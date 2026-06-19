@@ -689,7 +689,8 @@ str(Sars_2)
 #
 -------------------------------------------------------------------------------
                         Data Conversion  
-------------------------------------------------------------------------------- 
+-------------------------------------------------------------------------------
+#
 Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
 Sars_2$SEX <- as.factor(Sars_2$SEX)
 Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
@@ -737,30 +738,18 @@ prop.test(prop1_table, p = 0.052)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ------------------------ Two Sample test of Proportion -------------------------
 #Get table of sex by smoking status
-smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking)      
-smoke_status
-# Re-order the columns by list the column-2 first.
+smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking)     
+smoke_status                                                              #E.g, where column1-13, 35. column2-> 62, 106.
+
+#Re-order the columns by list the column-2 first.
 smoke_status <- matrix(c( 13,35, 62, 106), ncol = 2)
-#
 colnames(smoke_status)<- c("Yes","No")
 rownames(smoke_status)<- c("Female","Male")
 #
 prop.test(smoke_status)
-
-print(smoke_status)
-
-#-------------------------------------------------------------------------------  
-table_status <- table(Gender = data$Sex, HIVstatus = data$HIV) 
-table_status                        # E.g,where the output is column1-> 15, 143.column2-> 7, 23.
-# Input results
-table_status <- matrix(c(15, 143, 7, 23), ncol = 2)
-colnames(table_status)<- c("Reactive","Non reactive")
-rownames(table_status)<- c("Female","Male")
 #
-prop.test(table_status)
-# # #    
-#chisq.test(table_status)$expected
-
+#check counts in each cell
+chisq.test(table_status)$expected
 #fisher.test(table_status)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -776,7 +765,7 @@ rownames(smoke_status)<- c("Female","Male")
 #
 print(smoke_status)
 
-#------------------- Chisquare of Independence ---------------------------
+#------------------------ Chisquare of Independence ----------------------------
 
 #To add marginal totals
 addmargins(smoke_status,margin = c(1,2))
@@ -792,7 +781,8 @@ round(prop.table(smoke_status)*100, 2)
 barplot(prop.table(smoke_status)*100)
 #
 pie(table(data$SES), col = c("white","gray90","gray60"))#for 2x3 Table
-# Perform chis-square
+
+#----------------- Perform chis-square
 chisq.test(table(Sars_3$SEX, Sars_3$smoking))
     
 # --------------- Fisher's Exact Test ....................... for  cell count <2
@@ -800,12 +790,21 @@ fisher.test(table(Sars_3$SEX, Sars_3$smoking))
     
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
----------------------------- Oddratio & riskratio ------------------------------                                 
+---------------------------- Oddratio & riskratio ------------------------------ 
+#                                  ,
+#_______The right order  for using contingency table for interpretation_________for Epitab func.
+|                                      Disease                                 |
+|                    Exposure       No (ref)  Yes                              |
+|                     Level 1 (ref)  a         b                               |
+|                     Level 2        c         d                               |
+#------------------------------------------------------------------------------- 
+#  
 library(epitools)
 #------------ Oddratio
 oddsratio(Sars_3$SEX, Sars_3$smoking)
 #           or
 OR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "oddsratio",conf.level = 0.95)
+OR1 <-?epitab(Sars_3$SEX, Sars_3$smoking, method = "oddsratio", rev = "columns", conf.level = 0.95)
 OR
 #----------- riskratio
 riskratio(Sars_3$SEX, Sars_3$smoking)
