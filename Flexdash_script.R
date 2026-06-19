@@ -3,7 +3,7 @@
 output: 
   flexdashboard::flex_dashboard:
   theme:
-  bg: "#FFF5EE"
+  bg: "#E0EEEE"
 fg: "#104E8B" 
 primary: "#1874CD"
 base_font:
@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
-LFdata <- read_excel("LF_Jun13.xlsx")
+LFdata <- read_excel("LF_Jun19.xlsx")
 
 ```
 
@@ -55,7 +55,7 @@ library(gtsummary)
 
 basic_table <- 
   LFdata %>%
-  tbl_summary(include = c(consent, sex, site)) %>%   
+  tbl_summary(include = c(consent, participant_data_collection_tool_complete, site)) %>%   
   # add table captions
   as_gt() %>%
   gt::tab_header(title = "Basic Summary")
@@ -89,7 +89,21 @@ FTS
 
 ```
 
+###
 
+```{r}
+LFdata %>%
+  filter(fts_test_result == "Positive") %>%
+  ggplot(aes(x = sex, y = age, fill = sex)) +
+  geom_boxplot() +
+  labs(
+    title = "Age Distribution of FTS-Positive Participants by Sex",
+    x = "Sex",
+    y = "Age (years)"
+  ) +
+  theme_minimal()
+
+```
 
 
 Row

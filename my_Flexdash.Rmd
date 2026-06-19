@@ -55,7 +55,7 @@ library(gtsummary)
 
 basic_table <- 
   LFdata %>%
-  tbl_summary(include = c(consent, sex, site)) %>%   
+  tbl_summary(include = c(consent, participant_data_collection_tool_complete, site)) %>%   
   # add table captions
   as_gt() %>%
   gt::tab_header(title = "Basic Summary")
@@ -89,7 +89,21 @@ FTS
 
 ```
 
+###
 
+```{r}
+LFdata %>%
+  filter(fts_test_result == "Positive") %>%
+  ggplot(aes(x = sex, y = age, fill = sex)) +
+  geom_boxplot() +
+  labs(
+    title = "Age Distribution of FTS-Positive Participants by Sex",
+    x = "Sex",
+    y = "Age (years)"
+  ) +
+  theme_minimal()
+
+```
 
 
 Row
