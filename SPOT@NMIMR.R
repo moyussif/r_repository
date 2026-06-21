@@ -398,15 +398,17 @@ library(BSDA)
 library(stats)
 library(AICcmodavg)
 library(DescTools)
-
-#----------------Import data
+#
+#Import data
 Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
 View(Sars_2)
 print(Sars_2)
+#Data structure
 str(Sars_2)
--------------------------------------------------------------------------------
-                     Data Conversion _(CODING)  
-------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------
+                      Data Conversion _(CODING)  
+--------------------------------------------------------------------------------
+#
 Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
 Sars_2$SEX <- as.factor(Sars_2$SEX)
 Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
@@ -417,15 +419,16 @@ Sars_2$infection <- as.factor(Sars_2$infection)
 Sars_2$Resistance <- as.factor(Sars_2$Resistance)
 Sars_2$organism <- as.factor(Sars_2$organism)
 Sars_2$smoking <- as.factor(Sars_2$smoking)
-
 # revisit the data structure
 str(Sars_2)
-
-#--------- Explore the data by using descriptive statistics --------------------
-
+#
+--------------------------------------------------------------------------------
+---------- Explore the data by using descriptive statistics --------------------
+#Summarise 
 summary(Sars_2)
-#further insight into data normality
+#further insight for Skewness and Kurtosis
 describeBy(Sars_2) 
+
 # use normality test
 shapiro.test(Sars_2$Age)
 # Basic plots
@@ -558,11 +561,10 @@ tukey.plot.test <-TukeyHSD(tukey.plot.aov)
 plot(tukey.plot.test,las = 2)
 # # #
 ------------------------------------------------------------------------------
-  Tukey and LSD mean separation tests (pairwise comparisons)
+Tukey and LSD mean separation tests (pairwise comparisons)
 TukeyHSD, HSD.test, and LSD.test are not appropriate for cases where there are unequal variances
 though TukeyHSD does make an adjustment for mildly unequal sample sizes.
 ------------------------------------------------------------------------------
-  
   
 # # #
 ++++++++++++++++++++++ Kruskal–Wallis Test +++++++++++++++++++++++++++++++++++++
@@ -653,7 +655,6 @@ if(!require(FSA)){install.packages("FSA")
             main="Height Across Groups",
             xlab="Group",
             ylab="Height")
-    
     
 # # #  
 --------------------------------------------------------------------------------
@@ -889,7 +890,9 @@ Drosophila example, exact binomial test
   binom.test(140, (106+140), 0.5, alternative="two.sided", conf.level=0.95)
 
 # # #
-#------------------------- multinomial exact test -----------------------------
+#-------------------------------------------------------------------------------
+-------------------------- multinomial exact test ------------------------------
+#
 observed = c(315, 108, 101, 32)
 expected = c(9, 3, 3, 1)
 
@@ -899,7 +902,6 @@ xmulti(observed, expected, detail = 2)
 P value  (LLR)  =  0.9261    # log-likelihood ratio
 P value (Prob)  =  0.9382    # exact probability
 P value (Chisq) =  0.9272    # Chi-square probability
-
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -992,6 +994,9 @@ A plot of residuals vs. predicted values.  #The residuals should be unbiased & h
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ----------------------------- Simple Regression --------------------------------
 library(car)
+      
+#Plot to identify(Linear, Curvilinear, or Quadratic)       
+plot(Species ~ Latitude, data = Data)
 #
 model = lm(Species ~ Latitude, data = Data)
 #shows parameter estimates, p-value for model, r-square
@@ -1046,7 +1051,7 @@ Both.aic
 # in conclusion, our final model 
 pred <-lm(bmi~age+parity+hb,data = imdata)     #  where . is the list of x variables selected for modelling. 
 summary(pred)
-
+#
 par(mfrom = c(2,2))
 plot(pred)
 #
