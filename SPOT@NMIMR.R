@@ -450,9 +450,9 @@ plot(x= SarsCoV$systolic1, y= SarsCoV$sugar_level)
 #pie / donut -----depending the input at the hole
 PieChart(categoryofcases, data = SarsCoV, hole = 0.5, main = NULL)
 #
-
-+++++++++++++++++ One sample test of Mean ++++++++++++++++++++++++++++++++++++++
-  #One sample t.test
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++ One sample test of Mean +++++++++++++++++++++++++++++++
+#One sample t.test
   
 theorical = 35
 observed = SarsCoV$Age
@@ -462,11 +462,11 @@ t.test(observed,mu=theorical, conf.int=95.0 )# Option1
 t.test(SarsCoV$Age,mu=35, conf.int=95.0 )  #Option 2
 hist(SarsCoV$Age)  
 
-
-
-+++++++++++++++++ Two sample test of Mean ++++++++++++++++++++++++++++++++++++++
-  #Independent t.test
-  t.test(Age ~ SEX, data = SarsCoV, Var.equal =FALSE, conf.level = 0.95)  
+# # #
+--------------------------------------------------------------------------------
+++++++++++++++++++++++++ Two sample test of Mean +++++++++++++++++++++++++++++++
+#Independent t.test
+t.test(Age ~ SEX, data = SarsCoV, Var.equal =FALSE, conf.level = 0.95)  
 #
 hist(Age ~ SEX, data = SarsCoV, names=c("Female","Male"), ylab="Age")  
 #
@@ -477,6 +477,7 @@ t.test(Sars_2$systolic1,Sars_2$systolic2,paired = TRUE,conf.level = 0.95)
 #
 
 # # #
+--------------------------------------------------------------------------------
 ++++++++++++++++++++ More than Two sample (ANOVA) ++++++++++++++++++++++++++++++    
 library(readxl)
 library(lessR)
@@ -488,8 +489,7 @@ library(AICcmodavg)
 library(DescTools)  
 #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#--------------------- One_Way ANOVA (Between group )---------------------------LessR
-print(Sars_2)
+--------------------- One_Way ANOVA (Between group )----------------------------# LessR
 #
 Plot(Duration_days, data=SarsCoV, facet1 = categoryofcases)
 #normality 
@@ -502,7 +502,7 @@ ANOVA(Duration_days ~ categoryofcases, data=Sars_2)
 Duration_mean <- tapply(Sars_2$Duration_days, Sars_2$categoryofcases,mean)
 BarChart(Duration_mean)
 #
-#--------------------- One_Way ANOVA (Between group )---------------------------Car
+--------------------- One_Way ANOVA (Between group )----------------------------# Car
 #
 #Step1-----fit model for residuals
 redd <- aov(Age ~ categoryofcases, data = SarsCoV) 
@@ -523,7 +523,7 @@ QQ <- qqPlot(redd$residuals, id = TRUE)
 
 # # # 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#----------------------- Factorial ANOVA ---------------------------------------
+---------------------------- Factorial ANOVA -----------------------------------
 #
 #homogeneity of variance multiple variable
 leveneTest(Age ~ categoryofcases*SEX*smoking*TreatmentOUTCOME*SarsCov_Strain, data = SarsCoV) 
@@ -716,7 +716,8 @@ print(sars_4)
 #To verify filter function.
 summary(Sars_3)
 summary(sars_4)
-# # #  
+# # # 
+--------------------------------------------------------------------------------
 +++++++++++++++++++++++ One Sample test of Proportion ++++++++++++++++++++++++++
 #Is the proportion of smoker in male =5.2% ?
       
@@ -729,6 +730,7 @@ p1_table <- matrix(c(35, 106), ncol = 2)
 prop.test(p1_table, p = 0.052)
     
 # # #
+--------------------------------------------------------------------------------
 ++++++++++++++++++++++++ Two Sample test of Proportion +++++++++++++++++++++++++
 #Get table of sex by smoking status
 smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking)     
@@ -744,6 +746,7 @@ prop.test(smoke_status)
 #..................... check counts in each cell. 
 chisq.test(table_status)$expected
 #fisher.test(table_status)
+
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --------------------------- Test of Association --------------------------------
@@ -901,7 +904,7 @@ P value (Chisq) =  0.9272    # Chi-square probability
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --------------------------------- Correlation ----------------------------------
-#-------------------------------------------------------------------------------
+#
 Correlation
 Correlation can be performed with the cor.test function in the native stats package.  
 It can perform Pearson, Kendall, and Spearman correlation procedures.  
@@ -970,21 +973,11 @@ thus it tells us the amount of variables explain in the reponse(y) after fitting
 #R squared = explain variation of model-y
 ----------------------------
   #              Total variation of model                                         df =n-2
-    
-The **broom** package has a function called `augment()` which can calculate:
-    
-  1. estimated log odds 
-  2. probabilities
-  2. residuals
-  3. hat values
-  4. Cooks distance
-  5. standardized residuals
   
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
-#---------------------- Checking assumptions of the model ----------------------
-Assumptions
-#-y is a random variable and normally distributed with mean(u) and variance(Q)squared.
-#The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
+----------------------- Checking assumptions of the model ----------------------
+#Assumptions
+-y is a random variable and normally distributed with mean(u) and variance(Q)squared.
+The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
   
 hist(residuals(model), col="darkgray")
   
@@ -993,77 +986,23 @@ plot(fitted(model), residuals(model))
 A plot of residuals vs. predicted values.  #The residuals should be unbiased & homoscedastic.
   
 #Note,
-R squared = good for simple regression. 
-Adjusted R squared =for multiple regression (model building)
+      R squared = good for simple regression. 
+      Adjusted R squared =for multiple regression (model building)
+#
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------------- Simple Regression --------------------------------
+library(car)
 #
 model = lm(Species ~ Latitude, data = Data)
 #shows parameter estimates, p-value for model, r-square
-summary(model)                    
-  
-library(car)
+summary(model)
 #shows p-value for effects in model
 Anova(model, type="II")              
-  
 #Plot linear regression
 int = model$coefficient["(Intercept)"]
 slope = model$coefficient["Latitude"]
 plot(Species ~ Latitude, data = Data, pch=16, xlab = "Latitude", ylab = "Species")
 abline(int, slope, lty=1, lwd=2, col="blue")     #  style and color of line 
-  
-# # #   
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-------------------------- Curvilinear Regression -------------------------------
-#
-How to fit models to curvilinear data using three methods:
-#    
-1) Polynomial regression;  
-2) B-spline regression with polynomial splines;  
-3) Nonlinear regression with the nls function.  
-
-Each of these three will find essentially the same best-fit curve with very similar p-values and R-squared values. 
-
-# create sample data 
-sample_data <- data.frame(x=1:10, 
-                          y=c(25, 22, 13, 10, 5, 9, 12, 16, 34, 44)) 
-View(sample_data)
-print(sample_data)
-
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y)
-# define x-axis values 
-x_axis <- seq(1, 10, length=10)
-#_______________________________________________________________________________
-#+++++++++++++++++++ fit linear model +++++++++++++++++++++++++++++++++++++++++++
-linear_model1 <- lm(y~x, data=sample_data)
-lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
-summary(linear_model1)
-
-#_______________________________________________________________________________
-#+++++++++++++++++++ fit polynomial regression models up to degree 4 ++++++++++++
-linear_model2 <- lm(y~poly(x,2,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model2, data.frame(x=x_axis)), col='red')
-
-# add curve of each model to plot----------------------------
-linear_model3 <- lm(y~poly(x,3,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model3, data.frame(x=x_axis)), col='purple')
-
-# multiple curve to plot-------------------------------------
-linear_model4 <- lm(y~poly(x,4,raw=TRUE), data=sample_data)
-linear_model5 <- lm(y~poly(x,5,raw=TRUE), data=sample_data)
-# create a basic scatterplot 
-plot(sample_data$x, sample_data$y) 
-# define x-axis values 
-x_axis <- seq(1, 10, length=10) 
-lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
-lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1085,7 +1024,7 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ---------------------------- Model Building ------------------------------------  
-  
+library(olsrr)  
 # methods for evaluating subset regression models:
 1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
@@ -1093,40 +1032,16 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 4-choose one with the smallest predicted sum of square (SS)
 5-choose one with the number of the parammetrs used in a model equal to CP value.
 Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
-
 #
-install.packages("olsrr")        
-library(olsrr)        
-
 g <- lm(y~.,data = dataset)       # where . is the x variables
 summary(g)
 g <- lm(bmi~age+parity+hb,data = imdata)
 
 #--------model building
-forward <- ols_step_forward_p(g, penter = 0.05)
-forward                                               # forward
-forward <- ols_step_forward_aic(g, details = TRUE)
-forward
-
-Backward <- ols_step_backward_p(g, prem = 0.05)
-Backward                                             # Backward
-Backward <- ols_step_backward_aic(g, details = TRUE)
-Backward
-
 Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
 Both                                                 # Stepwise
 Both.aic <- ols_step_both_aic(g, details = TRUE)
 Both.aic
-
-#Options for all possible subset models
-all <- ols_step_all_possible(g)
-all
-as.data.frame(all)
-plot(all)
-
-#option for best subset regression
-best <- ols_step_best_subset(g)
-best
 
 # in conclusion, our final model 
 pred <-lm(bmi~age+parity+hb,data = imdata)     #  where . is the list of x variables selected for modelling. 
@@ -1134,10 +1049,8 @@ summary(pred)
 
 par(mfrom = c(2,2))
 plot(pred)
-
-
+#
 dev.off()
-
 
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

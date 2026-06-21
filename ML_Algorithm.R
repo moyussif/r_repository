@@ -1,15 +1,11 @@
 #
 rm(list=ls())
 gc(reset = TRUE)
-updateR()
+#................
 library(installr)
-
+updateR()
 #-------------------------------------------------------------------------------
-Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
-remotes::install_github("cran/DMwR")
-#-------------------------------------------------------------------------------
-
-#----------------- BUILDING FUNCTIONS -------  
+--------------------------- BUILDING FUNCTIONS ---------------------------------  
 e.g-1
 Area <- function(Length, Breadth){
   Area <- Length * Breadth
@@ -25,7 +21,6 @@ BMI <- function(weight,height){
   return(BMI)
 }  
 BMI(62,58)
-
 
 #----------------- Generate a hypothetical dataset ----------------------------#
 library(caTools)
@@ -45,14 +40,9 @@ outcome <- c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mean = 2))
 data <- data.frame(subject, group, outcome)
 
 
-
-
-
-
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                     Data flow Dplyr                                                  +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            Data flow Dplyr                                   +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 library(tidyverse)
 library(dplyr)
 library(readxl)
@@ -66,11 +56,9 @@ data2 <- imdata %>%
 print(data2)
 
 #  #  #
-
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                 HANDLING MISSING DATA                                               +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                            HANDLING MISSING DATA                             +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Missing Data Summary-----------------
 summary(data2)
@@ -94,18 +82,13 @@ df <- df %>% select(-Age)
 df <- df %>% select(-c(Age, Gender))
 
 #  #  #
-
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                            MACHINE LEARNING                                                    +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-
-  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                            Linear Regression
-
--------------------------------1st option -----------------------------------
-
+#===============================================================================
++++++++++++++++++++++++       MACHINE LEARNING        ++++++++++++++++++++++++++                             
+#===============================================================================
+#  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+---------------------------- Linear Regression---------------------------------- 1st option
+#
 library(caTools)
 library(readxl)
 library(car)
@@ -121,10 +104,10 @@ str(doro)
 cleanedoro <- na.omit(doro)
 str(cleanedoro)
 
-
 #split data
 training <- cleanedoro[1:29, 1:17]
 testing <- cleanedoro[30:41, 1:17]
+
 #Create the model
 Model <- lm(age ~., data=training)
 summary(Model)
@@ -143,12 +126,16 @@ accuracy
 #Model performance-------------------------------------------1.option
 RMSE #values closer to 0 indicate better model performance.
 MSE#lower value indicates a better fit
-R²#values closer to 1 indicate a Model better fit 
+R²#values closer to 1 indicate a Model better fit
+#
+# remotes::install_github("cran/DMwR")
 library(DMwR)
 DMwR::regr.eval(actual_pred$actuals, actual_pred$predicted)
 
 #  #  #
------------------------------- 2nd option -----------------------------------
+#===============================================================================
+---------------------------- Linear Regression---------------------------------- 2nd option
+#
 library(tidyverse)
 library(caret)
 theme_set(theme_classic())
@@ -178,7 +165,6 @@ data.frame(RMSE = RMSE(predictions, test.data$age),
  
 
 #   #   #
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                          Logistic Regression
 -------------------------                   ------------------------------------
@@ -262,7 +248,7 @@ print(accuracy)
 #  #  #
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                             KNN----(K Nearest Neighbour)
+                      KNN----(K Nearest Neighbour)
 --------------------------------------------------------------------------------
 rm(list=ls())
 gc(reset = TRUE)

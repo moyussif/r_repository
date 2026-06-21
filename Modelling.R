@@ -3,90 +3,10 @@ rm(list=ls())
 gc(reset = TRUE)
 updateR()
 library(installr)
-
-#-------------------------------------------------------------------------------
-Note ---- <= or >= #to get this symbols, SHIFT < or > and click =.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                     Data flow Dplyr                                                  +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-library(tidyverse)
-library(dplyr)
-data2 <- imdata %>%
-  select(CaseControl, expose, age,delivage, hb, plt, parity, bmi,-id ) %>% 
-  filter(hb > 10)        
-print(data2)
-
-#  #  #
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                 HANDLING MISSING DATA                                               +
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
-imdata <- read_excel("immunoData.xlsx")
-print(imdata)
-#Missing Data Summary-----------------
-summary(data2)
-# Count missing values in each column
-missing_per_column <- colSums(is.na(data2))
-print(missing_per_column)
-# Remove rows with any missing values 
-cleaned_data <- na.omit(data2)
-print(cleaned_data)
-# Perform mean imputation for the 'salary' column where NA values are present
-mean_salary <- mean(data$Salary, na.rm = TRUE)
-
-# Perform KNN imputation
-library(VIM)  
-# Perform KNN imputation
-data_imputed <- kNN(cleaned_data, k = 5)  # You can adjust 'k' as needed
-
-# Remove the 'Age' column
-df <- df %>% select(-Age)
-#Remove multiple columns
-df <- df %>% select(-c(Age, Gender))
-
-
-#  #  #
-================================================================================
-
-================================================================================
-install.packages("ggstatsplot") 
-library(ggstatsplot)
-library(readxl) 
-EGFL <- read_excel("C:/Users/User/Desktop/EGFL.xlsx")
-print(EGFL)
-
- 
-ggscatterstats(
-  data = EGFL,
-  x = `EGFL ELISA`,
-  y = `sENG ELISA`,
-  type = "nonparametric")  
-
-
-# creating a plot
-p <- ggscatterstats(
-  EGFL,
-  x = 'EGFL ELISA',
-  y = 'sENG ELISA',
-  label.var = 'PE only',
-  label.expression = 'sENG ELISA' > 7.6
-) +
-  ggplot2::geom_rug(sides = "b")
-
-
-ggcoefstats()
-
-
-# looking at the plot
-p
-
-# extracting details from statistical tests
-extract_stats(p)
-================================================================================  
-  
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-+                               Regression Analysis                                                  +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
++                            Regression Analysis                               +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #       Regression analysis study the relationship between variables:
 
 1-By identifying (Linear, Curvilinear, or Quadratic).
@@ -111,7 +31,7 @@ Thus, it tries to minimise the difference between the observed and the fitted va
   #                                        SSR                        SST                 
   
   
-  R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
+R squared (coefficient of determination)---------------useful for model building___(fit model for multiple regression).  
 thus it tells us the amount of variables explain in the reponse(y) after fitting the model.
 
 #R squared = explain variation of model-y
