@@ -124,7 +124,7 @@ community_table <- LFdata %>%
     .groups = "drop"
   )%>%
   select(site, keea_communities, keea_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
-  arrange(desc(Malaria_Pct)) 
+  arrange(desc(FTS_Positives)) 
   
 kable(community_table, align = "c")
 
@@ -148,7 +148,7 @@ community_table <- LFdata %>%
     .groups = "drop"
   )%>%
   select(site, gomoa_west_communities, gomoa_west_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
-  arrange(desc(Malaria_Pct)) 
+  arrange(desc(FTS_Positives)) 
 
 kable(community_table, align = "c")
 

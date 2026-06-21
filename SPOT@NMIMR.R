@@ -38,7 +38,7 @@ library(AICcmodavg)
 #--------------------------- set directorate -----------------------------------Option.1
 setwd("C:/Users/User/Downloads")
 
-healthData <- read_csv("health_data.csv")    #.csv format 
+healthData <- read_csv("health_data.csv",stringsAsFactors = TRUE)    #.csv format 
 
 Sars_2 <- read_excel("Sars-2.xlsx")          #.xlsx format
 
@@ -660,24 +660,23 @@ if(!require(FSA)){install.packages("FSA")
 +++++++++++++++++++++ ONE/TWO SAMPLE  PROPORTION +++++++++++++++++++++++++++++++  
 #...............................................................................
 #
-0-Chi-square for proportions---------------------prop.test()#for one or more proportions
-1-Exact Goodness-of-fit-------------------------binom.test()#whether difference to hypothised value
-2-Chi-Square test of independence---------------chisq.test()#Test of association independence      
-3-Fisher exact test----------------------------fisher.test()#N < 100, cell count<5 // Likelihood ratio chi-square
-4-McNemars chisquare test---------------------mcnemar.test()#Paired categorical data
-5-Mantel-Haenszel chisquare test-----------mantelhaen.test()#for stratified 2×2 tables (confounders)
-6-Posthoc-chisquare of independence-----chisq.posthoc.test()#pairwise comparisons after Chi-square
+0-Chi-square for proportions---------------------prop.test()                   #for one or more proportions
+1-Exact Goodness-of-fit-------------------------binom.test()                   #whether difference to hypothised value
+2-Chi-Square test of independence---------------chisq.test()                   #Test of association independence      
+3-Fisher exact test----------------------------fisher.test()             #N<100,cell count<5 (Likelihood ratio chi-square)
+4-McNemars chisquare test---------------------mcnemar.test()                   #Paired categorical data
+5-Mantel-Haenszel chisquare test-----------mantelhaen.test()                   #for stratified 2×2 tables (confounders)
+6-Posthoc-chisquare of independence-----chisq.posthoc.test()                   #pairwise comparisons after Chi-square
 #
-#.................. Chisquare Data .........................
+#.................. Chisquare Data ......................
 
 Proportions-#Decimal/Percentage
 Count      -# whole number
-
-#...........................................................
+#........................................................
 rm(list=ls())
 gc(reset = TRUE)
 
-#Load required packages.....................................
+#Load required packages..................................
 library(readxl)
 library(tidyverse)
 library(epitools)
@@ -687,9 +686,9 @@ library(XNomial)
 Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
 str(Sars_2)
 #
--------------------------------------------------------------------------------
-                        Data Conversion  
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+                             Data Conversion  
+--------------------------------------------------------------------------------
 #
 Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
 Sars_2$SEX <- as.factor(Sars_2$SEX)
@@ -718,25 +717,19 @@ print(sars_4)
 summary(Sars_3)
 summary(sars_4)
 # # #  
------------------------ One Sample test of Proportion --------------------------
++++++++++++++++++++++++ One Sample test of Proportion ++++++++++++++++++++++++++
 #Is the proportion of smoker in male =5.2% ?
       
 p1_table <- table(sars_4$smoking)
-p1_table
+p1_table                                    
 
 p1_table <- matrix(c(35, 106), ncol = 2) 
-#
-  
--------------------------------------------------------------------------------
-#prop1_table <-table(data$HIV)
-#prop1_table                         # E.g,where the output is row.25, column.143
-prop1_table <- matrix(c(143, 18), ncol = 2)
+
 #Therefore
-prop.test(prop1_table, p = 0.052)
+prop.test(p1_table, p = 0.052)
     
 # # #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
------------------------- Two Sample test of Proportion -------------------------
+++++++++++++++++++++++++ Two Sample test of Proportion +++++++++++++++++++++++++
 #Get table of sex by smoking status
 smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking)     
 smoke_status                                                              #E.g, where column1-13, 35. column2-> 62, 106.
@@ -747,8 +740,8 @@ colnames(smoke_status)<- c("Yes","No")
 rownames(smoke_status)<- c("Female","Male")
 #
 prop.test(smoke_status)
-#
-#check counts in each cell
+
+#..................... check counts in each cell. 
 chisq.test(table_status)$expected
 #fisher.test(table_status)
 # # #
@@ -764,9 +757,8 @@ colnames(smoke_status)<- c("Yes","No")
 rownames(smoke_status)<- c("Female","Male")
 #
 print(smoke_status)
-
-#------------------------ Chisquare of Independence ----------------------------
-
+#...............................................................................
+------------------------ Chisquare of Independence .............................
 #To add marginal totals
 addmargins(smoke_status,margin = c(1,2))
 
@@ -994,11 +986,11 @@ Assumptions
 #-y is a random variable and normally distributed with mean(u) and variance(Q)squared.
 #The unknown standard error (residual) are independent normally distributed. mean = 0, variance squared.
   
- hist(residuals(model), col="darkgray")
+hist(residuals(model), col="darkgray")
   
- plot(fitted(model), residuals(model))
+plot(fitted(model), residuals(model))
 #
-  A plot of residuals vs. predicted values.  #The residuals should be unbiased & homoscedastic.
+A plot of residuals vs. predicted values.  #The residuals should be unbiased & homoscedastic.
   
 #Note,
 R squared = good for simple regression. 
@@ -1036,23 +1028,18 @@ sample_data <- data.frame(x=1:10,
 View(sample_data)
 print(sample_data)
 
-#------------ fit linear -----------------
 # create a basic scatterplot 
 plot(sample_data$x, sample_data$y)
 # define x-axis values 
 x_axis <- seq(1, 10, length=10)
-#fit model
+#_______________________________________________________________________________
+#+++++++++++++++++++ fit linear model +++++++++++++++++++++++++++++++++++++++++++
 linear_model1 <- lm(y~x, data=sample_data)
-
 lines(x_axis, predict(linear_model1, data.frame(x=x_axis)), col='green')
-
 summary(linear_model1)
 
-
-#---- fit polynomial regression models up to degree 4 -------
--------------------------------------------------------------
-  #----------- Curvilinear ------------------------------------
-
+#_______________________________________________________________________________
+#+++++++++++++++++++ fit polynomial regression models up to degree 4 ++++++++++++
 linear_model2 <- lm(y~poly(x,2,raw=TRUE), data=sample_data)
 # create a basic scatterplot 
 plot(sample_data$x, sample_data$y) 
@@ -1078,55 +1065,29 @@ x_axis <- seq(1, 10, length=10)
 lines(x_axis, predict(linear_model4, data.frame(x=x_axis)), col='blue') 
 lines(x_axis, predict(linear_model5, data.frame(x=x_axis)), col='orange')
 
-================================================================================
-------------------------- Polynomial regression --------------------------------
-#
-Polynomial regression is really just a special case of multiple regression, 
-#Simple plot of model
-library(ggplot2)
-ggplot(imdata,aes(x =age, y = bmi))+geom_point(size = 4, shape = 20,colour = "Black")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,3), colour = "Green")+
-  stat_smooth(method = lm, se = FALSE, formula = y~poly(x,2), colour = "Red")
-
 # # #
-===================================
-View(imdata)  
-Data = imdata
-plot(imdata$age,imdata$bmi)
-
-model <- lm(bmi~poly(age,1,raw=TRUE), data=imdata)
-plot(model)
-
-lines(x_axis, predict(model, data.frame(age=x_axis)), col='blue')
-
-plot(bwgt ~ age, data = imdata, pch=16, xlab = "Age", ylab = "Babywt") 
-i = seq(min(imdata$age), max(imdata$age), len=100)          #  x-values for line
-predy = predict(model, data.frame(age=i))                   #  fitted values
-lines(i, predy, lty=1, lwd=2, col="blue")                   #  style and color
-
-# # #
-#---------------------------- Multiple Regression ------------------------------ 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---------------------------- Multiple Regression ------------------------------- 
 library(psych)
 corr.test(Data.num, use = "pairwise", method="pearson", adjust="none", alpha=.05)
-
+#
 pairs(data=Data, ~ Longnose + Acerage + DO2 + Maxdepth + NO3 + SO4 + Temp)
-
+#
 library(PerformanceAnalytics)
 chart.Correlation(Data.num, method="pearson", histogram=TRUE, pch=16)
--------------------------------------------------------------------------------
+#
 #Multiple regression
-  Model selection using the step function-(options)
+Model selection using the step function-(options)
 1-To add terms to a model (direction="forward"),
 2-To remove terms from a model (direction="backward"),
 3-To use a process that both adds and removes terms (direction="both").
-
 It uses AIC (Akaike information criterion) as a selection criterion.  
-
-#-------------------------------------------------------------------------------
+#
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ---------------------------- Model Building ------------------------------------  
   
-  # methods for evaluating subset regression models:
-  1-choose one  with the largest Adjusted R squared.
+# methods for evaluating subset regression models:
+1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
 4-choose one with the smallest predicted sum of square (SS)
@@ -1189,8 +1150,10 @@ Note----the function is glm, y is categorical, x can be (categorical or continuo
 Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
 Probability is 0  - 1
 OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
-
-#--------------------------- Simple Logistic Regression 
+#
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------------------- Simple Logistic Regression ---------------------------
+#
 library(readxl)
 library(readr)
 library(tidyverse)
@@ -1218,7 +1181,7 @@ exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
 table(imdata$CaseControl,imdata$parity)
 
 #regression model
-#------when x is continuous===========================================
+#----------------when x is continuous ==========================================
 logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
 summary(logistic)
 
@@ -1232,7 +1195,11 @@ exp(coef(logistic))
 -----a unit increase in age,the odds of having case is increase by factor 1.06. 
 holding other factors constant(e.g multiple logistic regression).
 
-#------when x is categorical============================================
+#--------------when x is categorical ===========================================
+#
+#Note_______in case we want to reorder /change the reference group, Use relevel
+change_ref <-relevel(imdata$parity, ref = "1")
+#
 logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist1
 summary(logist1)
@@ -1245,8 +1212,10 @@ parity-1 is 1.96 more likely to have case compared to parity-0
 parity-2 is 8.62 more likely to have case compared to parity-0
 parity-3 is 6.46 more likely to have case compared to parity-0
 parity-4 is 1.37 more likely to have case compared to parity-0
-
-#----------------------- Multiple Logistics regression 
+#
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------- Multiple Logistics regression --------------------------
+#  
 multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
 summary(multi_logist)
 
