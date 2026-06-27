@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
- LFdata <- read_excel("LF_Jun19.xlsx")
+ LFdata <- read_excel("LF_Jun25.xlsx")
 
 ```
 
@@ -93,6 +93,7 @@ FTS
 
 ```{r}
 age_sex_summary <- LFdata %>%
+  filter(fts_test_result == "Positive") %>%   # keep only positive FTS results
   mutate(
     Age_Group = case_when(
       age < 10 ~ "<10",
@@ -125,7 +126,7 @@ ggplot(age_sex_summary,
   ) +
   labs(
     x = "Age Group (Years)",
-    y = "Number of Participants",
+    y = "Number of Positive FTS Participants",
     fill = "Sex"
   ) +
   scale_fill_brewer(palette = "Paired") +
@@ -135,7 +136,6 @@ ggplot(age_sex_summary,
     legend.position = "top",
     panel.grid.minor = element_blank()
   )
-
 ```
 
 Row

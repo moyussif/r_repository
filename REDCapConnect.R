@@ -26,12 +26,12 @@ rcon <- redcapAPI::redcapConnection(
 redcap <- redcapAPI::exportRecords(rcon)
 
 #save RDS(redcap, file = "LF_study.rds")
-write_xlsx(redcap, "LF_Jun19.xlsx")
+write_xlsx(redcap, "LF_Jun25.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
-setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4NMIMRdocumnt/mod_r/modibo")
+setwd("C:\Users\User\OneDrive - University of Ghana\moyussif@NMIMR\NMIMR\4Official\mod_r")
 
-LFdata <- read_excel("LF_Jun19.xlsx")
+LFdata <- read_excel("LF_Jun25.xlsx")
 
 str(LFdata)
 
@@ -133,17 +133,51 @@ str(joined_df)
 write_xlsx(joined_df, "Mergedoo.xlsx")
 
 #  #  #  
+  ============================
+  ============================
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  age_sex_summary <- LFdata %>%
+  filter(fts_test_result == "Positive") %>%   # keep only positive FTS results
+  mutate(
+    Age_Group = case_when(
+      age < 10 ~ "<10",
+      age >= 10 & age <= 19 ~ "10-19",
+      age >= 20 & age <= 29 ~ "20-29",
+      age >= 30 & age <= 40 ~ "30-40",
+      age > 40 ~ ">40",
+      TRUE ~ NA_character_
+    ),
+    Age_Group = factor(
+      Age_Group,
+      levels = c("<10", "10-19", "20-29", "30-40", ">40")
+    )
+  ) %>%
+  group_by(Age_Group, sex) %>%
+  summarise(
+    Count = n(),
+    .groups = "drop"
+  )
+
+ggplot(age_sex_summary,
+       aes(x = Age_Group, y = Count, fill = sex)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(
+    aes(label = Count),
+    position = position_dodge(width = 0.8),
+    vjust = -0.4,
+    size = 4,
+    fontface = "bold"
+  ) +
+  labs(
+    x = "Age Group (Years)",
+    y = "Number of Positive FTS Participants",
+    fill = "Sex"
+  ) +
+  scale_fill_brewer(palette = "Paired") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    panel.grid.minor = element_blank()
+  )

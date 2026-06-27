@@ -36,6 +36,7 @@ library(epitools)
 library(PMCMRplus)
 library(AICcmodavg)
 #--------------------------- set directorate -----------------------------------Option.1
+setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
 setwd("C:/Users/User/Downloads")
 
 healthData <- read_csv("health_data.csv",stringsAsFactors = TRUE)    #.csv format 

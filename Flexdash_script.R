@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
-LFdata <- read_excel("LF_Jun19.xlsx")
+LFdata <- read_excel("LF_Jun25.xlsx")
 
 ```
 
@@ -55,7 +55,7 @@ library(gtsummary)
 
 basic_table <- 
   LFdata %>%
-  tbl_summary(include = c(consent, participant_data_collection_tool_complete, site)) %>%   
+  tbl_summary(include = c(consent, site)) %>%   
   # add table captions
   as_gt() %>%
   gt::tab_header(title = "Basic Summary")
@@ -92,19 +92,51 @@ FTS
 ###
 
 ```{r}
-LFdata %>%
-  filter(fts_test_result == "Positive") %>%
-  ggplot(aes(x = sex, y = age, fill = sex)) +
-  geom_boxplot() +
-  labs(
-    title = "Age Distribution of FTS-Positive Participants by Sex",
-    x = "Sex",
-    y = "Age (years)"
+age_sex_summary <- LFdata %>%
+  filter(fts_test_result == "Positive") %>%   # keep only positive FTS results
+  mutate(
+    Age_Group = case_when(
+      age < 10 ~ "<10",
+      age >= 10 & age <= 19 ~ "10-19",
+      age >= 20 & age <= 29 ~ "20-29",
+      age >= 30 & age <= 40 ~ "30-40",
+      age > 40 ~ ">40",
+      TRUE ~ NA_character_
+    ),
+    Age_Group = factor(
+      Age_Group,
+      levels = c("<10", "10-19", "20-29", "30-40", ">40")
+    )
+  ) %>%
+  group_by(Age_Group, sex) %>%
+  summarise(
+    Count = n(),
+    .groups = "drop"
+  )
+
+ggplot(age_sex_summary,
+       aes(x = Age_Group, y = Count, fill = sex)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(
+    aes(label = Count),
+    position = position_dodge(width = 0.8),
+    vjust = -0.4,
+    size = 4,
+    fontface = "bold"
   ) +
-  theme_minimal()
-
+  labs(
+    x = "Age Group (Years)",
+    y = "Number of Positive FTS Participants",
+    fill = "Sex"
+  ) +
+  scale_fill_brewer(palette = "Paired") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    panel.grid.minor = element_blank()
+  )
 ```
-
 
 Row
 -------------------------------------------------------------------------------
@@ -116,15 +148,26 @@ community_table <- LFdata %>%
   filter(site != "Gomoa West District") %>%
   group_by(site, keea_communities, keea_facilities) %>%
   summarise(
-    Tested_Count = n(),
+    Malaria_Tested = n(),
     Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Malaria_Tested, 1), "%"),
+    FTS_Tested = sum(!is.na(fts_test_result)),
     FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
-    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 1), "%"),
-    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 1), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / FTS_Tested, 1), "%"),
     .groups = "drop"
-  )%>%
-  select(site, keea_communities, keea_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
-  arrange(desc(Malaria_Pct)) 
+  ) %>%
+  select(
+    site,
+    keea_communities,
+    keea_facilities,
+    Malaria_Tested,
+    Malaria_Positives,
+    Malaria_Pct,
+    FTS_Tested,
+    FTS_Positives,
+    FTS_Pct
+  ) %>%
+  arrange(desc(FTS_Positives))
 
 kable(community_table, align = "c")
 
@@ -140,15 +183,26 @@ community_table <- LFdata %>%
   filter(site != "KEEA-Municipal") %>%
   group_by(site, gomoa_west_communities, gomoa_west_facilities) %>%
   summarise(
-    Tested_Count = n(),
+    Malaria_Tested = n(),
     Malaria_Positives = sum(malaria_t_results == "Positive", na.rm = TRUE),
+    Malaria_Pct = paste0(round(100 * Malaria_Positives / Malaria_Tested, 1), "%"),
+    FTS_Tested = sum(!is.na(fts_test_result)),
     FTS_Positives = sum(fts_test_result == "Positive", na.rm = TRUE),
-    Malaria_Pct = paste0(round(100 * Malaria_Positives / Tested_Count, 1), "%"),
-    FTS_Pct = paste0(round(100 * FTS_Positives / Tested_Count, 1), "%"),
+    FTS_Pct = paste0(round(100 * FTS_Positives / FTS_Tested, 1), "%"),
     .groups = "drop"
-  )%>%
-  select(site, gomoa_west_communities, gomoa_west_facilities, Tested_Count, Malaria_Positives,Malaria_Pct, FTS_Positives, FTS_Pct)%>%
-  arrange(desc(Malaria_Pct)) 
+  ) %>%
+  select(
+    site,
+    gomoa_west_communities,
+    gomoa_west_facilities,
+    Malaria_Tested,
+    Malaria_Positives,
+    Malaria_Pct,
+    FTS_Tested,
+    FTS_Positives,
+    FTS_Pct
+  ) %>%
+  arrange(desc(FTS_Positives))
 
 kable(community_table, align = "c")
 

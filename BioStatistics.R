@@ -78,6 +78,7 @@ Sys.time()
                    dir.exists("path")#--Checks if specific folder already exists.
                    
 #--------------------------- set directorate -----------------------------------Option.1
+setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
 setwd("C:/Users/User/Desktop")
 mpData <- read_excel("mparasite.xlsx")
 
@@ -110,7 +111,8 @@ all_data3 <- read_delim(file = 'children_data.txt', delim = "\t")
 # or use
 all_data4 <- read_tsv(file = 'children_data.txt' )
 
-#--------------------------- EXport function------------------------------------  
+#--------------------------- EXport function------------------------------------ 
+
 library(writexl)
 write_xlsx(mparasite, "falciparum.xlsx")
 
