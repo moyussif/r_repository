@@ -54,8 +54,38 @@ str(Sars_2)
 print(Sars_2)
 #
 #-------------------------------------------------------------------------------
+                           Create Age group
+#-------------------------------------------------------------------------------
+  #
+  df <- FLU100 %>%
+  mutate(age_group = case_when(
+    AGE < 5 ~ "0-4",
+    AGE < 11 ~ "5-10",
+    AGE < 18 ~ "11-17",
+    AGE < 35 ~ "18-34",
+    AGE < 50 ~ "35-49",
+    AGE < 65 ~ "50-64",
+    TRUE ~ "65+"
+  ))
+
+str(df)
+print(df)
+print(df, n = Inf, width = Inf)
+
+
+#-------------------------------------------------------------------------------
                      Data Conversion _(CODING)  
 #-------------------------------------------------------------------------------
+#
+df$DATE_ONSET <- as.Date(df$DATE_ONSET, format = "%Y/%m/%d")
+#
+df$WEEK <- isoweek(df$DATE_ONSET)#weeks start on Monday
+df$WEEKdiff <- as.numeric(difftime(df$DATE_ONSET,min(df$DATE_ONSET, na.rm = TRUE),
+                                   units = "weeks"))#Number of weeks since a reference date
+#
+df$AGE <-as.integer(df$AGE)# For whole Numbers 
+df$AGE <-as.numeric(df$AGE)# For Decimal Numbers
+df$age_group <- factor(df$age_group, exclude=NULL)
 #
 Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
 Sars_2$SEX <- as.factor(Sars_2$SEX)
@@ -70,7 +100,7 @@ Sars_2$smoking <- as.factor(Sars_2$smoking)
 
 # revisit the data structure
 str(Sars_2)
-
+print(df, n = Inf, width = Inf)
 # # #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 Transform and Manipulate Data using Dplyr 

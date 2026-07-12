@@ -4,6 +4,7 @@ gc(reset = TRUE)
 updateR()
 library(installr)
 #
+setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
 +                            Regression Analysis                               +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

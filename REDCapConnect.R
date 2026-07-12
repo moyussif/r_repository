@@ -29,7 +29,7 @@ redcap <- redcapAPI::exportRecords(rcon)
 write_xlsx(redcap, "LF_Jun25.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
-setwd("C:\Users\User\OneDrive - University of Ghana\moyussif@NMIMR\NMIMR\4Official\mod_r")
+setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
 
 LFdata <- read_excel("LF_Jun25.xlsx")
 
