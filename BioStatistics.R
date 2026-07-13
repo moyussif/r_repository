@@ -290,6 +290,25 @@ print(Cleaned_Hanisah)
 Check_Clean_Hanisah <- colSums(is.na(Cleaned_Hanisah))
 print(Check_Clean_Hanisah)
 
+#-------------------------------------------------------------------------------
+Create Age group
+#-------------------------------------------------------------------------------
+#
+df <- FLU100 %>%
+  mutate(age_group = case_when(
+    AGE < 5 ~ "0-4",
+    AGE < 11 ~ "5-10",
+    AGE < 18 ~ "11-17",
+    AGE < 35 ~ "18-34",
+    AGE < 50 ~ "35-49",
+    AGE < 65 ~ "50-64",
+    TRUE ~ "65+"
+  ))
+
+str(df)
+print(df)
+print(df, n = Inf, width = Inf)
+
 # # #
 --------------------------------------------------------------------------------
                          Data Conversion _(CODING)                        Option 1
@@ -1271,7 +1290,7 @@ It uses AIC (Akaike information criterion) as a selection criterion.
 #-------------------------------------------------------------------------------
 ---------------------------- Model Building ------------------------------------  
   
-  # methods for evaluating subset regression models:
+# methods for evaluating subset regression models:
 1-choose one  with the largest Adjusted R squared.
 2-choose one with the smallest MSE.
 3-choose one with the smallest AIC.
@@ -1680,4 +1699,196 @@ Sars_3$smoking <- factor(
 )
 
 table(Sars_3$SEX, Sars_3$smoking)
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                               Survival Analysis                               #(Time to event) +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #-------------Is a test to investigate (HOW LONG IT TAKES FOR AN EVENT TO OCCUR) 
+  
+  # Kaplan-Meier(KM)__________________(Nonparametric method)
+  Is decriptives
+# Cox proportional Hazard Model_____(semi parametric method)
+Distributive assumptions
+#-----------------------------------
+library(readr)
+library(readxl)
+library(survival)
+library(survminer)
+#-----------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+#-----------------------------------
+Survdata <- read_csv("lung.csv")
+View(Survdata)
+#create censoring variable (right censoring)
+Survdata$censored[Survdata$status == 1] <- 1
+Survdata$censored[Survdata$status == 0 | Survdata$status == 2 ] <- 0 
+View (Survdata)
+
+#inspect time spent
+hist(Survdata$time)
+# inspect distribution just those status=0(Not censored)
+hist(subset(Survdata, status == 0)$time)
+# inspect distribution just those status=1(Censored)
+hist(subset(Survdata, status == 1)$time)
+
+#+++++++++++++++++++++ Kaplan-Meier analysis (model) ++++++++++++++++++++++++++++++++++++++++ (KM)
++---------------------------------------------------------------------------------------------- +
+  km_fit1 <- survfit(Surv(time, censored) ~ 1, data=Survdata ) #------------------STEP 1
+print(km_fit1)
+summary(km_fit1)
+#summarize by pre-specified Time interval ---------> repeat90 days for 30 times 90*(1:30)
+summary(km_fit1, times = c(30, 60, 90*(1:30)))
+
+#plot 
+plot(km_fit1)
+#plot cumulative survival rates (probabilities)
+ggsurvplot(km_fit1, data = Survdata, risk.table = TRUE, conf.int = TRUE, ggtheme = theme_minimal())
+
+#--------------- Km analysis model with categorical covariate ------------------STEP 2
+km_fit2 <- survfit(Surv(time, censored) ~ ph.ecog, data=Survdata )
+print(km_fit2)
+summary(km_fit2)
+summary(km_fit2, times = c(30, 60, 90*(1:30)))
+#plot
+ggsurvplot(km_fit2, data = Survdata, risk.table = TRUE, conf.int = TRUE, pval= TRUE, pval.method=TRUE, 
+           ggtheme = theme_minimal())
+
+#  #  #
+
+#+++++++++++++++++++++++++ cox proportional Hazard (PH) Model +++++++++++++++++++++++++++++++++ (PH)
++------------------------------------------------------------------------------------------------ +
+  #---- Estimate cox Regression Model---------------------------------------------STEP1
+  cox_reg1 <- coxph(Surv(time, censored) ~ ph.ecog, data =Survdata)
+summary(cox_reg1)
+
+#---- Estimate cox Regression Model with Categorical and Continues predictors----STEP2
+cox_reg2 <- coxph(Surv(time, censored) ~ ph.ecog + wt.loss + sex + age + ph.karno, data =Survdata)
+summary(cox_reg2)
+
+
+#NB---------------------------------- can change the reference group and perform (Log_overallrisk)
+
+#    #    # 
+
+# # #
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                          PCA                                                       +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Descriptives  -------------#Variances ie equality and standard deviations
+  KMO & Barlet test----------#Sample adequacy(>0.07)  &  Non-correlated(0.05)
+  Correlation matrix---------0 - 1#correlation close to 1----highly correlated
+Communality ---------------# Must be close 1 (ind//extracted)
+  Total Variances------------
+  Rotated component----------# Must be > 1
+  Plot-----------------------# Scree plot , Loading plot
+  
+  --------------------------------------------------------------------------------
+  rm(list=ls())
+gc(reset = TRUE)
+#Load library
+library(readr)
+library(readxl)
+library(rio)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+#import data
+
+pcadata <- import("pca_immdat1.csv", na.rm = TRUE)
+View(pcadata)
+pcadata
+#Scale the data--------------------
+scdat <-scale(pcadata[,-1:-5], center = T)
+scdat
+#No of print----
+options(max.print = 10000)
+options(scipen = 100)
+getwd()
+#Visualize Package
+library(factoextra)
+install.packages("pca3d")
+# Built pca analysis------------
+library(FactoMineR)
+fpca <- PCA(scdat, ncp = 8)
+fpca
+fpca$eig #eigen values
+fpca$ind$coord
+fpca$ind$cos2
+fpca$var$contrib #contribution of individual variable
+
+#biplot
+fviz_pca(fpca)
+fviz_pca_biplot(fpca, repel = TRUE)
+fviz_pca_biplot(fpca, repel = TRUE, col.ind = "cos2")
+#individual scatter plot
+fviz_pca_ind(fpca)
+fviz_pca_ind(fpca, repel = TRUE, col.ind = "cos2")
+
+# Adding Ellipses
+fviz_pca_ind(fpca, geom.ind = "point", col.ind = pcadata$SCGen, palette = c("green","pink","purple", "blue", "yellow","red"), 
+             addEllipses = TRUE,legend.title = "individual component" )
+
+
+fviz_pca_ind(fpca, geom.ind = "point", col.ind = pcadata$NICUadmin, palette = c("purple", "blue", "red"), 
+             addEllipses = TRUE,legend.title = "individual component" )
+
+
+#Variable
+fviz_pca_var(fpca)
+fviz_pca_var(fpca, repel = TRUE, col.var = "contrib")
+
+#scree plot
+fviz_screeplot(fpca)
+fviz_screeplot(fpca, ncp = 8)
+fviz_screeplot(fpca, ncp = 8, geom="line")
+fviz_screeplot(fpca, ncp = 8, geom="bar")
+fviz_screeplot(fpca, ncp = 8, geom="bar", barfill="red")
+fviz_screeplot(fpca, choice="eigenvalue")
+fviz_screeplot(fpca, choice="eigenvalue", ncp= 8)
+#
+fpca$eig
+#to export the data generated with eigenvalues
+table1 <- fpca$eig
+class(table1)
+table1 <- as.data.frame(table1)
+class(table1)
+
+#import data
+library(writexl)
+write_xlsx(table1, "eigentable.xlsx")
+
+#----------------elbow method-----------------
+plot(table1$`cumulative percentage of variance`)
+
+#----------------Rotated components-----------
+library(psych)
+rpca <- principal(scdat, nfactors = 3, rotate = "varimax", scores = TRUE)
+rpca
+rpca$communality
+rpca$loadings
+print(rpca$loadings, digits = 3, cutoff = 0) #save in the working directorate---->convert image to excel 
+# rotated component matrix Barplot
+barplot(rpca$loadings)
+barplot(rpca$loadings, beside = TRUE)
+barplot(rpca$loadings, beside = TRUE, col = "blue", main = "Rotated Component matrix")
+
+# add R color palette
+library(pals)
+barplot(rpca$loadings, beside = TRUE, col = brewer.accent(18), main = "Rotated Component matrix")  
+barplot(rpca$loadings, beside = TRUE, col = brewer.greens(18), main = "Rotated Component matrix")  
+barplot(rpca$loadings, beside = TRUE, col = alphabet(18), main = "Rotated Component matrix")  
+
+#import scores
+rpca$scores
+scores <- rpca$scores
+class(rpca$scores)
+scores <- as.data.frame(rpca$scores)
+class(scores)
+#
+write_xlsx(scores, "scores.xlsx")
+
+#   #    #  
+
+
 

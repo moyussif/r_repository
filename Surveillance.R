@@ -1,9 +1,9 @@
---------------------------------------------------------------------------------
-  |||||||||||||||||||||||||| Analysis of Flu data ||||||||||||||||||||||||||||||||
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  rm(list=ls())
-gc(reset = TRUE)  
-#--------------load required packages
+#
+rm(list=ls())
+gc(reset = TRUE)
+#-------------------------------------------------------------------------------
+........................ Analysis of Flu data .................................
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(readxl)
 library(readr)
 library(tidyverse)
@@ -19,15 +19,14 @@ library(stats)
 library(epitools)
 library(gtsummary)
 library(lubridate)
-
 #  
 FLU100 <- read_excel("C:/Users/User/Desktop/FLU100.xlsx")
 str(FLU100)  
-
+#
 --------------------------------------------------------------------------------
-  Create Age group
+                          Create Age group
 --------------------------------------------------------------------------------
-  #
+#
   df <- FLU100 %>%
   mutate(age_group = case_when(
     AGE < 5 ~ "0-4",
@@ -43,10 +42,10 @@ str(df)
 print(df)
 
 --------------------------------------------------------------------------------
-  Data Conversion  
+                          Data Conversion  
 --------------------------------------------------------------------------------
-  #
-  df$DATE_ONSET <- as.Date(df$DATE_ONSET, format = "%Y/%m/%d")
+#
+df$DATE_ONSET <- as.Date(df$DATE_ONSET, format = "%Y/%m/%d")
 #
 df$WEEK <- isoweek(df$DATE_ONSET)#weeks start on Monday
 df$WEEKdiff <- as.numeric(difftime(df$DATE_ONSET,min(df$DATE_ONSET, na.rm = TRUE),
@@ -77,8 +76,8 @@ summary(df)
 describe.by(df)
 #
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  --------------------------------------------------------------------------------
-  ######################## Table - Descriptive Statistics  #######################
+--------------------------------------------------------------------------------
+######################## Table - Descriptive Statistics  #######################
 table1 <- df %>%
   select(ILI_SARI, AGE, SEX, age_group, REGION, District, FLUMATRIX) %>%
   tbl_summary(
@@ -97,7 +96,7 @@ table1 <- df %>%
 table1
 #
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  ########################## PREVALENCE BY AGE GROUP #############################
+########################## PREVALENCE BY AGE GROUP #############################
 plot_data <- df %>%
   filter(!is.na(FLUMATRIX), !FLUMATRIX %in% c("SARI", "NEG")) %>%
   count(SEX, age_group, FLUMATRIX) %>%
@@ -130,7 +129,7 @@ ggplot(plot_data, aes(x = age_group, y = n, fill = FLUMATRIX)) +
 
 # # # 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  ############################ PREVALENCE BY REGION ##############################
+############################ PREVALENCE BY REGION ##############################
 plot_data <- df %>%
   filter(!is.na(FLUMATRIX), !FLUMATRIX %in% c("SARI", "NEG")) %>%
   count(SEX, REGION, FLUMATRIX) %>%
@@ -235,3 +234,153 @@ ggplot(plot_data, aes(x = WEEK, y = n, color = FLUMATRIX, group = FLUMATRIX)) +
     plot.title = element_text(hjust = 0.5, face = "bold")
   ) +
   scale_x_continuous(breaks = unique(plot_data$WEEK))
+
+
+
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                         Time Series Analysis                                 +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  library(tidyverse)
+library(ggplot2)
+library(tseries)
+library(forecast)
+library(readxl)
+library(readr)
+#-------------------------------------------------------------------------------
+
+Converting date to time series
+#STEP1====tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d") 
+#STEP2====hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
+#STEP3====class(hhdata)  
+#-------------------------------------------------------------------------------
+
+Monthly data
+#1-month_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 12)
+#2-monthly <- ts(tdata$attendance, start = 2015, frequency = 12)
+#3-monthly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 12)
+Quarterly data 
+#1-qtr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+#2-quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+#3-qtrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 4)
+Yearly data 
+#1-yr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+#2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
+#3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
+--------------------------------------------------------------------------------
+  setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
+cnfm <- read_csv("cnfm.csv")
+View(cnfm)
+class(cnfm)
+boxplot(ParasitePresence~Date, data = cnfm)
+--------------------------------------------------------------------------------
+  #To control//make the variance Equal
+  log(cnfm$ParasitePresence)
+plot(log(tdata$attendance))  
+#To control//make the mean Equal
+plot(diff(log(tdata$attendance)))
+
+#convert data to time series
+tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+class(tsdata)
+view(tsdata)
+plot(tsdata)
+
+#check to determine stationarity of data 
+acf(tsdata)      #step1----autocorrelation
+pacf(tsdata)     #step2----partial autocorrelation
+adf.test(tsdata) #step3----augmented Dickey-fuller test
+
+#Convert Non_stationary to Stationary---------(seasonal arima model)
+tsdata_model=auto.arima(tsdata, ic = "aic", trace = TRUE)
+tsdata_model
+tsdisplay(residuals(tsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
+#Check for stationary again
+acf(ts(tsdata_model$residuals))
+pacf(ts(tsdata_model$residuals))
+
+#Now perform forecast for stationary data-----(seasonal arima model)
+mydataforecast=forecast(tsdata_model, level = c(95),h=5*4)
+mydataforecast
+plot(mydataforecast)
+autoplot(mydataforecast)
+
+#Non seasonal ARIMA-------------------------------------------------
+nsdata_model=auto.arima(tsdata, seasonal = FALSE)
+nsdata_model
+tsdisplay(residuals(nsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
+non_seasonal = forecast(nsdata_model)
+plot(non_seasonal)
+
+#Now perform forecast for stationary data-----(seasonal arima model)
+mysecondforecast=forecast(nsdata_model, level = c(95),h=5*4)
+mysecondforecast
+plot(mysecondforecast)
+
+
+#Evaluate model (seasonal model)
+Box.test(tsdata_model$residuals, lag = 5,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 15,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
+#alternate the lag values until the P.values is > 0.05  ---- indicate No further autocorrelation
+
+
+
+# # #
+
+=========================== Time series Using ggplot2 ==========================
+#------------------------------------------------------------------------------
+library(readxl)
+library(scales)
+library(ggplot2)
+library(ggpmisc)
+#------------------------------------------------------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
+View(tdata)
+#convert date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")  
+
+# line and Points
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()
+
+#peaks
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+  stat_peaks(geom = "point", span = 15, color = "steelblue3", size = 2) +  
+  stat_peaks(geom = "label", span = 15, color = "steelblue3", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
+  stat_peaks(geom = "rug", span = 15, color = "blue", sides = "b")
+
+#Valleys  
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+  stat_valleys(geom = "point", span = 11, color = "red", size = 2)+   
+  stat_valleys(geom = "label", span = 11, color = "red", angle = 0,
+               hjust = -0.1, x.label.fmt = "%Y-%m-%d")+
+  stat_valleys(geom = "rug", span = 11, color = "red", sides = "b")
+
+#break midpoint
+ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_point()+
+  geom_vline(xintercept = as.Date(tdata$Date, format = "%Y/%m/%d"),
+             linetype = 2, color = 2, linewidth = 1)
+
+# Facet wrap for multiple lines  
+fw <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_wrap(~Date)
+fw
+
+# Facet grid for multiple lines
+fg <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_grid(attendance~Date)
+fg
+
+
+  
+  
+  
