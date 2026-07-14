@@ -1,7 +1,11 @@
 #
 rm(list=ls())
 gc(reset = TRUE)
-#--------------------------- required package
+#--------------------------- required package ----------------------------------
+#Install packages (run once)
+install.packages(c("readxl", "tidyverse", "lubridate","psych", "car", "lessR", 
+                   "epitools", "stats", "Hmisc", "FSA"))
+#Install packages (one by one)
 install.packages("readxl")
 install.packages("readr")
 install.packages("tidyverse")

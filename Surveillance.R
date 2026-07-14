@@ -241,7 +241,7 @@ ggplot(plot_data, aes(x = WEEK, y = n, color = FLUMATRIX, group = FLUMATRIX)) +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                         Time Series Analysis                                 +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  library(tidyverse)
+library(tidyverse)
 library(ggplot2)
 library(tseries)
 library(forecast)
@@ -268,7 +268,7 @@ Yearly data
 #2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
 #3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
 --------------------------------------------------------------------------------
-  setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 tdata <- read_excel("CTrends.xlsx")
 cnfm <- read_csv("cnfm.csv")
 View(cnfm)
