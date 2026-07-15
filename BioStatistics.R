@@ -1344,9 +1344,9 @@ dev.off()
 
 
 # # #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                              LOGISTIC REGRESSION                                               +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                              LOGISTIC REGRESSION                             +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #A binary variable is a categorical outcome that has two categories or levels. 
 #The logistic model (or logit model) is used to model the probability of a particular 
 #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
@@ -1770,13 +1770,11 @@ summary(cox_reg2)
 
 #NB---------------------------------- can change the reference group and perform (Log_overallrisk)
 
-#    #    # 
 
 # # #
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                                          PCA                                                       +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                                    PCA                                       +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Descriptives  -------------#Variances ie equality and standard deviations
   KMO & Barlet test----------#Sample adequacy(>0.07)  &  Non-correlated(0.05)
   Correlation matrix---------0 - 1#correlation close to 1----highly correlated
@@ -1887,8 +1885,476 @@ scores <- as.data.frame(rpca$scores)
 class(scores)
 #
 write_xlsx(scores, "scores.xlsx")
+#
 
-#   #    #  
+# # #  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                         Surveillance-Analysis                                +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+rm(list=ls())
+gc(reset = TRUE)
+# Load packages
+library(readxl)
+library(readr)
+library(janitor)
+library(tidyverse)
+library(patchwork)
+library(psych)
+library(car)
+library(lessR)
+library(Hmisc)
+library(stats)
+library(epitools)
+library(lubridate)
+library(gtsummary)
+library(surveillance)
+
+# # #
+--------------------------------------------------------------------------------
+  #------------------------- Set working Directorate ----------------------------Step.1
+  --------------------------------------------------------------------------------
+  #
+  setwd("C:/Users/User/Downloads")
+# # #
+--------------------------------------------------------------------------------
+  #------------------------- import Surveillance data ----------------------------Step.2
+  --------------------------------------------------------------------------------
+  #
+  FLU10 <- read_excel("FLU100.xlsx")
+str(FLU10)
+# # #
+print(FLU10, width = Inf)
+summary(FLU10)
+
+# # #
+#-------------------------------------------------------------------------------
+------------------------------- Clean the data --- -----------------------------Step.3
+#-------------------------------------------------------------------------------
+  #Remove duplicates
+  FLU10 <- FLU10 %>% distinct()
+#..............................
+#Check missing values
+colSums(is.na(FLU10))
+#Remove missing observations
+FLU_clean <- FLU10 %>% drop_na()
+#verify clean data
+colSums(is.na(FLU_clean))
+# # #
+str(FLU_clean)
+#-------------------------------------------------------------------------------
+------------------------------- Data Conversion -------------------------------- 
+#-------------------------------------------------------------------------------
+  #df$DATE_ONSET <- as.Date(df$DATE_ONSET, format = "%Y/%m/%d")
+  #
+  FLU10$AGE <- as.integer(FLU10$AGE)# For whole Numbers
+FLU10$AGE <-as.numeric(FLU10$AGE)# For Decimal Numbers
+#
+FLU10$SEX <- as.factor(FLU10$SEX)
+FLU10$REGION <- as.factor(FLU10$REGION)
+FLU10$District <- as.factor(FLU10$District)  
+FLU10$ILI_SARI <- as.factor(FLU10$ILI_SARI) 
+FLU10$FEVER <- as.factor(FLU10$FEVER)  
+FLU10$COUGH <- as.factor(FLU10$COUGH)  
+FLU10$THROAT <- as.factor(FLU10$THROAT)
+FLU10$CORYZA <- as.factor(FLU10$CORYZA) 
+FLU10$MYALGIA <- as.factor(FLU10$MYALGIA)
+FLU10$HEADACHE <- as.factor(FLU10$HEADACHE)
+FLU10$BREATH_DIFFICULTY <- as.factor(FLU10$BREATH_DIFFICULTY)
+FLU10$FLUMATRIX <- as.factor(FLU10$FLUMATRIX)
+# 
+str(FLU10)
+
+# # #
+#-------------------------------------------------------------------------------
+----------------------- Create epidemiological variables -----------------------Step.4
+#-------------------------------------------------------------------------------
+  #--------------Convert Dates-------------------
+FLU10$DATE_ONSET <- as.Date(FLU10$DATE_ONSET)
+#Create epidemiological Year
+#FLU_clean$Year <- as.integer(format(FLU_clean$DATE_ONSET, "%Y"))
+FLU10$Year <- format(FLU10$DATE_ONSET, "%Y")
+#Create epidemiological Month
+FLU10$Month <- month(FLU10$DATE_ONSET,label = TRUE)
+#Create epidemiological weeks (start on Monday)
+FLU10$Week <- isoweek(FLU10$DATE_ONSET)
+#
+#------------- Create Agegroup -------------------
+df <- FLU10 %>% mutate(Age_group = case_when(
+  AGE < 5 ~ "0-4",
+  AGE < 11 ~ "5-10",
+  AGE < 18 ~ "11-17", 
+  AGE < 35 ~ "18-34", 
+  AGE < 50 ~ "35-49",
+  AGE < 65 ~ "50-64",
+  TRUE ~ "65+"))
+#
+str(df)
+print(df, width = Inf)
+print(df, n = Inf, width = Inf)
+summary(df)
+describe.by(df)
+# # #
+#-------------------------------------------------------------------------------
+----------------------------- Descriptive analysis -----------------------------Step.5
+#--------------------------------Demographics-----------------------------------.1
+#
+  table1 <- df %>%
+  select(ILI_SARI, SEX, Age_group, REGION, FLUMATRIX) %>%
+  tbl_summary(
+    by = ILI_SARI,
+    statistic = list(
+      all_continuous() ~ "{median} ({p25}, {p75})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 1,
+    missing = "ifany"
+  ) %>%
+  add_p() %>%          # Adds p-values comparing groups
+  add_overall() %>%    # Adds an Overall column
+  bold_labels()
+
+table1
+# # #
+#--------- Total Cases by COUNT - PREVALENCE - PROPORTION - INCIDENCE -----------.2
+#
+describe_FLU <- df %>% group_by(REGION, SEX, Age_group,Month) %>%
+    summarise(total = n(),
+              FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+              negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
+              percent_positive = 100 * FLU_cases / total,
+              Proportion_positive = FLU_cases / total) %>% 
+    arrange(desc(percent_positive))
+
+# # #
+--------------------------------------------------------------------------------
+#--------------------------- Calculate incidence rate --------------------------Step.6
+--------------------------------------------------------------------------------
+str(df)
+#For incidence 
+population <- 810
+FLU_cases <- sum(df$FLUMATRIX != "NEG", na.rm = TRUE)
+#Incidence
+incidence <- FLU_cases / population
+#Incidence percentage
+incidence_percent <- (FLU_cases / population) * 100
+incidence_percent
+#For incidence per 1,000 people:
+incidence_per_1000 <- (FLU_cases / population) * 1000
+incidence_per_1000
+
+#For incidence by Region
+df %>%
+  group_by(REGION) %>%
+  summarise(
+    population = first(population),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    incidence_per_1000 = (FLU_cases / population) * 1000
+  ) %>%
+  arrange(desc(incidence_per_1000))
+
+# # #
+--------------------------------------------------------------------------------
+  #---------------------------- Create epidemic curve ----------------------------Step.7
+  --------------------------------------------------------------------------------
+  # Epidemic curve (weekly)
+  p1 <- df %>%
+  filter(FLUMATRIX != "NEG", !is.na(DATE_ONSET)) %>%
+  ggplot(aes(x = DATE_ONSET)) +
+  geom_histogram(
+    binwidth = 7,
+    fill = "steelblue",
+    color = "black"
+  ) +
+  labs(
+    title = "Epidemic Curve of Influenza Cases",
+    x = "Date of Symptom Onset",
+    y = "Number of Cases"
+  ) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# Monthly trend
+monthly_cases <- df %>%
+  filter(FLUMATRIX != "NEG") %>%
+  count(Month)
+
+p2 <- ggplot(monthly_cases, aes(Month, n, group = 1)) +
+  geom_line(color = "darkred", size = 1) +
+  geom_point(size = 3, color = "darkred") +
+  labs(
+    title = "Monthly Influenza Cases",
+    x = "Month",
+    y = "Number of Cases"
+  ) +
+  theme_minimal()
+
+# Combine plots
+p1 / p2
 
 
+# # #
+--------------------------------------------------------------------------------
+#---------------------------- Bar chart by district ----------------------------Step.9
+--------------------------------------------------------------------------------
+  #  
+  df %>%
+  count(REGION, District, name = "FLU_cases") %>%
+  left_join(
+    df %>%
+      group_by(REGION, District) %>%
+      summarise(population = first(population), .groups = "drop"),
+    by = c("REGION", "District")
+  ) %>%
+  mutate(prevalence = 100 * FLU_cases / population) %>%
+  ggplot(aes(x = reorder(District, FLU_cases), y = FLU_cases)) +
+  geom_col(fill = "steelblue") +
+  geom_text(
+    aes(label = paste0(FLU_cases, " (", round(prevalence, 1), "%)")),
+    hjust = -0.1,
+    size = 3
+  ) +
+  coord_flip() +
+  facet_wrap(~REGION, scales = "free_y") +
+  labs(
+    x = "District",
+    y = "Number of cases",
+    title = "Flu Cases and Prevalence by District Within Region"
+  ) +
+  theme_gray() +
+  expand_limits(y = max(df$FLU_cases, na.rm = TRUE) * 1.2)
+# # #
+--------------------------------------------------------------------------------
+  #------------------------------- Age distribution ------------------------------Step.10
+  --------------------------------------------------------------------------------
+  # Histogram of age distribution
+  p1 <- ggplot(df, aes(AGE)) +
+  geom_histogram(binwidth = 5, fill = "orange") +
+  labs(
+    title = "Age Distribution of Cases",
+    x = "Age (years)",
+    y = "Number of Cases"
+  ) +
+  theme_minimal()
+
+# Age group bar plot
+p2 <- df %>%
+  count(Age_group) %>%
+  ggplot(aes(x = Age_group, y = n)) +
+  geom_col(fill = "gray") +
+  labs(
+    title = "Cases by Age Group",
+    x = "Age Group (years)",
+    y = "Number of Cases"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# Combine plots
+p1 + p2
+
+# # #
+--------------------------------------------------------------------------------
+  #------------------------------- Cross-tabulation ------------------------------Step.11
+  --------------------------------------------------------------------------------
+  str(df)
+#
+table(df$SEX, df$FLUMATRIX)  
+
+# # #
+--------------------------------------------------------------------------------
+  #-------------------------------- Chi-square test ------------------------------Step.12
+  --------------------------------------------------------------------------------
+  # 
+  chisq.test(table(df$SEX, df$FLUMATRIX))  
+
+# # #
+--------------------------------------------------------------------------------
+  #------------------------------- Logistic regression ---------------------------Step.13
+  --------------------------------------------------------------------------------
+  #  
+  malaria$Death <- ifelse(malaria$Outcome=="Dead",1,0)
+#
+model <- glm(Death ~ Age + Sex, family=binomial, data=malaria)
+summary(model)  
+
+# # #
+--------------------------------------------------------------------------------
+  #-------------------------------- Time series ----------------------------------Step.14
+  --------------------------------------------------------------------------------
+  #  
+  weekly_cases <- df %>% count(Week)
+
+plot(weekly_cases$Week, weekly_cases$n, type="l")  
+
+# # #
+--------------------------------------------------------------------------------
+  #------------------------------ Detect outbreaks -------------------------------Step.15
+  --------------------------------------------------------------------------------
+  # 
+  library(surveillance)
+# Example workflow (requires surveillance time-series object)
+# sts_object <- sts(...)
+# alarms <- farrington Flexible(sts_object)  
+
+# # #
+--------------------------------------------------------------------------------
+  #---------------------- Generate a surveillance report -------------------------Step.16
+  --------------------------------------------------------------------------------
+  #  
+  df %>% summarise(Total_Cases = n(),Mean_Age = mean(AGE),Median_Age = median(AGE))  
+#Cases by district  
+df %>% group_by(District) %>% summarise(Cases = n()) 
+
+################################################################################
+
+
+
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                         Time Series Analysis                                 +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  library(tidyverse)
+library(ggplot2)
+library(tseries)
+library(forecast)
+library(readxl)
+library(readr)
+#-------------------------------------------------------------------------------
+
+Converting date to time series
+#STEP1====tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d") 
+#STEP2====hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
+#STEP3====class(hhdata)  
+#-------------------------------------------------------------------------------
+
+Monthly data
+#1-month_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 12)
+#2-monthly <- ts(tdata$attendance, start = 2015, frequency = 12)
+#3-monthly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 12)
+Quarterly data 
+#1-qtr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+#2-quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+#3-qtrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 4)
+Yearly data 
+#1-yr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+#2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
+#3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
+--------------------------------------------------------------------------------
+  setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
+cnfm <- read_csv("cnfm.csv")
+View(cnfm)
+class(cnfm)
+boxplot(ParasitePresence~Date, data = cnfm)
+--------------------------------------------------------------------------------
+  #To control//make the variance Equal
+  log(cnfm$ParasitePresence)
+plot(log(tdata$attendance))  
+#To control//make the mean Equal
+plot(diff(log(tdata$attendance)))
+
+#convert data to time series
+tsdata=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+class(tsdata)
+view(tsdata)
+plot(tsdata)
+
+#check to determine stationarity of data 
+acf(tsdata)      #step1----autocorrelation
+pacf(tsdata)     #step2----partial autocorrelation
+adf.test(tsdata) #step3----augmented Dickey-fuller test
+
+#Convert Non_stationary to Stationary---------(seasonal arima model)
+tsdata_model=auto.arima(tsdata, ic = "aic", trace = TRUE)
+tsdata_model
+tsdisplay(residuals(tsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
+#Check for stationary again
+acf(ts(tsdata_model$residuals))
+pacf(ts(tsdata_model$residuals))
+
+#Now perform forecast for stationary data-----(seasonal arima model)
+mydataforecast=forecast(tsdata_model, level = c(95),h=5*4)
+mydataforecast
+plot(mydataforecast)
+autoplot(mydataforecast)
+
+#Non seasonal ARIMA-------------------------------------------------
+nsdata_model=auto.arima(tsdata, seasonal = FALSE)
+nsdata_model
+tsdisplay(residuals(nsdata_model), lag.max = 45, main = "(0,0,0) Model residuals" )
+non_seasonal = forecast(nsdata_model)
+plot(non_seasonal)
+
+#Now perform forecast for stationary data-----(seasonal arima model)
+mysecondforecast=forecast(nsdata_model, level = c(95),h=5*4)
+mysecondforecast
+plot(mysecondforecast)
+
+
+#Evaluate model (seasonal model)
+Box.test(tsdata_model$residuals, lag = 5,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 15,type = "Ljung-Box")
+Box.test(tsdata_model$residuals, lag = 30,type = "Ljung-Box")
+#alternate the lag values until the P.values is > 0.05  ---- indicate No further autocorrelation
+
+
+
+# # #
+
+=========================== Time series Using ggplot2 ==========================
+  #------------------------------------------------------------------------------
+library(readxl)
+library(scales)
+library(ggplot2)
+library(ggpmisc)
+#------------------------------------------------------------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+tdata <- read_excel("CTrends.xlsx")
+View(tdata)
+#convert date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")  
+
+# line and Points
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()
+
+#peaks
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+  stat_peaks(geom = "point", span = 15, color = "steelblue3", size = 2) +  
+  stat_peaks(geom = "label", span = 15, color = "steelblue3", angle = 0,
+             hjust = -0.1, x.label.fmt = "%Y-%m-%d") +
+  stat_peaks(geom = "rug", span = 15, color = "blue", sides = "b")
+
+#Valleys  
+ggplot(tdata, aes(x = Date, y = attendance)) +
+  geom_line()+
+  stat_valleys(geom = "point", span = 11, color = "red", size = 2)+   
+  stat_valleys(geom = "label", span = 11, color = "red", angle = 0,
+               hjust = -0.1, x.label.fmt = "%Y-%m-%d")+
+  stat_valleys(geom = "rug", span = 11, color = "red", sides = "b")
+
+#break midpoint
+ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_point()+
+  geom_vline(xintercept = as.Date(tdata$Date, format = "%Y/%m/%d"),
+             linetype = 2, color = 2, linewidth = 1)
+
+# Facet wrap for multiple lines  
+fw <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_wrap(~Date)
+fw
+
+# Facet grid for multiple lines
+fg <-ggplot(tdata, aes(x = Date, y = attendance)) +  
+  geom_line() +
+  facet_grid(attendance~Date)
+fg 
 

@@ -1229,3 +1229,232 @@ The parameter indicates that one unit increase in the bmi is associated with a 0
 increase in the log mean number of age    ---- Holding other variables constant
 
 #  #  #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+============================ Surveillance Data =================================
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+rm(list=ls())
+gc(reset = TRUE)
+# Load packages
+library(readxl)
+library(readr)
+library(janitor)
+library(tidyverse)
+library(patchwork)
+library(psych)
+library(car)
+library(lessR)
+library(Hmisc)
+library(stats)
+library(epitools)
+library(lubridate)
+library(gtsummary)
+library(surveillance)
+
+# # #
+setwd("C:/Users/User/Downloads")
+#
+FLU10 <- read_excel("FLU100.xlsx")
+str(FLU10)
+# # #
+print(FLU10, width = Inf)
+
+#------------------------------ Data Conversion --------------------------------
+#
+FLU10$SEX <- as.factor(FLU10$SEX)
+FLU10$REGION <- as.factor(FLU10$REGION)
+FLU10$District <- as.factor(FLU10$District)  
+FLU10$ILI_SARI <- as.factor(FLU10$ILI_SARI) 
+FLU10$FEVER <- as.factor(FLU10$FEVER)  
+FLU10$COUGH <- as.factor(FLU10$COUGH)  
+FLU10$THROAT <- as.factor(FLU10$THROAT)
+FLU10$CORYZA <- as.factor(FLU10$CORYZA) 
+FLU10$MYALGIA <- as.factor(FLU10$MYALGIA)
+FLU10$HEADACHE <- as.factor(FLU10$HEADACHE)
+FLU10$BREATH_DIFFICULTY <- as.factor(FLU10$BREATH_DIFFICULTY)
+FLU10$FLUMATRIX <- as.factor(FLU10$FLUMATRIX)
+# 
+str(FLU10)
+# # #
+#---------------------- Create epidemiological variables ---------------------
+
+#-------------------Convert Dates
+FLU10$DATE_ONSET <- as.Date(FLU10$DATE_ONSET)
+
+#Create epidemiological Month
+FLU10$Month <- month(FLU10$DATE_ONSET,label = TRUE)
+
+#Create epidemiological weeks (start on Monday)
+FLU10$Week <- isoweek(FLU10$DATE_ONSET)
+#
+#------------- Create Agegroup 
+df <- FLU10 %>% mutate(Age_group = case_when(
+  AGE < 5 ~ "0-4",
+  AGE < 11 ~ "5-10",
+  AGE < 18 ~ "11-17", 
+  AGE < 35 ~ "18-34", 
+  AGE < 50 ~ "35-49",
+  AGE < 65 ~ "50-64",
+  TRUE ~ "65+"))
+#
+str(df)
+print(df, width = Inf)
+
+#---------------------------- Descriptive analysis ---------------------------
+#
+table1 <- df %>%
+  select(ILI_SARI, SEX, Age_group, REGION, FLUMATRIX) %>%
+  tbl_summary(by = ILI_SARI,
+              statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = all_continuous() ~ 1,missing = "ifany") %>%
+  add_p() %>%          # Adds p-values comparing groups
+  add_overall() %>%    # Adds an Overall column
+  bold_labels()
+
+table1  
+#
+#..................Total Cases ......................
+FLU_cases <- sum(df$FLUMATRIX != "NEG", na.rm = TRUE)
+FLU_cases
+#..................Cases by sex
+df %>%
+  group_by(SEX) %>%
+  summarise(
+    total = n(),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
+    percent_positive = 100 * FLU_cases / total
+  )
+#..................Cases by District................
+#case_Count
+df %>%
+  group_by(REGION) %>%
+  summarise(
+    total = n(),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
+    percent_positive = 100 * FLU_cases / total) %>%
+  arrange(desc(FLU_cases))
+
+#case_Prevalence
+df %>%
+  group_by(REGION) %>%
+  summarise(
+    total = n(),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
+    percent_positive = 100 * FLU_cases / total
+  ) %>%
+  arrange(desc(percent_positive))
+
+#case_Proportion
+df %>%
+  group_by(REGION) %>%
+  summarise(
+    total = n(),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
+    Proportion_positive = FLU_cases / total
+  ) %>%
+  arrange(desc(Proportion_positive))
+#
+#Cases by month
+df %>% count(Month)
+# # #
+#--------------------------- Calculate incidence rate --------------------------
+str(df)
+#For incidence 
+population <- 810
+FLU_cases <- sum(df$FLUMATRIX != "NEG", na.rm = TRUE)
+
+#Incidence percentage
+incidence_percent <- (FLU_cases / population) * 100
+incidence_percent
+#For incidence per 1,000 people:
+incidence_per_1000 <- (FLU_cases / population) * 1000
+incidence_per_1000
+
+#For incidence by Region
+df %>%
+  group_by(REGION) %>%
+  summarise(
+    population = first(population),
+    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
+    incidence_per_1000 = (FLU_cases / population) * 1000
+  ) %>%
+  arrange(desc(incidence_per_1000))
+
+# # #
+#---------------------------- Create epidemic curve ----------------------------
+# Epidemic curve (weekly)
+df %>%
+  filter(FLUMATRIX != "NEG", !is.na(DATE_ONSET)) %>%
+  ggplot(aes(x = DATE_ONSET)) +
+  geom_histogram(
+    binwidth = 7,
+    fill = "steelblue",
+    color = "black"
+  ) +
+  labs(
+    title = "Epidemic Curve of Influenza Cases",
+    x = "Date of Symptom Onset",
+    y = "Number of Cases"
+  ) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# # #
+#---------------------------- Bar chart by district 
+#  
+df %>%
+  count(REGION, District, name = "FLU_cases") %>%
+  left_join(df %>% group_by(REGION, District) %>%
+              summarise(population = first(population), .groups = "drop"),
+            by = c("REGION", "District")) %>%
+  mutate(prevalence = 100 * FLU_cases / population) %>%
+  ggplot(aes(x = reorder(District, FLU_cases), y = FLU_cases)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = paste0(FLU_cases)),hjust = -0.1, size = 3) +
+  coord_flip() +
+  facet_wrap(~REGION, scales = "free_y") +
+  labs(x = "District",y = "Number of cases",title = "Flu Cases by District Within Region")+
+  theme_classic()
+# # #
+#------------------------------- Age distribution ----------------------------
+# Histogram of age distribution
+ggplot(df, aes(AGE)) +geom_histogram(binwidth = 5, fill = "orange") +
+  labs(title = "Age Distribution of Cases",x = "Age (years)", y = "Number of Cases")+
+  theme_minimal()
+# Age group bar plot
+df %>% count(Age_group) %>%
+  ggplot(aes(x = Age_group, y = n)) + geom_col(fill = "gray") +
+  labs(title = "Cases by Age Group", x = "Age Group (years)", y = "Number of Cases")+
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# # #
+#-------------------------------- Time series ----------------------------------
+#  
+weekly_cases <- df %>% count(Week)
+
+plot(weekly_cases$Week, weekly_cases$n, type="l")  
+# # #
+#------------------------------- Cross-tabulation ------------------------------
+str(df)
+#
+table(df$SEX, df$FLUMATRIX)  
+#-------------------------------- Chi-square test ------------------------------
+# 
+chisq.test(table(df$SEX, df$FLUMATRIX))  
+# # #
+#------------------------------- Logistic regression ---------------------------
+#  
+malaria$Death <- ifelse(malaria$Outcome=="Dead",1,0)
+#
+model <- glm(Death ~ Age + Sex, family=binomial, data=malaria)
+summary(model)  
+
+# # #
+
