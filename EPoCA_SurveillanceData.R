@@ -1,6 +1,3 @@
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                         Surveillance-Analysis                                +
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 rm(list=ls())
 gc(reset = TRUE)
@@ -19,7 +16,6 @@ library(epitools)
 library(lubridate)
 library(gtsummary)
 library(surveillance)
-
 # # #
 --------------------------------------------------------------------------------
 #------------------------- Set working Directorate ----------------------------Step.1
@@ -27,31 +23,34 @@ library(surveillance)
 #
 setwd("C:/Users/User/Downloads")
 # # #
---------------------------------------------------------------------------------
-#------------------------- import Surveillance data ----------------------------Step.2
---------------------------------------------------------------------------------
-#
 EPo2 <- read_excel("EPo2.xlsx")
 str(EPo2)
 # # #
 print(EPo2, width = Inf)
-summary(EPo2)
-
+describe(EPo2) #categorical data(HMISC)
 # # #
-#-------------------------------------------------------------------------------
-------------------------------- Clean the data --- -----------------------------Step.3
-#-------------------------------------------------------------------------------
-#Remove duplicates
+#...............................................................................
+-------------------- Clean data ( missing & duplicates) -------------------Step.2
+#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#................................ Option.1 .....................................
+describe(EPo2)#(HMISC)                 
+
+#................................ Option.2 .....................................
+#===================== Duplicates
+#View duplicates
+EPo2 %>% group_by(ID, Date) %>% filter(n() > 1)
+#Remove duplicates, keeping the first row
+EPo2 <- EPo2 %>% distinct(ID, Date, .keep_all = TRUE)
+#remove all duplicates
 EPo2 <- EPo2 %>% distinct()
-#..............................
-#Check missing values
+#==================== Missing
+#View missing
 colSums(is.na(EPo2))
-#Remove missing observations
+#Remove missing
 EPo2_clean <- EPo2 %>% drop_na()
 #verify clean data
 colSums(is.na(EPo2_clean))
 # # #
-str(EPo2_clean)
 #-------------------------------------------------------------------------------
 ------------------------------- Data Conversion -------------------------------- 
 #-------------------------------------------------------------------------------
@@ -75,6 +74,7 @@ str(EPo2_clean)
 #-------------------------------------------------------------------------------
 ----------------------- Create epidemiological variables -----------------------Step.4
 #----------------------------- Convert Dates -----------------------------------
+
 EPo2_clean$DateReceived <- as.Date(EPo2_clean$DateReceived, format = "%Y/%m/%d")
 #Create epidemiological Year
 #FLU_clean$Year <- as.integer(format(FLU_clean$DATE_ONSET, "%Y"))
@@ -86,9 +86,9 @@ EPo2_clean$Week <- isoweek(EPo2_clean$DateReceived)
 #
 str(EPo2_clean)
 # # #
-#-------------------------------------------------------------------------------
------------------------------ Descriptive analysis -----------------------------Step.5
-#--------------------------------Demographics-----------------------------------.1
+--------------------------------------------------------------------------------
+#----------------------------- Descriptive analysis -----------------------------Step.5
+---------------------------------Demographics-----------------------------------
 #
 table1 <- EPo2_clean %>% select(Sex, AgeGroup, Patient_statu, Fever, Bleeding, 
                                 Bleeding_type, Marburg, Dengue, Lassa_fever, Yellow_Fever) %>%
@@ -108,8 +108,8 @@ describe_Marburg <- EPo2_clean %>% group_by(Region) %>%
   summarise(total = n(),
             Positive = sum(Marburg == "POSITIVE", na.rm = TRUE),
             Negative = sum(Marburg == "NEGATIVE", na.rm = TRUE),
-            Percent_positive = 100 * Positive / total,
-            Proportion_positive = Positive / total,.groups = "drop") %>%
+            Percent_positive = round(100 * Positive / total, 1),
+            Proportion_positive = round(Positive / total, 3),.groups = "drop") %>%
   filter(Positive > 0) %>% 
   arrange(desc(Percent_positive))
 #---------------------- Dengue
@@ -117,8 +117,8 @@ describe_Dengue <- EPo2_clean %>% group_by(Region) %>%
   summarise(total = n(),
             Positive = sum(Dengue == "POSITIVE", na.rm = TRUE),
             Negative = sum(Dengue == "NEGATIVE", na.rm = TRUE),
-            Percent_positive = 100 * Positive / total,
-            Proportion_positive = Positive / total,.groups = "drop") %>%
+            Percent_positive = round(100 * Positive / total, 1),
+            Proportion_positive = round(Positive / total, 3),.groups = "drop") %>%
   filter(Positive > 0) %>% 
   arrange(desc(Percent_positive))
 #--------------------- Lassa fever
@@ -126,8 +126,8 @@ describe_Lassa <- EPo2_clean %>% group_by(Region) %>%
   summarise(total = n(),
             Positive = sum(Lassa_fever == "POSITIVE", na.rm = TRUE),
             Negative = sum(Lassa_fever == "NEGATIVE", na.rm = TRUE),
-            Percent_positive = 100 * Positive / total,
-            Proportion_positive = Positive / total,
+            Percent_positive = round(100 * Positive / total, 1),
+            Proportion_positive = round(Positive / total, 3),
             .groups = "drop") %>%
   filter(Positive > 0) %>%
   arrange(desc(Percent_positive))
@@ -136,8 +136,8 @@ describe_YellowFever <- EPo2_clean %>% group_by(Region) %>%
   summarise(total = n(),
             Positive = sum(Yellow_Fever == "POSITIVE", na.rm = TRUE),
             Negative = sum(Yellow_Fever == "NEGATIVE", na.rm = TRUE),
-            Percent_positive = 100 * Positive / total,
-            Proportion_positive = Positive / total,.groups = "drop") %>%
+            Percent_positive = round(100 * Positive / total, 1),
+            Proportion_positive = round(Positive / total, 3),.groups = "drop") %>%
   filter(Positive > 0) %>%
   arrange(desc(Percent_positive))
 #
@@ -157,50 +157,64 @@ print(describe_all, n = Inf, width = Inf)
 --------------------------------------------------------------------------------
   str(df)
 #For incidence 
-population <- 810
-FLU_cases <- sum(df$FLUMATRIX != "NEG", na.rm = TRUE)
-#Incidence
-incidence <- FLU_cases / population
-#Incidence percentage
-incidence_percent <- (FLU_cases / population) * 100
-incidence_percent
-#For incidence per 1,000 people:
-incidence_per_1000 <- (FLU_cases / population) * 1000
-incidence_per_1000
+disease_cols <- c("Marburg","Dengue", "Lassa_fever", "Yellow_Fever")
+population <- nrow(EPo2_clean)
 
-#For incidence by Region
-df %>%
-  group_by(REGION) %>%
-  summarise(
-    population = first(population),
-    FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
-    incidence_per_1000 = (FLU_cases / population) * 1000
-  ) %>%
-  arrange(desc(incidence_per_1000))
+#For incidence per 100, and per 1,000 people:
+all_incidence <- tibble(Disease = disease_cols,
+                        Cases = sapply(disease_cols,function(x) sum(EPo2_clean[[x]] == "POSITIVE", na.rm = TRUE))) %>%
+  mutate(Population = population,
+         Incidence = Cases / Population,
+         Incidence_per_100 = round(100 * Incidence, 1),
+         Incidence_per_1000 = round(1000 * Incidence, 1))
 
+all_incidence
+
+#+++++++++++++++++++++++++++++++++++++++
+
+# For incidence by Region
+all_incidence_region <- EPo2_clean %>% select(Region, all_of(disease_cols)) %>%
+  pivot_longer(cols = all_of(disease_cols),names_to = "Disease",values_to = "Result") %>%
+  group_by(Region, Disease) %>%
+  summarise(Population = n(),
+            Cases = sum(Result == "POSITIVE", na.rm = TRUE),
+            Incidence = Cases / Population,Incidence_per_100 = round(100 * Incidence, 1),
+            Incidence_per_1000 = round(1000 * Incidence, 1),.groups = "drop") %>%
+  filter(Cases > 0) %>%
+  arrange(Region, desc(Incidence_per_100))
+#
+print(all_incidence_region, n = Inf)
 # # #
 --------------------------------------------------------------------------------
-  #---------------------------- Create epidemic curve ----------------------------Step.7
-  --------------------------------------------------------------------------------
-  # Epidemic curve (weekly)
-  p1 <- df %>%
-  filter(FLUMATRIX != "NEG", !is.na(DATE_ONSET)) %>%
-  ggplot(aes(x = DATE_ONSET)) +
-  geom_histogram(
-    binwidth = 7,
-    fill = "steelblue",
-    color = "black"
-  ) +
-  labs(
-    title = "Epidemic Curve of Influenza Cases",
-    x = "Date of Symptom Onset",
-    y = "Number of Cases"
-  ) +
-  scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
+#---------------------------- Create epidemic curve ----------------------------Step.7
+--------------------------------------------------------------------------------
+#Prepare data
+disease_cols <- c("Marburg", "Dengue", "Lassa_fever", "Yellow_Fever")
+#
+long_df <- EPo2_clean %>%
+  pivot_longer(cols = all_of(disease_cols),
+               names_to = "Disease",
+               values_to = "Cases") %>% mutate(date = as.Date(DateReceived))
+#Weekly epidemic curve
+weekly_epi <- long_df %>%
+  mutate(
+    Period = floor_date(date, unit = "week")
+  ) %>%
+  group_by(Period, Disease) %>%
+  summarise(
+    Cases = sum(Cases, na.rm = TRUE),
+    .groups = "drop"
   )
+
+ggplot(weekly_epi, aes(x = Period, y = Cases, color = Disease)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(
+    title = "Weekly Epidemic Curve",
+    x = "Week",
+    y = "Cases"
+  ) +
+  theme_minimal()
 
 # Monthly trend
 monthly_cases <- df %>%
@@ -223,27 +237,27 @@ p1 / p2
 
 # # #
 --------------------------------------------------------------------------------
-  #---------------------------- Bar chart by district ----------------------------Step.9
-  --------------------------------------------------------------------------------
+#---------------------------- Bar chart by district ----------------------------Step.9
+--------------------------------------------------------------------------------
   #  
-  df %>%
-  count(REGION, District, name = "FLU_cases") %>%
+  EPo2_clean %>%
+  count(Region, name = "disease_cols") %>%
   left_join(
     df %>%
-      group_by(REGION, District) %>%
+      group_by(Region) %>%
       summarise(population = first(population), .groups = "drop"),
     by = c("REGION", "District")
   ) %>%
-  mutate(prevalence = 100 * FLU_cases / population) %>%
-  ggplot(aes(x = reorder(District, FLU_cases), y = FLU_cases)) +
+  mutate(prevalence = 100 * Positive / total) %>%
+  ggplot(aes(x = reorder(District, FLU_cases), y = disease_cols)) +
   geom_col(fill = "steelblue") +
   geom_text(
-    aes(label = paste0(FLU_cases, " (", round(prevalence, 1), "%)")),
+    aes(label = paste0(Diseases, " (", round(prevalence, 1), "%)")),
     hjust = -0.1,
     size = 3
   ) +
   coord_flip() +
-  facet_wrap(~REGION, scales = "free_y") +
+  facet_wrap(~Region, scales = "free_y") +
   labs(
     x = "District",
     y = "Number of cases",
@@ -256,27 +270,29 @@ p1 / p2
   #------------------------------- Age distribution ------------------------------Step.10
   --------------------------------------------------------------------------------
   # Histogram of age distribution
-  p1 <- ggplot(df, aes(AGE)) +
+  p1 <- ggplot(EPo2_clean, aes(Age)) +
   geom_histogram(binwidth = 5, fill = "orange") +
   labs(
     title = "Age Distribution of Cases",
     x = "Age (years)",
     y = "Number of Cases"
   ) +
-  theme_minimal()
+  theme_classic()
 
 # Age group bar plot
-p2 <- df %>%
-  count(Age_group) %>%
-  ggplot(aes(x = Age_group, y = n)) +
-  geom_col(fill = "gray") +
+p2 <- EPo2_clean %>%
+  count(AgeGroup) %>%
+  ggplot(aes(x = AgeGroup, y = n)) +
+  geom_col(fill = "orange") +
   labs(
     title = "Cases by Age Group",
     x = "Age Group (years)",
     y = "Number of Cases"
   ) +
-  theme_minimal() +
+  theme_sub_panel() +
   theme(
+    panel.background = element_rect(fill = "grey95", colour = NA),
+    plot.background = element_rect(fill = "grey100", colour = NA),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 

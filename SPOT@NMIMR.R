@@ -76,7 +76,8 @@ str(df)
 print(df)
 print(df, n = Inf, width = Inf)
 
-
+describe(df) #categorical
+describeBy(df)#Continuous
 #-------------------------------------------------------------------------------
                      Data Conversion _(CODING)  
 #-------------------------------------------------------------------------------

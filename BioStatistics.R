@@ -308,7 +308,9 @@ df <- FLU100 %>%
 str(df)
 print(df)
 print(df, n = Inf, width = Inf)
-
+#
+describe(df) #categorical data(HMISC)
+describeBy(df)#Continuous data(psych)
 # # #
 --------------------------------------------------------------------------------
                          Data Conversion _(CODING)                        Option 1
