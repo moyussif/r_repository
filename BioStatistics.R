@@ -2219,42 +2219,42 @@ df %>% group_by(District) %>% summarise(Cases = n())
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                         Time Series Analysis                                 +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  library(tidyverse)
+#
+library(readxl)
+library(readr)
+library(tidyverse)
 library(ggplot2)
 library(tseries)
 library(forecast)
-library(readxl)
-library(readr)
-#-------------------------------------------------------------------------------
+#
+#Converting date to time series
+tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d")                           #STEP1
+hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)#STEP2
+class(hhdata)#STEP3  
 
-Converting date to time series
-#STEP1====tdata$Date = as.Date(tdata$Date, format = "%Y/%m/%d") 
-#STEP2====hhdata = ts(tdata$attendance,start = min(tdata$Date), end = max(tdata$Date),frequency = 1)
-#STEP3====class(hhdata)  
 #-------------------------------------------------------------------------------
-
-Monthly data
-#1-month_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 12)
-#2-monthly <- ts(tdata$attendance, start = 2015, frequency = 12)
-#3-monthly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 12)
-Quarterly data 
-#1-qtr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
-#2-quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
-#3-qtrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 4)
-Yearly data 
-#1-yr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
-#2-yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
-#3-yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
+#Monthly data
+month_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 12)
+monthly <- ts(tdata$attendance, start = 2015, frequency = 12)
+monthly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 12)
+#Quarterly data 
+qtr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 4)
+quarterly <- ts(ttdata$registrants, start = 2015, frequency = 4)
+qtrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 4)
+#Yearly data 
+yr_data=ts(tdata$attendance, start = min(tdata$Date),end = max(tdata$Date),frequency = 1)
+yearly <- ts(ttdata$registrants, start = 2015, frequency = 1)
+yrly = ts(tdata$attendance, start = c(2015,3),end = c(2022, 12),frequency = 1)
 --------------------------------------------------------------------------------
-  setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
 tdata <- read_excel("CTrends.xlsx")
 cnfm <- read_csv("cnfm.csv")
 View(cnfm)
 class(cnfm)
 boxplot(ParasitePresence~Date, data = cnfm)
 --------------------------------------------------------------------------------
-  #To control//make the variance Equal
-  log(cnfm$ParasitePresence)
+#To control//make the variance Equal
+log(cnfm$ParasitePresence)
 plot(log(tdata$attendance))  
 #To control//make the mean Equal
 plot(diff(log(tdata$attendance)))
