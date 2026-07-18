@@ -237,38 +237,45 @@ p1 / p2
 
 # # #
 --------------------------------------------------------------------------------
-#---------------------------- Bar chart by district ----------------------------Step.9
+#---------------------------- Bar chart by Region ----------------------------Step.9
 --------------------------------------------------------------------------------
-  #  
-  EPo2_clean %>%
-  count(Region, name = "disease_cols") %>%
-  left_join(
-    df %>%
-      group_by(Region) %>%
-      summarise(population = first(population), .groups = "drop"),
-    by = c("REGION", "District")
+  disease_cols <- c("Marburg", "Dengue", "Lassa_fever", "Yellow_Fever") 
+   #  
+EPo2_clean %>%
+  filter(!is.na(Region), !is.na(Years)) %>%
+  pivot_longer(
+    cols = all_of(disease_cols),
+    names_to = "Disease",
+    values_to = "cases"
   ) %>%
-  mutate(prevalence = 100 * Positive / total) %>%
-  ggplot(aes(x = reorder(District, FLU_cases), y = disease_cols)) +
-  geom_col(fill = "steelblue") +
-  geom_text(
-    aes(label = paste0(Diseases, " (", round(prevalence, 1), "%)")),
-    hjust = -0.1,
-    size = 3
-  ) +
+  filter(!is.na(cases)) %>%
+  mutate(cases = as.numeric(cases)) %>%
+  group_by(Region, Years, Disease) %>%
+  summarise(disease_cols = sum(cases), .groups = "drop") %>%
+  group_by(Region) %>%
+  mutate(region_total = sum(disease_cols)) %>%
+  ungroup() %>%
+  mutate(Region = reorder(Region, -region_total)) %>%  # descending order
+  ggplot(aes(
+    x = Years,
+    y = disease_cols,
+    fill = Disease
+  )) +
+  geom_col() +
   coord_flip() +
   facet_wrap(~Region, scales = "free_y") +
   labs(
-    x = "District",
+    x = "Year",
     y = "Number of cases",
-    title = "Flu Cases and Prevalence by District Within Region"
+    fill = "Disease",
+    title = "Disease Cases by Year Within Region"
   ) +
-  theme_gray() +
-  expand_limits(y = max(df$FLU_cases, na.rm = TRUE) * 1.2)
+  theme_sub_axis_y()
+
 # # #
 --------------------------------------------------------------------------------
-  #------------------------------- Age distribution ------------------------------Step.10
-  --------------------------------------------------------------------------------
+#------------------------------- Age distribution ------------------------------Step.10
+--------------------------------------------------------------------------------
   # Histogram of age distribution
   p1 <- ggplot(EPo2_clean, aes(Age)) +
   geom_histogram(binwidth = 5, fill = "orange") +
