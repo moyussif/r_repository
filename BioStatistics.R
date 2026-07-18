@@ -2027,7 +2027,7 @@ describe_FLU <- df %>% group_by(REGION, SEX, Age_group,Month) %>%
               percent_positive = 100 * FLU_cases / total,
               Proportion_positive = FLU_cases / total) %>% 
     arrange(desc(percent_positive))
-
+describe_FLU
 # # #
 --------------------------------------------------------------------------------
 #--------------------------- Calculate incidence rate --------------------------Step.6
