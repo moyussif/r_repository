@@ -1,6 +1,6 @@
 #  #  #
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-============================ Surveillance Data =================================
+============================ Surveillance FLU_data =============================
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
   rm(list=ls())
@@ -13,7 +13,6 @@
   library(patchwork)
   library(psych)
   library(car)
-  library(lessR)
   library(Hmisc)
   library(stats)
   library(epitools)
@@ -29,7 +28,7 @@
   # # #
   print(FLU10, width = Inf)
   
-  #------------------------------ Data Conversion --------------------------------
+  #------------------------------ Data Conversion ------------------------------
   #
   FLU10$SEX <- as.factor(FLU10$SEX)
   FLU10$REGION <- as.factor(FLU10$REGION)
@@ -46,11 +45,8 @@
   # 
   str(FLU10)
   # # #
-  #---------------------- Create epidemiological variables ---------------------
-  
-  #-------------------Convert Dates
+  #-------------------Convert Dates Conversion ---------------------------------
   FLU10$DATE_ONSET <- as.Date(FLU10$DATE_ONSET)
-  
   #Create epidemiological Month
   FLU10$Month <- month(FLU10$DATE_ONSET,label = TRUE)
   
@@ -212,10 +208,21 @@
   plot(weekly_cases$Week, weekly_cases$n, type="l")  
   
   
-  # # #
- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                  Malaria_data
- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--------------------------------------------------------------------------------
+ #Task;
+      (1)Five_year incidence of malaria.
+
+      (2)Five_year uptake of IPTp.
+ 
+      (3)Factors associated with adequate IPTp (3doses and 5doses).
+ 
+      (4)Risk of malaria, given exposure to adequate IPTp coverages.
+  
+      (5)Any other
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 gc(reset = TRUE)
 library(readxl)
@@ -224,34 +231,72 @@ library(gtsummary)
 # import data
 setwd("C:/Users/User/Downloads")
 
-GAR_data <- read_excel("GAR_Malaria data_2020_2025.xlsx")
+GAR_data <- read_excel("GAR_Malaria.xlsx")
 
 str(GAR_data)
 
-#Reshape to long format......................................................................
-iptp <- GAR_data %>% pivot_longer(cols = starts_with("Percentage of Pregnant"),
-                                  names_to = "Year",
-                                  values_to = "IPTp")
+#Reshape to long format.........................................................
 #
 malaria <- GAR_data %>%pivot_longer(cols = starts_with("Confirmed"),
                                     names_to = "Year",
                                     values_to = "Malaria")
-#Five-year Malaria Incidence.................................................................
-malaria_summary <- malaria %>% group_by(District) %>% summarise(Mean_Malaria = mean(Malaria),
-                                                                SD = sd(Malaria),
-                                                                Median = median(Malaria),
-                                                                Minimum = min(Malaria),
-                                                                Maximum = max(Malaria))
+#
+iptp <- GAR_data %>% pivot_longer(cols = starts_with("Percentage of Pregnant"),
+                                  names_to = "Year",
+                                  values_to = "IPTp")
+#
+#(1)Five-year incidence of malaria................................................................................
+malaria_summary <- malaria %>% group_by(District) %>% summarise(Mean_Malaria = mean(Malaria, na.rm = TRUE),
+                                                                SD = sd(Malaria, na.rm = TRUE),
+                                                                Median = median(Malaria, na.rm = TRUE),
+                                                                Minimum = min(Malaria, na.rm = TRUE),
+                                                                Maximum = max(Malaria, na.rm = TRUE),
+                                                                Cumulative_Incidence = sum(Malaria, na.rm = TRUE))
 #
 print(malaria_summary, n = Inf)
 #
-#Five-year IPTP Uptake......................................................................
-iptp_summary <- iptp %>% group_by(District) %>% summarise(Mean_IPTp = mean(IPTp),
-                                                         SD = sd(IPTp),
-                                                         Median = median(IPTp))
+
+#
+#(2)Five-year uptake of IPTp......................................................................................
+iptp_summary <- iptp %>% group_by(District) %>% summarise(Mean_IPTp = mean(IPTp, na.rm = TRUE),
+                                                          SD = sd(IPTp, na.rm = TRUE),
+                                                          Median = median(IPTp, na.rm = TRUE),
+                                                          Minimum = min(IPTp, na.rm = TRUE),
+                                                          Maximum = max(IPTp, na.rm = TRUE),
+                                                          Cumulative_IPTp = sum(IPTp, na.rm = TRUE))
 #
 iptp_summary
 #
+
+#Objective 3: Factors Associated with Adequate IPTp (3 and 5 doses)..............................................
+#
+This cannot be done with the provided dataset. 
+The dataset contains only district-level IPTp3 percentages. 
+To identify factors associated with adequate IPTp uptake, you would need individual-level or 
+additional district-level predictors such as maternal age, parity, education, ANC attendance, residence, or
+socioeconomic status. If you had those data, you could fit a logistic regression model, for example:
+#
+# Adequate IPTp (3+ doses)
+  df$Adequate_IPTp3 <- ifelse(df$IPTp_doses >= 3, 1, 0)
+
+# Adequate IPTp (5+ doses)
+df$Adequate_IPTp5 <- ifelse(df$IPTp_doses >= 5, 1, 0)
+#
+glm(IPTp3_Adequate ~ Age + Parity + ANC_Visits + Education + Residence,family = binomial)
+#
+#Objective 4: Risk of Malaria Given Adequate IPTp Coverage......................................................
+#
+With the current district-level data, you can estimate an ecological association, not an individual risk. 
+A suitable model is:
+#
+lmer(Malaria ~ IPTp + Year + (1 | District), data = long)
+#
+The regression coefficient for IPTp indicates the average change in malaria incidence (cases per 1,000 population) 
+associated with a one-percentage-point increase in IPTp coverage, 
+after accounting for time (and district, in the mixed model).
+#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #Trend Analysis...........................................................................
 ggplot(malaria,aes(Year, Malaria, group=District, colour=District))+
   geom_line(size=1)+
@@ -312,25 +357,3 @@ iptp_summary %>% arrange(desc(Mean_IPTp))
 
 #Scatter
 ggplot(dataCombined,aes(IPTp,Malaria))+geom_point(size=3)+geom_smooth(method="lm")
-
-#Objective 3: Factors Associated with Adequate IPTp (3 and 5 doses)..................
-#
-This cannot be done with the provided dataset. 
-The dataset contains only district-level IPTp3 percentages. 
-To identify factors associated with adequate IPTp uptake, you would need individual-level or 
-additional district-level predictors such as maternal age, parity, education, ANC attendance, residence, or
-socioeconomic status. If you had those data, you could fit a logistic regression model, for example:
-#
-glm(IPTp3_Adequate ~ Age + Parity + ANC_Visits + Education + Residence,family = binomial)
-#
-#Objective 4: Risk of Malaria Given Adequate IPTp Coverage..........................
-#
-With the current district-level data, you can estimate an ecological association, not an individual risk. 
-A suitable model is:
-#
-lmer(Malaria ~ IPTp + Year + (1 | District), data = long)
-#
-The regression coefficient for IPTp indicates the average change in malaria incidence (cases per 1,000 population) 
-associated with a one-percentage-point increase in IPTp coverage, 
-after accounting for time (and district, in the mixed model).
-#
