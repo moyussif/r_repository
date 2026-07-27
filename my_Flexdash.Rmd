@@ -41,7 +41,7 @@ library(gt)
 ```{r}
 #Import Data
 
- LFdata <- read_excel("LF_July_22.xlsx")
+ LFdata <- read_excel("LF_July_27.xlsx")
 #
 
 df <- LFdata %>% mutate(Age_group = case_when(
@@ -56,7 +56,7 @@ df <- LFdata %>% mutate(Age_group = case_when(
 
 Row 
 ---------------------------------
-#####
+####
 
 ```{r}
 library(gtsummary)
@@ -85,7 +85,7 @@ basic_table
 
 ```
 
-#####
+####
 
 ```{r}
 Malaria <-
@@ -107,7 +107,7 @@ Malaria
 
 ```
 
-#####
+####
 
 ```{r}
 
@@ -135,112 +135,50 @@ FTS
 #### 
 
 ```{r}
-#----
-prev <- df %>% group_by(site, sex, Age_group,keea_communities, gomoa_west_communities) %>%
-  summarise( Prev = mean(fts_test_result== "Positive", na.rm = TRUE) * 100,
-    .groups = "drop")
-
-#----
-prev_sex_age_plot <- prev %>% filter(!is.na(Age_group),!is.na(sex),!is.na(site),!is.na(Prev))
-
-
-#      sink("Prevalence_results.doc")
-
-
-# Plot--------------------Keea_communities--------------------------------------
-prev_sex_age_plot <- prev %>% 
-  filter(
-    !is.na(Age_group),
-    Age_group != 0.00,
-    !is.na(sex),
-    !is.na(keea_communities),
-    !is.na(Prev),
-    Prev > 0
-  )
-
-p1 <- ggplot(prev_sex_age_plot,
-       aes(Age_group, Prev, fill = sex)) +
-  geom_col(position = position_dodge(width = 0.8)) +
-  geom_text(
-    aes(label = sprintf("%.1f%%", Prev)),
-    position = position_dodge(width = 0.8),
-    vjust = 1.0,
-    size = 3.0
-  ) +
-  facet_wrap(~keea_communities) +
-  scale_fill_manual(
-    values = c(
-      "Male" = "#1F77B4",
-      "Female" = "#E377E2"
-    )
-  ) +
-  labs(
-    title = "KEEA_District",
-    x = "Age group",
-    y = NULL,
-    fill = "Sex"
-  ) +
-  theme_grey() +
-  theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.line.y = element_blank()
-  )
-# Plot--------------------Gomoa_West_communities--------------------------------
-df <- LFdata %>% 
+age_sex_summary <- LFdata %>%
+  filter(fts_test_result == "Positive") %>%   # keep only positive FTS results
   mutate(
-    Age_group = case_when(
+    Age_Group = case_when(
       age < 10 ~ "<10",
       age >= 10 & age <= 19 ~ "10-19",
       age >= 20 & age <= 29 ~ "20-29",
       age >= 30 & age <= 40 ~ "30-40",
       age > 40 ~ ">40",
       TRUE ~ NA_character_
+    ),
+    Age_Group = factor(
+      Age_Group,
+      levels = c("<10", "10-19", "20-29", "30-40", ">40")
     )
+  ) %>%
+  group_by(Age_Group, sex) %>%
+  summarise(
+    Count = n(),
+    .groups = "drop"
   )
-prev_sex_age_plot <- prev %>% 
-  filter(
-    !is.na(Age_group),
-    Age_group != 0.00,
-    !is.na(sex),
-    !is.na(gomoa_west_communities),
-    !is.na(Prev),
-    Prev > 0
-  )
-#
-p2 <- ggplot(prev_sex_age_plot,
-       aes(Age_group, Prev, fill = sex)) +
-  geom_col(position = position_dodge(width = 0.8)) +
+
+ggplot(age_sex_summary,
+       aes(x = Age_Group, y = Count, fill = sex)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
   geom_text(
-    aes(label = sprintf("%.1f%%", Prev)),
+    aes(label = Count),
     position = position_dodge(width = 0.8),
-    vjust = 1.0,
-    size = 3.0
-  ) +
-  facet_wrap(~gomoa_west_communities) +
-  scale_fill_manual(
-    values = c(
-      "Male" = "#1F77B4",
-      "Female" = "#E377C2"
-    )
+    vjust = -0.4,
+    size = 4,
+    fontface = "bold"
   ) +
   labs(
-    title = "Gomoa.West_District",
-    x = "Age group",
-    y = NULL,
+    x = "Age Group (Years)",
+    y = "Number of Positive FTS Participants",
     fill = "Sex"
   ) +
-  theme_grey() +
+  scale_fill_brewer(palette = "Paired") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_minimal(base_size = 12) +
   theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.line.y = element_blank()
+    legend.position = "top",
+    panel.grid.minor = element_blank()
   )
-#
-
-p1 / p2
 ```
 
 Row
