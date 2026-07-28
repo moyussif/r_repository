@@ -28,7 +28,7 @@ library(patchwork)
 
 ```{R}
 #Import Data
-setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
+
  LFdata <- read_excel("LF_July_22.xlsx")
 
 df <- LFdata
@@ -286,7 +286,7 @@ ggplotly(p, tooltip = "text")
 
 ```
 
-# Community Results
+# Site & Communities
 
 ### Community Results
 

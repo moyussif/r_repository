@@ -4,9 +4,9 @@ username: moyussif
 account: moyussif
 server: connect.posit.cloud
 hostUrl: https://api.connect.posit.cloud/v1
-appId: 019e6419-40c5-443c-20ad-d5928388296e
+appId: 019fa9fb-ffde-c4f1-8434-d4194f68761f
 bundleId:
-url: https://connect.posit.cloud/moyussif/content/019e6419-40c5-443c-20ad-d5928388296e
+url: https://connect.posit.cloud/moyussif/content/019fa9fb-ffde-c4f1-8434-d4194f68761f
 version: 1
 asMultiple: FALSE
 asStatic: TRUE
