@@ -1,10 +1,11 @@
 ---
-  title: "LF_Study Dashboard  - Noguchi Memorial Institute for Medical Research (NMIMR)"
-output: 
+  title: "LF_Study Dashboard - Noguchi Memorial Institute for Medical Research (NMIMR)"
+
+output:
   flexdashboard::flex_dashboard:
   theme:
   bg: "#E0EEEE"
-fg: "#104E8B" 
+fg: "#104E8B"
 primary: "#1874CD"
 base_font:
   google: Prompt
@@ -13,8 +14,6 @@ code_font:
 orientation: rows
 vertical_layout: fill
 ---
-  
-  
   
   ```{r setup, include=FALSE}
 #---------------------------------------------------
@@ -38,109 +37,256 @@ library(gt)
 #
 ```
 
+
+
 ```{r}
 #Import Data
 
-LFdata <- read_excel("LF_Jun25.xlsx")
+LFdata <- read_excel("LF_July_28.xlsx")
+#
+
+df <- LFdata %>% mutate(Age_group = case_when(
+  age < 10 ~ "<10",
+  age >= 10 & age <= 19 ~ "10-19",
+  age >= 20 & age <= 29 ~ "20-29",
+  age >= 30 & age <= 40 ~ "30-40",
+  age > 40 ~ ">40",
+  TRUE ~ NA_character_))
 
 ```
 
 Row 
 ---------------------------------
-  ##
+  ###
   
   ```{r}
 library(gtsummary)
 # Basic Info
 
-basic_table <- 
-  LFdata %>%
-  tbl_summary(include = c(consent, site)) %>%   
-  # add table captions
-  as_gt() %>%
-  gt::tab_header(title = "Basic Summary")
-basic_table
+# Consent summary
+consent_sum <- LFdata %>%
+  count(consent)
 
-```
+# Total records
+total_records <- nrow(LFdata)
 
-###
+# Total consent = Yes
+consent_yes <- consent_sum %>%
+  filter(consent == "Yes") %>%
+  pull(n)
 
-```{r}
-Malaria <- 
-  LFdata %>%
-  tbl_summary(include = c(malaria_test_done, malaria_t_results)) %>%   
-  # add table captions
-  as_gt() %>%
-  gt::tab_header(title = "Malaria Results")
-Malaria
+if (length(consent_yes) == 0) consent_yes <- 0
 
-```
+# Consent rate
+consent_rate <- round(
+  100 * consent_yes / sum(consent_sum$n),
+  1
+)
 
-###
-
-```{r}
-FTS <- 
-  LFdata %>%
-  tbl_summary(include = c(fts_test_done, fts_test_result)) %>%   
-  # add table captions
-  as_gt() %>%
-  gt::tab_header(title = "FTS Results")
-FTS
-
-```
-
-###
-
-```{r}
-age_sex_summary <- LFdata %>%
-  filter(fts_test_result == "Positive") %>%   # keep only positive FTS results
-  mutate(
-    Age_Group = case_when(
-      age < 10 ~ "<10",
-      age >= 10 & age <= 19 ~ "10-19",
-      age >= 20 & age <= 29 ~ "20-29",
-      age >= 30 & age <= 40 ~ "30-40",
-      age > 40 ~ ">40",
-      TRUE ~ NA_character_
+# Gauge chart
+plot_ly(
+  type = "indicator",
+  mode = "gauge+number",
+  value = consent_rate,
+  number = list(suffix = "%"),
+  gauge = list(
+    axis = list(range = list(0, 100)),
+    bar = list(color = "#2E86AB"),
+    bgcolor = "white",
+    borderwidth = 1,
+    bordercolor = "grey",
+    steps = list(
+      list(range = c(0, 50), color = "#F8D7DA"),
+      list(range = c(50, 80), color = "#FFF3CD"),
+      list(range = c(80, 100), color = "#D4EDDA")
     ),
-    Age_Group = factor(
-      Age_Group,
-      levels = c("<10", "10-19", "20-29", "30-40", ">40")
+    threshold = list(
+      line = list(color = "red", width = 2),
+      thickness = 0.15,
+      value = consent_rate
     )
-  ) %>%
-  group_by(Age_Group, sex) %>%
-  summarise(
-    Count = n(),
-    .groups = "drop"
+  )
+) %>%
+  layout(
+    margin = list(l = 150, t = 20, b = 70),
+    annotations = list(
+      
+      # Bottom title
+      list(
+        text = "<b>Overall Consent Rate</b>",
+        x = 0.5,
+        y = -0.15,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        font = list(size = 16)
+      ),
+      
+      # Left information panel
+      list(
+        text = paste0(
+          "<b>Total Records</b><br>",
+          total_records,
+          "<br><br>",
+          "<b>Consent = Yes</b><br>",
+          consent_yes
+        ),
+        x = -0.80,
+        y = 0.5,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        align = "center",
+        font = list(
+          size = 15,
+          color = "#555555"
+        )
+      )
+    )
   )
 
-ggplot(age_sex_summary,
-       aes(x = Age_Group, y = Count, fill = sex)) +
-  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
-  geom_text(
-    aes(label = Count),
-    position = position_dodge(width = 0.8),
-    vjust = -0.4,
-    size = 4,
-    fontface = "bold"
-  ) +
-  labs(
-    x = "Age Group (Years)",
-    y = "Number of Positive FTS Participants",
-    fill = "Sex"
-  ) +
-  scale_fill_brewer(palette = "Paired") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-  theme_minimal(base_size = 12) +
-  theme(
-    legend.position = "top",
-    panel.grid.minor = element_blank()
+```
+
+###
+
+```{r}
+# Study site summary
+site_sum <- LFdata %>%
+  count(site) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1)
+  )
+
+# Pie chart
+plot_ly(
+  data = site_sum,
+  labels = ~site,
+  values = ~n,
+  type = "pie",
+  textinfo = "label+percent",
+  textposition = "inside",
+  hovertemplate = paste(
+    "<b>%{label}</b><br>",
+    "Participants: %{value}<br>",
+    "Percentage: %{percent}<extra></extra>"
+  ),
+  marker = list(
+    colors = c("#4CAF50", "#FF9800", "#3F51B5", "#E91E63")
+  ),
+  showlegend = TRUE
+) %>%
+  layout(
+    title = list(
+      text = "<b>Study Site Distribution</b>",
+      x = 0.5
+    )
   )
 ```
+
+###
+
+```{r}
+# Create summary table
+malaria_plot <- bind_rows(
+  df %>%
+    count(Response = malaria_test_done) %>%
+    mutate(Variable = "Malaria test done"),
+  
+  df %>%
+    count(Response = malaria_t_results) %>%
+    mutate(Variable = "Malaria test result")
+) %>%
+  group_by(Variable) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1),
+    Label = paste0(n, " (", Percent, "%)")
+  ) %>%
+  ungroup()
+
+# Interactive stacked bar chart
+plot_ly(
+  data = malaria_plot,
+  x = ~Variable,
+  y = ~n,
+  color = ~Response,
+  colors = "Set2",
+  type = "bar",
+  text = ~Label,
+  textposition = "inside",
+  hovertemplate = paste(
+    "<b>%{fullData.name}</b><br>",
+    "Category: %{x}<br>",
+    "Count: %{y}<br>",
+    "Percentage: %{text}<extra></extra>"
+  )
+) %>%
+  layout(
+    title = "<b>Malaria Testing Results</b>",
+    barmode = "stack",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Number of Participants"),
+    legend = list(
+      title = list(text = "Response")
+    )
+  )
+
+```
+
+###
+
+```{r}
+
+
+# Create summary data
+fts_plot <- bind_rows(
+  
+  df %>%
+    count(Response = fts_test_done) %>%
+    mutate(Variable = "FTS test done"),
+  
+  df %>%
+    count(Response = fts_test_result) %>%
+    mutate(Variable = "FTS test result")
+  
+) %>%
+  group_by(Variable) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1)
+  ) %>%
+  ungroup()
+
+# Interactive stacked bar chart
+plot_ly(
+  data = fts_plot,
+  x = ~Variable,
+  y = ~n,
+  color = ~Response,
+  colors = c("#1b9e77", "#d95f02", "#7570b3", "#e7298a"),
+  type = "bar",
+  textposition = "none",
+  customdata = ~Percent,
+  hovertemplate = paste(
+    "<b>%{fullData.name}</b><br>",
+    "Variable: %{x}<br>",
+    "Count: %{y}<br>",
+    "Percentage: %{customdata}%<extra></extra>"
+  )
+) %>%
+  layout(
+    title = "<b>FTS Testing Results</b>",
+    barmode = "stack",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Number of Participants"),
+    legend = list(
+      title = list(text = "Response")
+    )
+  )
+```
+
 
 Row
 -------------------------------------------------------------------------------
-  ## KEEA_Municipal - Malaria & QFAT {width = 100%}
+  ###                                              KEEA_Municipal - Malaria & QFAT 
   
   ```{r}
 #KEEA_Municipal
@@ -175,7 +321,7 @@ kable(community_table, align = "c")
 
 Row
 ------------------------------------------------------------------------------
-  ## Gomoa.West_District-Malaria & QFAT {width = 100%}
+  ###                                           Gomoa.West_District-Malaria & QFAT 
   
   ```{r}
 #Gomoa.West_District

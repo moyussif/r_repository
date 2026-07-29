@@ -14,8 +14,7 @@ output:
     orientation: rows
     vertical_layout: fill
 ---
-  
-  
+
 ```{r setup, include=FALSE}
 #---------------------------------------------------
 #Import Packages
@@ -38,6 +37,8 @@ library(gt)
 #
 ```
 
+
+
 ```{r}
 #Import Data
 
@@ -56,54 +57,178 @@ df <- LFdata %>% mutate(Age_group = case_when(
 
 Row 
 ---------------------------------
-##
-  
+###
+
 ```{r}
 library(gtsummary)
 # Basic Info
 
+# Consent summary
+consent_sum <- LFdata %>%
+  count(consent)
 
+# Total records
+total_records <- nrow(LFdata)
 
-basic_table <-
-  df %>%
-  tbl_summary(
-    include = c(consent, site),
-    label = list(
-      consent ~ "consent",
-      site ~ "site"
+# Total consent = Yes
+consent_yes <- consent_sum %>%
+  filter(consent == "Yes") %>%
+  pull(n)
+
+if (length(consent_yes) == 0) consent_yes <- 0
+
+# Consent rate
+consent_rate <- round(
+  100 * consent_yes / sum(consent_sum$n),
+  1
+)
+
+# Gauge chart
+plot_ly(
+  type = "indicator",
+  mode = "gauge+number",
+  value = consent_rate,
+  number = list(suffix = "%"),
+  gauge = list(
+    axis = list(range = list(0, 100)),
+    bar = list(color = "#2E86AB"),
+    bgcolor = "white",
+    borderwidth = 1,
+    bordercolor = "grey",
+    steps = list(
+      list(range = c(0, 50), color = "#F8D7DA"),
+      list(range = c(50, 80), color = "#FFF3CD"),
+      list(range = c(80, 100), color = "#D4EDDA")
     ),
-    statistic = all_categorical() ~ "{n} ({p}%)",
-    missing = "ifany"
-  ) %>%
-  bold_labels() %>%
-  italicize_levels() %>%
-  modify_caption("**Basic Summary**") %>%
-  as_gt()
-basic_table
-
-
+    threshold = list(
+      line = list(color = "red", width = 2),
+      thickness = 0.15,
+      value = consent_rate
+    )
+  )
+) %>%
+  layout(
+    margin = list(l = 150, t = 20, b = 70),
+    annotations = list(
+      
+      # Bottom title
+      list(
+        text = "<b>Overall Consent Rate</b>",
+        x = 0.5,
+        y = -0.15,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        font = list(size = 16)
+      ),
+      
+      # Left information panel
+      list(
+        text = paste0(
+          "<b>Total Records</b><br>",
+          total_records,
+          "<br><br>",
+          "<b>Consent = Yes</b><br>",
+          consent_yes
+        ),
+        x = -0.80,
+        y = 0.5,
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE,
+        align = "center",
+        font = list(
+          size = 15,
+          color = "#555555"
+        )
+      )
+    )
+  )
 
 ```
 
 ###
 
 ```{r}
-Malaria <-
+# Study site summary
+site_sum <- LFdata %>%
+  count(site) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1)
+  )
+
+# Pie chart
+plot_ly(
+  data = site_sum,
+  labels = ~site,
+  values = ~n,
+  type = "pie",
+  textinfo = "label+percent",
+  textposition = "inside",
+  hovertemplate = paste(
+    "<b>%{label}</b><br>",
+    "Participants: %{value}<br>",
+    "Percentage: %{percent}<extra></extra>"
+  ),
+  marker = list(
+    colors = c("#4CAF50", "#FF9800", "#3F51B5", "#E91E63")
+  ),
+  showlegend = TRUE
+) %>%
+  layout(
+    title = list(
+      text = "<b>Study Site Distribution</b>",
+      x = 0.5
+    )
+  )
+```
+
+###
+
+```{r}
+# Create summary table
+malaria_plot <- bind_rows(
   df %>%
-  tbl_summary(
-    include = c(malaria_test_done, malaria_t_results),
-    label = list(
-      malaria_test_done ~ "Malaria test done",
-      malaria_t_results ~ "Malaria test result"
-    ),
-    statistic = all_categorical() ~ "{n} ({p}%)",
-    missing = "ifany"
+    count(Response = malaria_test_done) %>%
+    mutate(Variable = "Malaria test done"),
+
+  df %>%
+    count(Response = malaria_t_results) %>%
+    mutate(Variable = "Malaria test result")
+) %>%
+  group_by(Variable) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1),
+    Label = paste0(n, " (", Percent, "%)")
   ) %>%
-  bold_labels() %>%
-  italicize_levels() %>%
-  modify_caption("**Malaria Results**") %>%
-  as_gt()
-Malaria
+  ungroup()
+
+# Interactive stacked bar chart
+plot_ly(
+  data = malaria_plot,
+  x = ~Variable,
+  y = ~n,
+  color = ~Response,
+  colors = "Set2",
+  type = "bar",
+  text = ~Label,
+  textposition = "inside",
+  hovertemplate = paste(
+    "<b>%{fullData.name}</b><br>",
+    "Category: %{x}<br>",
+    "Count: %{y}<br>",
+    "Percentage: %{text}<extra></extra>"
+  )
+) %>%
+  layout(
+    title = "<b>Malaria Testing Results</b>",
+    barmode = "stack",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Number of Participants"),
+    legend = list(
+      title = list(text = "Response")
+    )
+  )
 
 ```
 
@@ -112,29 +237,56 @@ Malaria
 ```{r}
 
 
-FTS <-
-  df %>%
-  tbl_summary(
-    include = c(fts_test_done, fts_test_result),
-    label = list(
-      fts_test_done ~ "FTS test done",
-      fts_test_result ~ "FTS test result"
-    ),
-    statistic = all_categorical() ~ "{n} ({p}%)",
-    missing = "ifany"
-  ) %>%
-  bold_labels() %>%
-  italicize_levels() %>%
-  modify_caption("**FTS Results**") %>%
-  as_gt()
-FTS
+# Create summary data
+fts_plot <- bind_rows(
 
+  df %>%
+    count(Response = fts_test_done) %>%
+    mutate(Variable = "FTS test done"),
+
+  df %>%
+    count(Response = fts_test_result) %>%
+    mutate(Variable = "FTS test result")
+
+) %>%
+  group_by(Variable) %>%
+  mutate(
+    Percent = round(100 * n / sum(n), 1)
+  ) %>%
+  ungroup()
+
+# Interactive stacked bar chart
+plot_ly(
+  data = fts_plot,
+  x = ~Variable,
+  y = ~n,
+  color = ~Response,
+  colors = c("#1b9e77", "#d95f02", "#7570b3", "#e7298a"),
+  type = "bar",
+  textposition = "none",
+  customdata = ~Percent,
+  hovertemplate = paste(
+    "<b>%{fullData.name}</b><br>",
+    "Variable: %{x}<br>",
+    "Count: %{y}<br>",
+    "Percentage: %{customdata}%<extra></extra>"
+  )
+) %>%
+  layout(
+    title = "<b>FTS Testing Results</b>",
+    barmode = "stack",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Number of Participants"),
+    legend = list(
+      title = list(text = "Response")
+    )
+  )
 ```
 
 
 Row
 -------------------------------------------------------------------------------
-## KEEA_Municipal - Malaria & QFAT {width = 100%}
+###                                              KEEA_Municipal - Malaria & QFAT 
   
 ```{r}
 #KEEA_Municipal
@@ -169,7 +321,7 @@ kable(community_table, align = "c")
 
 Row
 ------------------------------------------------------------------------------
-## Gomoa.West_District-Malaria & QFAT {width = 100%}
+###                                           Gomoa.West_District-Malaria & QFAT 
   
 ```{r}
 #Gomoa.West_District
