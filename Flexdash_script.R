@@ -91,14 +91,14 @@ plot_ly(
   number = list(suffix = "%"),
   gauge = list(
     axis = list(range = list(0, 100)),
-    bar = list(color = "#2E86AB"),
+    bar = list(color = "#FFF3CD"),
     bgcolor = "white",
     borderwidth = 1,
     bordercolor = "grey",
     steps = list(
-      list(range = c(0, 50), color = "#F8D7DA"),
-      list(range = c(50, 80), color = "#FFF3CD"),
-      list(range = c(80, 100), color = "#D4EDDA")
+      list(range = c(0, 50), color = "#EE6363"),
+      list(range = c(50, 80), color = "#4CAF50"),
+      list(range = c(80, 100), color = "#4CAF50")
     ),
     threshold = list(
       line = list(color = "red", width = 2),
@@ -171,14 +171,14 @@ plot_ly(
     "Percentage: %{percent}<extra></extra>"
   ),
   marker = list(
-    colors = c("#4CAF50", "#FF9800", "#3F51B5", "#E91E63")
+    colors = c("#4CAF50", "#FF9800", "#3F51B5", "#CD3333")
   ),
   showlegend = TRUE
 ) %>%
   layout(
     title = list(
       text = "<b>Study Site Distribution</b>",
-      x = 0.5
+      x = 0.8
     )
   )
 ```
@@ -198,8 +198,7 @@ malaria_plot <- bind_rows(
 ) %>%
   group_by(Variable) %>%
   mutate(
-    Percent = round(100 * n / sum(n), 1),
-    Label = paste0(n, " (", Percent, "%)")
+    Percent = round(100 * n / sum(n), 1)
   ) %>%
   ungroup()
 
@@ -209,20 +208,20 @@ plot_ly(
   x = ~Variable,
   y = ~n,
   color = ~Response,
-  colors = "Set2",
+  colors = c("#4CAF50", "#FF9800", "#3F51B5", "#CD3333"),
   type = "bar",
-  text = ~Label,
-  textposition = "inside",
+  textposition = "none",
+  customdata = ~Percent,
   hovertemplate = paste(
     "<b>%{fullData.name}</b><br>",
-    "Category: %{x}<br>",
     "Count: %{y}<br>",
-    "Percentage: %{text}<extra></extra>"
+    "Percentage: %{customdata}%<extra></extra>"
   )
 ) %>%
   layout(
     title = "<b>Malaria Testing Results</b>",
     barmode = "stack",
+    hovermode = "x unified",
     xaxis = list(title = ""),
     yaxis = list(title = "Number of Participants"),
     legend = list(
@@ -261,13 +260,12 @@ plot_ly(
   x = ~Variable,
   y = ~n,
   color = ~Response,
-  colors = c("#1b9e77", "#d95f02", "#7570b3", "#e7298a"),
+  colors = c("#4CAF50", "#FF9800", "#3F51B5", "#A52A2A"),
   type = "bar",
   textposition = "none",
   customdata = ~Percent,
   hovertemplate = paste(
     "<b>%{fullData.name}</b><br>",
-    "Variable: %{x}<br>",
     "Count: %{y}<br>",
     "Percentage: %{customdata}%<extra></extra>"
   )
@@ -275,6 +273,7 @@ plot_ly(
   layout(
     title = "<b>FTS Testing Results</b>",
     barmode = "stack",
+    hovermode = "x unified",   # <- Compare all responses on hover
     xaxis = list(title = ""),
     yaxis = list(title = "Number of Participants"),
     legend = list(
