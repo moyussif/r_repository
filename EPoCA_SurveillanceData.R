@@ -206,7 +206,7 @@ weekly_epi <- long_df %>%
     .groups = "drop"
   )
 
-ggplot(weekly_epi, aes(x = Period, y = Cases, color = Disease)) +
+p1<-ggplot(weekly_epi, aes(x = Period, y = Cases, color = Disease)) +
   geom_line(size = 1) +
   geom_point() +
   labs(

@@ -192,9 +192,13 @@
   # # #
   #------------------------------- Age distribution ----------------------------
   # Histogram of age distribution
+  df$AGE <- as.numeric(as.character(df$AGE))
+  #
   ggplot(df, aes(AGE)) +geom_histogram(binwidth = 5, fill = "orange") +
     labs(title = "Age Distribution of Cases",x = "Age (years)", y = "Number of Cases")+
     theme_minimal()
+  #
+  
   # Age group bar plot
   df %>% count(Age_group) %>%
     ggplot(aes(x = Age_group, y = n)) + geom_col(fill = "gray") +
@@ -234,14 +238,16 @@ setwd("C:/Users/User/Downloads")
 GAR_data <- read_excel("GAR_Malaria.xlsx")
 
 str(GAR_data)
-
+print(GAR_data)
+print(GAR_data, width = Inf)
 #Reshape to long format.........................................................
 #
-malaria <- GAR_data %>%pivot_longer(cols = starts_with("Confirmed"),
+malaria <- GAR_data %>%pivot_longer(cols = starts_with("Malaria_per_1000"),
                                     names_to = "Year",
                                     values_to = "Malaria")
+malaria
 #
-iptp <- GAR_data %>% pivot_longer(cols = starts_with("Percentage of Pregnant"),
+iptp <- GAR_data %>% pivot_longer(cols = starts_with("Percent_IPT3"),
                                   names_to = "Year",
                                   values_to = "IPTp")
 #
@@ -252,6 +258,8 @@ malaria_summary <- malaria %>% group_by(District) %>% summarise(Mean_Malaria = m
                                                                 Minimum = min(Malaria, na.rm = TRUE),
                                                                 Maximum = max(Malaria, na.rm = TRUE),
                                                                 Cumulative_Incidence = sum(Malaria, na.rm = TRUE))
+#
+malaria_summary
 #
 print(malaria_summary, n = Inf)
 #
@@ -266,6 +274,8 @@ iptp_summary <- iptp %>% group_by(District) %>% summarise(Mean_IPTp = mean(IPTp,
                                                           Cumulative_IPTp = sum(IPTp, na.rm = TRUE))
 #
 iptp_summary
+#
+print(iptp_summary, n = Inf)
 #
 
 #Objective 3: Factors Associated with Adequate IPTp (3 and 5 doses)..............................................
