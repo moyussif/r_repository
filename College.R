@@ -65,7 +65,7 @@
   #
   str(df)
   print(df, width = Inf)
-  
+  print(df, n = Inf, width = Inf)
   #---------------------------- Descriptive analysis ---------------------------
   #
   table1 <- df %>%
@@ -172,6 +172,14 @@
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1)
     )
+  # # #
+  
+#-------------------------------- Time series ----------------------------------
+  #  
+  weekly_cases <- df %>% count(Week)
+  
+  plot(weekly_cases$Week, weekly_cases$n, type="l")  
+  
   
   # # #
   #---------------------------- Bar chart by district 
@@ -205,17 +213,19 @@
     labs(title = "Cases by Age Group", x = "Age Group (years)", y = "Number of Cases")+
     theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
   # # #
-  #-------------------------------- Time series ----------------------------------
-  #  
-  weekly_cases <- df %>% count(Week)
-  
-  plot(weekly_cases$Week, weekly_cases$n, type="l")  
-  
+  #------------------------------- Cross-tabulation ------------------------------
+  str(df)
+  #
+  table(df$SEX, df$FLUMATRIX)  
+  #-------------------------------- Chi-square test ------------------------------
+  # 
+  chisq.test(table(df$SEX, df$FLUMATRIX))  
+  # # #  
   
 # # #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                  Malaria_data
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
  #Task;
       (1)Five_year incidence of malaria.
 
