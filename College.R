@@ -19,7 +19,8 @@
   library(lubridate)
   library(gtsummary)
   library(surveillance)
-  
+  library(flextable)
+  library(officer)
   # # #
   setwd("C:/Users/User/Downloads")
   #
@@ -68,7 +69,7 @@
   print(df, n = Inf, width = Inf)
   #---------------------------- Descriptive analysis ---------------------------
   #
-  table1 <- df %>%
+Descriptive1 <- df %>%
     select(ILI_SARI, SEX, Age_group, REGION, FLUMATRIX) %>%
     tbl_summary(by = ILI_SARI,
                 statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
@@ -78,13 +79,18 @@
     add_overall() %>%    # Adds an Overall column
     bold_labels()
   
-  table1  
+  Descriptive1 
   #
+  gtsummary::as_flex_table(table1) %>%
+    flextable::save_as_docx(path = "Descriptive1.docx") 
+  
+  
   #..................Total Cases ......................
   FLU_cases <- sum(df$FLUMATRIX != "NEG", na.rm = TRUE)
   FLU_cases
+  
   #..................Cases by sex
-  df %>%
+  result<-df %>%
     group_by(SEX) %>%
     summarise(
       total = n(),
@@ -92,6 +98,20 @@
       negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
       percent_positive = 100 * FLU_cases / total
     )
+  #
+  
+  #-------------------------Create Word document-------------------------=-=-=-=
+  doc <- read_docx()
+  
+  doc <- doc %>%
+    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_flextable(flextable(result) %>%
+        autofit())
+
+  # Export to Word
+  print(doc, target = "FluCases_by_sex.docx")
+  
+  
   #..................Cases by District................
   #case_Count
   df %>%
@@ -103,8 +123,8 @@
       percent_positive = 100 * FLU_cases / total) %>%
     arrange(desc(FLU_cases))
   
-  #case_Prevalence
-  df %>%
+#case_Prevalence
+  prev_by_district <-df %>%
     group_by(REGION) %>%
     summarise(
       total = n(),
@@ -114,8 +134,24 @@
     ) %>%
     arrange(desc(percent_positive))
   
-  #case_Proportion
-  df %>%
+
+  #-------------------------Create Word document-------------------------=-=-=-=
+  doc <- read_docx()
+  
+  doc <- doc %>%
+    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_flextable(
+      flextable(prev_by_district) %>%
+        autofit()
+    )
+  
+  # Export to Word
+  print(doc, target = "prev_by_district.docx")
+  
+
+  
+#case_Proportion----------------------------------------------------------
+  case_prop<-df %>%
     group_by(REGION) %>%
     summarise(
       total = n(),
@@ -125,10 +161,24 @@
     ) %>%
     arrange(desc(Proportion_positive))
   #
-  #Cases by month
+  #_____________________________________________________________________________
+  #-------------------------Create Word document-------------------------=-=-=-=
+  doc <- read_docx()
+  
+  doc <- doc %>%
+    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_flextable(flextable(case_prop) %>%
+        autofit())
+  # Export to Word
+  print(doc, target = "case_prop.docx")
+  
+  
+  
+  
+#---------------------------------- Cases by month -----------------------------
   df %>% count(Month)
   # # #
-  #--------------------------- Calculate incidence rate --------------------------
+#--------------------------- Calculate incidence rate --------------------------
   str(df)
   #For incidence 
   population <- 810
@@ -142,7 +192,7 @@
   incidence_per_1000
   
   #For incidence by Region
-  df %>%
+  incidence_by_Region<-df %>%
     group_by(REGION) %>%
     summarise(
       population = first(population),
@@ -150,6 +200,19 @@
       incidence_per_1000 = (FLU_cases / population) * 1000
     ) %>%
     arrange(desc(incidence_per_1000))
+ #
+#_______________________________________________________________________________  
+  #-------------------------Create Word document-------------------------=-=-=-=
+  doc <- read_docx()
+  
+  doc <- doc %>%
+    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_flextable(flextable(incidence_by_Region) %>%
+                         autofit())
+  # Export to Word
+  print(doc, target = "incidence by Region.docx") 
+  
+  
   
   # # #
   #---------------------------- Create epidemic curve ----------------------------
@@ -175,15 +238,15 @@
   # # #
   
 #-------------------------------- Time series ----------------------------------
-  #  
+#  
   weekly_cases <- df %>% count(Week)
   
   plot(weekly_cases$Week, weekly_cases$n, type="l")  
   
   
-  # # #
-  #---------------------------- Bar chart by district 
-  #  
+# # #
+#----------------------------- Bar chart by district ---------------------------
+#  
   df %>%
     count(REGION, District, name = "FLU_cases") %>%
     left_join(df %>% group_by(REGION, District) %>%
@@ -223,7 +286,7 @@
   # # #  
   
 # # #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                  Malaria_data
 -------------------------------------------------------------------------------------------------------------------
  #Task;
