@@ -64,24 +64,23 @@
     AGE < 65 ~ "50-64",
     TRUE ~ "65+"))
   #
-  str(df)
+  print(df)
   print(df, width = Inf)
   print(df, n = Inf, width = Inf)
   #---------------------------- Descriptive analysis ---------------------------
   #
 Descriptive1 <- df %>%
-    select(ILI_SARI, SEX, Age_group, REGION, FLUMATRIX) %>%
+    select(ILI_SARI, SEX, Age_group, FLUMATRIX) %>%
     tbl_summary(by = ILI_SARI,
                 statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
                                  all_categorical() ~ "{n} ({p}%)"),
                 digits = all_continuous() ~ 1,missing = "ifany") %>%
-    add_p() %>%          # Adds p-values comparing groups
-    add_overall() %>%    # Adds an Overall column
+    add_overall() %>% 
     bold_labels()
   
   Descriptive1 
   #
-  gtsummary::as_flex_table(table1) %>%
+  gtsummary::as_flex_table(Descriptive1) %>%
     flextable::save_as_docx(path = "Descriptive1.docx") 
   
   
@@ -90,7 +89,7 @@ Descriptive1 <- df %>%
   FLU_cases
   
   #..................Cases by sex
-  result<-df %>%
+  marian<-df %>%
     group_by(SEX) %>%
     summarise(
       total = n(),
@@ -99,13 +98,13 @@ Descriptive1 <- df %>%
       percent_positive = 100 * FLU_cases / total
     )
   #
-  
+  marian
   #-------------------------Create Word document-------------------------=-=-=-=
   doc <- read_docx()
   
   doc <- doc %>%
     body_add_par("Influenza Results by Sex", style = "heading 1") %>%
-    body_add_flextable(flextable(result) %>%
+    body_add_flextable(flextable(marian) %>%
         autofit())
 
   # Export to Word
@@ -120,7 +119,7 @@ Descriptive1 <- df %>%
       total = n(),
       FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
       negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
-      percent_positive = 100 * FLU_cases / total) %>%
+      percent_positive = round( 100 * FLU_cases / total),2) %>%
     arrange(desc(FLU_cases))
   
 #case_Prevalence
@@ -130,8 +129,8 @@ Descriptive1 <- df %>%
       total = n(),
       FLU_cases = sum(FLUMATRIX != "NEG", na.rm = TRUE),
       negative = sum(FLUMATRIX == "NEG", na.rm = TRUE),
-      percent_positive = 100 * FLU_cases / total
-    ) %>%
+      percent_positive = round(100 * FLU_cases / total
+    )) %>%
     arrange(desc(percent_positive))
   
 
@@ -139,14 +138,14 @@ Descriptive1 <- df %>%
   doc <- read_docx()
   
   doc <- doc %>%
-    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_par("Influenza Results by Sex", style = "Image Caption") %>%
     body_add_flextable(
-      flextable(prev_by_district) %>%
+      flextable( prev_by_district) %>%
         autofit()
     )
   
   # Export to Word
-  print(doc, target = "prev_by_district.docx")
+  print(doc, target = "prev_by_districttt.docx")
   
 
   
@@ -166,12 +165,11 @@ Descriptive1 <- df %>%
   doc <- read_docx()
   
   doc <- doc %>%
-    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_par("Influenza Results by Sex", style = "Image Caption") %>%
     body_add_flextable(flextable(case_prop) %>%
         autofit())
   # Export to Word
-  print(doc, target = "case_prop.docx")
-  
+  print(doc, target = "case_props.docx")
   
   
   
@@ -206,7 +204,7 @@ Descriptive1 <- df %>%
   doc <- read_docx()
   
   doc <- doc %>%
-    body_add_par("Influenza Results by Sex", style = "heading 1") %>%
+    body_add_par("Influenza Results by Sex", style = "Image Caption") %>%
     body_add_flextable(flextable(incidence_by_Region) %>%
                          autofit())
   # Export to Word
@@ -243,7 +241,7 @@ Descriptive1 <- df %>%
   
   plot(weekly_cases$Week, weekly_cases$n, type="l")  
   
-  
+ 
 # # #
 #----------------------------- Bar chart by district ---------------------------
 #  
@@ -260,22 +258,25 @@ Descriptive1 <- df %>%
     facet_wrap(~REGION, scales = "free_y") +
     labs(x = "District",y = "Number of cases",title = "Flu Cases by District Within Region")+
     theme_classic()
+  ggsave("df.png")
   # # #
   #------------------------------- Age distribution ----------------------------
   # Histogram of age distribution
   df$AGE <- as.numeric(as.character(df$AGE))
   #
-  ggplot(df, aes(AGE)) +geom_histogram(binwidth = 5, fill = "orange") +
+  p1<-ggplot(df, aes(AGE)) +geom_histogram(binwidth = 5, fill = "orange") +
     labs(title = "Age Distribution of Cases",x = "Age (years)", y = "Number of Cases")+
     theme_minimal()
   #
   
   # Age group bar plot
-  df %>% count(Age_group) %>%
+ p2<- df %>% count(Age_group) %>%
     ggplot(aes(x = Age_group, y = n)) + geom_col(fill = "gray") +
     labs(title = "Cases by Age Group", x = "Age Group (years)", y = "Number of Cases")+
     theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
   # # #
+ 
+ p1+p2
   #------------------------------- Cross-tabulation ------------------------------
   str(df)
   #
@@ -305,6 +306,8 @@ gc(reset = TRUE)
 library(readxl)
 library(tidyverse)
 library(gtsummary)
+library(flextable)
+library(officer)
 # import data
 setwd("C:/Users/User/Downloads")
 
@@ -325,11 +328,11 @@ iptp <- GAR_data %>% pivot_longer(cols = starts_with("Percent_IPT3"),
                                   values_to = "IPTp")
 #
 #(1)Five-year incidence of malaria................................................................................
-malaria_summary <- malaria %>% group_by(District) %>% summarise(Mean_Malaria = mean(Malaria, na.rm = TRUE),
-                                                                SD = sd(Malaria, na.rm = TRUE),
-                                                                Median = median(Malaria, na.rm = TRUE),
-                                                                Minimum = min(Malaria, na.rm = TRUE),
-                                                                Maximum = max(Malaria, na.rm = TRUE),
+malaria_summary <- malaria %>% group_by(District) %>% summarise(Mean = round(mean(Malaria, na.rm = TRUE), 2),
+                                                                SD = round(sd(Malaria, na.rm = TRUE), 2),
+                                                                Median = round(median(Malaria, na.rm = TRUE), 2),
+                                                                Min = min(Malaria, na.rm = TRUE),
+                                                                Max = max(Malaria, na.rm = TRUE),
                                                                 Cumulative_Incidence = sum(Malaria, na.rm = TRUE))
 #
 malaria_summary
@@ -337,11 +340,28 @@ malaria_summary
 print(malaria_summary, n = Inf)
 #
 
+####+#-------------------------Create Word document-------------------------=-=-=-=
+doc <- read_docx()
+
+doc <- doc %>%
+  body_add_par("Five-year incidence of malaria", style = "Image Caption") %>%
+  body_add_flextable(
+    flextable(malaria_summary) %>%
+      autofit()
+  )
+
+# Export to Word
+print(doc, target = "malaria summary.docx")
+
+
+
+
+
 #
 #(2)Five-year uptake of IPTp......................................................................................
-iptp_summary <- iptp %>% group_by(District) %>% summarise(Mean_IPTp = mean(IPTp, na.rm = TRUE),
-                                                          SD = sd(IPTp, na.rm = TRUE),
-                                                          Median = median(IPTp, na.rm = TRUE),
+iptp_summary <- iptp %>% group_by(District) %>% summarise(Mean = round(mean(IPTp, na.rm = TRUE),2),
+                                                          SD = round(sd(IPTp, na.rm = TRUE),2),
+                                                          Median = round(median(IPTp, na.rm = TRUE),2),
                                                           Minimum = min(IPTp, na.rm = TRUE),
                                                           Maximum = max(IPTp, na.rm = TRUE),
                                                           Cumulative_IPTp = sum(IPTp, na.rm = TRUE))
@@ -350,6 +370,23 @@ iptp_summary
 #
 print(iptp_summary, n = Inf)
 #
+
+####+#-------------------------Create Word document-------------------------=-=-=-=
+doc <- read_docx()
+
+doc <- doc %>%
+  body_add_par("Five-year uptake of IPTp", style = "Image Caption") %>%
+  body_add_flextable(
+    flextable(iptp_summary) %>%
+      autofit()
+  )
+
+# Export to Word
+print(doc, target = "iptp_summary.docx")
+
+
+
+
 
 #Objective 3: Factors Associated with Adequate IPTp (3 and 5 doses)..............................................
 #

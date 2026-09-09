@@ -70,6 +70,24 @@ library(finalfit)
 Sys.time()
 Sys.setenv(TZ='GMT')
 Sys.time()
+#
+#+==============================================================================
+#+==============================================================================
+library(MASS)
+data(package = "MASS")
+
+data(Pima.tr)
+#Structure 
+head(Aids2)
+str(Pima.tr)
+summary(Aids2)
+#Export data
+library(writexl)
+write_xlsx(Pima.tr, "Pima.xlsx")
+
+#+==============================================================================
+#+==============================================================================
+
 
 #------ Directory Functions
                    getwd()#-------------Checks your current active folder path.

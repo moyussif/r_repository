@@ -3,8 +3,9 @@ rm(list=ls())
 gc(reset = TRUE)
 #--------------------------- required package ----------------------------------
 #Install packages (run once)
-install.packages(c("readxl", "tidyverse", "lubridate","psych", "car", "lessR", 
-                   "epitools", "stats", "Hmisc", "FSA"))
+#install.packages(c("readxl", "tidyverse", "lubridate","psych", "car", "lessR", 
+#                   "epitools", "stats", "Hmisc", "FSA"))
+
 #Install packages (one by one)
 install.packages("readxl")
 install.packages("readr")
@@ -720,7 +721,7 @@ library(epitools)
 library(XNomial)
 
 #Import data.............................................
-Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
+#Sars_2 <- read_excel("C:/Users/User/Desktop/Sars-2.xlsx")
 str(Sars_2)
 #
 --------------------------------------------------------------------------------
@@ -1458,4 +1459,19 @@ model <- glm(Death ~ Age + Sex, family=binomial, data=malaria)
 summary(model)  
 
 # # #
+
+
+
+install.packages("MASS")   # only needed once
+library(MASS)
+
+data(package = "MASS")
+data(Boston)
+
+head(Boston)
+str(Boston)
+summary(Boston)
+
+
+
 
