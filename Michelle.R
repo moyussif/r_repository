@@ -472,8 +472,6 @@ RR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "riskratio",conf.level = 0.95)
 RR                     
                      
 
-
-
 # # #
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+                              LOGISTIC REGRESSION                             +
@@ -506,7 +504,7 @@ Data Conversion
 #
 Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
 Sars_2$SEX <- as.factor(Sars_2$SEX)
-Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
+Sars_2$Delta <- as.factor(Sars_2$Delta)
 Sars_2$Hospitalstatus <- as.factor(Sars_2$Hospitalstatus)
 Sars_2$categoryofcases <- as.factor(Sars_2$categoryofcases)
 Sars_2$TreatmentOUTCOME <- as.factor(Sars_2$TreatmentOUTCOME)
@@ -525,23 +523,17 @@ print(countmissing)
 
  sars <- na.omit(Sars_2)
  print(sars)
- 
+ str(Sars_LG)
 #---------Selecting column 
 Sars_LG <- sars %>% select(-Duration_wks)
 
-
-#filter for Delta (SaraCovstrain)
-
-filter_Delta <- Sars_LG %>% filter(SarsCov_Strain== "Delta")
-
-print(filter_Delta, n= Inf)
-
-dim(filter_Delta)
-dim(Sars_LG)
-
 #fitting glm  for Continuous variable
-mich_log <- glm(SarsCov_Strain ~ Duration_days, data = Sars_LG, family = "binomial")
-mich_log
+mich_log1 <- glm(Delta ~ TreatmentOUTCOME , data = Sars_LG, family = "binomial")
+summary(mich_log1)
+
+
+tryy <-glm(formula = Delta ~ Duration_days, family = "binomial", data = Sars_LG)
+ summary(tryy)
 
 summary(mich_log)
 #confidence intervals
@@ -550,13 +542,21 @@ confint(mich_log)
 exp(coef(mich_log))
 
 exp(cbind(OR = coef(mich_log), confint(mich_log)))
+     
 
 
-# Fitting  glm for Categorical variable
-michell_logist_categorical1 <- glm(SarsCov_Strain ~ categoryofcases, data = Sars_LG, family = "binomial")
-michell_logist_categorical1
 
-summary(michell_logist_categorical1)
+#===================multiple logistic regression================================
+
+multiple.Logistic <-glm(Delta ~ Duration_days +TreatmentOUTCOME, family = "binomial", data = Sars_LG)
+
+
+summary(multiple.Logistic)
+
+summary(multiple.Logistic)
+ 
+ exp(coef(tryy))
+ 
  
  
 table(Sars_LG$SarsCov_Strain, Sars_LG$Resistance)
@@ -618,31 +618,169 @@ logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
 logist2
 
 
+#================================================================================
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+---------------------------- Model Building ------------------------------------  
+  
+  # methods for evaluating subset regression models:
+1-choose one  with the largest Adjusted R squared.
+2-choose one with the smallest MSE.
+3-choose one with the smallest AIC.
+4-choose one with the smallest predicted sum of square (SS)
+5-choose one with the number of the parammetrs used in a model equal to CP value.
+Example of Mallow CP ------------------- 4 parameters, 1 intercept = 5CP
 
 
-
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#--------------------------------- Correlation ----------------------------------
+str(Sars_LG)
 #
-#Pearson correlation (Parametric--residuals are normally distributed)
-#
-cor.test( ~ age + bmi, data=imdata, method = "pearson", conf.level = 0.95)
+install.packages("olsrr")        
+library(olsrr)        
 
-##
-library(ggpubr)
-#CorrelationPlot----------ggscatter() 
-Hanisah90 <- read_excel("C:/Users/User/Desktop/covid02.xlsx")
-str(Hanisah90)
-    
-ggscatter(Hanisah90, x = "Noofsymptoms", y = "Durationdays",
-          add = "reg.line",                                 # Add regression line
-          conf.int = TRUE,                                  # Add confidence interval
-          add.params = list(color = "blue",
-                            fill = "lightgray"))+
-  stat_cor(method = "pearson", label.x = 3, label.y = 30)   # Add correlation coefficient   
-    
-#Spearman correlation (Non-parametric / ordinals)
-#
-cor.test( ~ age + bmi, data=imdata, method = "spearman", continuity = FALSE, conf.level = 0.95)
-    
+ggg <-lm(systolic1 ~ Age+AgeCategory+cholesterol+sugar_level+smoking+exercise_score_hrs, data = Sars_LG)
+ summary(ggg)
+
+
+g <- lm(y~.,data = dataset)       # where . is the x variables
+summary(g)
+g <- lm(bmi~age+parity+hb,data = imdata)
+
+#--------model building
+forward <- ols_step_forward_p(ggg, penter = 0.05)
+forward                                               # forward
+forward <- ols_step_forward_aic(ggg, details = TRUE)
+forward
+
+Backward <- ols_step_backward_p(g, prem = 0.05)
+Backward                                             # Backward
+Backward <- ols_step_backward_aic(g, details = TRUE)
+Backward
+
+Both <- ols_step_both_p(g, pent = 0.05, prem = 0.05)
+Both                                                 # Stepwise
+Both.aic <- ols_step_both_aic(g, details = TRUE)
+Both.aic
+
+#Options for all possible subset models
+all <- ols_step_all_possible(ggg)
+all
+as.data.frame(all)
+plot(all)
+
+#option for best subset regression
+best <- ols_step_best_subset(g)
+best
+
+# in conclusion, our final model 
+pred <-lm(bmi~age+parity+hb,data = imdata)     #  where . is the list of x variables selected for modelling. 
+summary(pred)
+
+par(mfrom = c(2,2))
+plot(pred)
+
+
+dev.off()
+
+
 # # #
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  +                              LOGISTIC REGRESSION                             +
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #A binary variable is a categorical outcome that has two categories or levels. 
+  #The logistic model (or logit model) is used to model the probability of a particular 
+  #class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
+  Note----the function is glm, y is categorical, x can be (categorical or continuous).
+Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
+Probability is 0  - 1
+OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
+
+#--------------------------- Simple Logistic Regression 
+library(readxl)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+setwd("C:/Users/User/OneDrive - University of Ghana/myComputer@space/repos")
+ARMdata <- read_csv("Untitled2.csv")
+print(ARMdata)
+str(ARMdata)
+#Convert categorical variable to factors
+ARMdata$ParasitePresence <-as.factor(ARMdata$ParasitePresence)
+ARMdata$AgeGroup <-as.factor(ARMdata$AgeGroup)
+ARMdata$Gender <-as.factor(ARMdata$Gender)
+ARMdata$study_site <-as.factor(ARMdata$study_site)
+str(ARMdata)
+
+multi_logist <- glm(ParasitePresence ~ Gender + AgeGroup + study_site, data = ARMdata, family = "binomial" )
+summary(multi_logist)
+confint(multi_logist)
+exp(coef(multi_logist))
+exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+
+#Create contingency table of categorical outcome and predictors we want to make sure no 0 cells.
+table(imdata$CaseControl,imdata$parity)
+
+#regression model
+#------when x is continuous===========================================
+logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
+summary(logistic)
+
+#log-odds=-1.92264+0.05512*age
+exp(0.05512)
+
+# oddratio only
+exp(coef(logistic))
+
+#interpret
+-----a unit increase in age,the odds of having case is increase by factor 1.06. 
+holding other factors constant(e.g multiple logistic regression).
+
+#------when x is categorical============================================
+logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
+logist1
+summary(logist1)
+#log-odds=-0.7673+0.6719*(parity=1)+2.1535*(parity=2)+1.8659*(parity=1)-15.7988*(parity=4)
+parity0 is used as reference
+
+#odd ratio only
+exp(coef(logist1))
+parity-1 is 1.96 more likely to have case compared to parity-0
+parity-2 is 8.62 more likely to have case compared to parity-0
+parity-3 is 6.46 more likely to have case compared to parity-0
+parity-4 is 1.37 more likely to have case compared to parity-0
+
+#----------------------- Multiple Logistics regression 
+multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
+summary(multi_logist)
+
+#CI using profiled log-likelihood-------------as part of reporting OR & p value.       
+confint(multi_logist)
+
+#odd ratio only
+exp(coef(multi_logist))
+
+#odd ratio and 95% CI
+exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
+
+#Note_______in case we want to reorder /change the reference group, Use relevel
+change_ref <-relevel(imdata$parity, ref = "1")
+logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
+logist2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

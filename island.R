@@ -56,251 +56,534 @@ str(healthData)
 
 
 # ==============================
-# # #
-#...............................................................................
-#--------------------------- Test of Association -------------------------------
+############################################################
+# MASTER R SCRIPT: RUN ALL COMMON REGRESSIONS
+############################################################
 
-# Is gender associated with smokingstatus ?
-#  --> table_status
-smoke_status <- table( Gender = Sars_3$SEX, Smokingstatus = Sars_3$smoking) 
-#
-smoke_status <- matrix(c( 13,35, 62, 106), ncol = 2)
-#
-colnames(smoke_status)<- c("Yes","No")
-rownames(smoke_status)<- c("Female","Male")
-#
-print(smoke_status)
-#...............................................................................
-#------------------------ Chisquare of Independence .............................
-#To add marginal totals
-addmargins(smoke_status33,margin = c(1,2))
+# ==========================================================
+# 1. INSTALL AND LOAD PACKAGES
+# ==========================================================
 
-#To get proportions
-prop.table(smoke_status33)
+packages <- c(
+  "tidyverse",
+  "readxl",
+  "haven",
+  "broom",
+  "lmtest",
+  "sandwich",
+  "car",
+  "fixest",
+  "modelsummary",
+  "performance",
+  "psych"
+)
 
-#To get percentages
-prop.table(smoke_status)*100
-#To round off values
-round(prop.table(smoke_status33)*100, 2)
-#plot
-barplot(prop.table(smoke_status33)*100)
-#
-pie(table(data$SES), col = c("white","gray90","gray60"))#for 2x3 Table
+installed <- rownames(installed.packages())
 
-#----------------- Perform chis-square
-chisq.test(table(Sars_3$SEX, Sars_3$smoking))
-chisq.test(smoke_status33)    
-# --------------- Fisher's Exact Test ....................... for  cell count <2
-fisher.test(table(Sars_3$SEX, Sars_3$smoking))
+for (p in packages) {
+  if (!(p %in% installed)) {
+    install.packages(p)
+  }
+}
 
-?t.test
-# # #
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ---------------------------- Oddratio & riskratio ------------------------------ 
-  #                                  ,
-  #_______The right order  for using contingency table for interpretation_________for Epitab func.
-  Disease                                 
-Exposure       No (ref)  Yes                              
-Level 1 (ref)  a         b                               
-Level 2        c         d    
-#________________________________________________________________________________
-
-#------------ Oddratio
-oddsratio(Sars_3$SEX, Sars_3$smoking)
-# 
-#----------- riskratio
-riskratio(Sars_3$SEX, Sars_3$smoking)
-#                      
-
-#================  
-library(epitools)
-#------------ Oddratio
-OR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "oddsratio",conf.level = 0.95)
-OR1<-epitab(Sars_3$SEX, Sars_3$smoking, method = "oddsratio", rev = "columns", conf.level = 0.95)
-OR                     
-#----------- riskratio                     
-RR <-epitab(Sars_3$SEX, Sars_3$smoking, method = "riskratio",conf.level = 0.95)
-RR                     
-
-
-
-
-# # #
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+                              LOGISTIC REGRESSION                             +
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#A binary variable is a categorical outcome that has two categories or levels. 
-#The logistic model (or logit model) is used to model the probability of a particular 
-#class/event such as pass or fail, win or lose, alive or dead or healthy or sick. 
-Note----the function is glm, y is categorical, x can be (categorical or continuous).
-Report logistic regression outcome with Oddratio by taking exponentiation of Estimate. 
-Probability is 0  - 1
-OddRatio------OR<1,LESS likely to occur / OR > 1 MORE likely to occur
-#
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#------------------------- Simple Logistic Regression ---------------------------
-#
-library(readxl)
-library(readr)
 library(tidyverse)
-library(ggplot2)
-library(ggpubr)
-library(dplyr)
-
-#Import data.............................................
-Sars_2 <- read_excel("C:/Users/User/Downloads/Sars-2.xlsx")
-str(Sars_2)
-#
-#--------------------------------------------------------------------------------
-Data Conversion  
-#--------------------------------------------------------------------------------
-#
-Sars_2$AgeCategory <- as.factor(Sars_2$AgeCategory)
-Sars_2$SEX <- as.factor(Sars_2$SEX)
-Sars_2$SarsCov_Strain <- as.factor(Sars_2$SarsCov_Strain)
-Sars_2$Hospitalstatus <- as.factor(Sars_2$Hospitalstatus)
-Sars_2$categoryofcases <- as.factor(Sars_2$categoryofcases)
-Sars_2$TreatmentOUTCOME <- as.factor(Sars_2$TreatmentOUTCOME)
-Sars_2$infection <- as.factor(Sars_2$infection)
-Sars_2$Resistance <- as.factor(Sars_2$Resistance)
-Sars_2$organism <- as.factor(Sars_2$organism)
-Sars_2$smoking <- as.factor(Sars_2$smoking)
-
-# revisit the data structure
-str(Sars_2)
-print(Sars_2)
-
-#
-countmissing <- colSums(is.na(Sars_2))
-print(countmissing)
-
-sars <- na.omit(Sars_2)
-print(sars)
-
-#---------Selecting column 
-Sars_LG <- sars %>% select(-Duration_wks)
+library(readxl)
+library(haven)
+library(broom)
+library(lmtest)
+library(sandwich)
+library(car)
+library(fixest)
+library(modelsummary)
+library(performance)
+library(psych)
 
 
-#filter for Delta (SaraCovstrain)
+# ==========================================================
+# 2. IMPORT DATA
+# ==========================================================
 
-filter_Delta <- Sars_LG %>% filter(SarsCov_Strain== "Delta")
+# ---- CSV ----
+data <- read.csv("your_data.csv")
 
-print(filter_Delta, n= Inf)
+# ---- OR Excel ----
+# data <- read_excel("your_data.xlsx")
 
-dim(filter_Delta)
-dim(Sars_LG)
-
-#fitting glm  for Continuous variable
-mich_log <- glm(SarsCov_Strain ~ Duration_days, data = Sars_LG, family = "binomial")
-mich_log
-
-summary(mich_log)
-#confidence intervals
-confint(mich_log) 
-#Odd ratio
-exp(coef(mich_log))
-
-exp(cbind(OR = coef(mich_log), confint(mich_log)))
+# ---- OR Stata ----
+# data <- read_dta("your_data.dta")
 
 
-# Fitting  glm for Categorical variable
-michell_logist_categorical1 <- glm(SarsCov_Strain ~ categoryofcases, data = Sars_LG, family = "binomial")
-michell_logist_categorical1
+# ==========================================================
+# 3. INSPECT DATA
+# ==========================================================
 
-summary(michell_logist_categorical1)
+str(data)
+summary(data)
+head(data)
+dim(data)
 
+# Missing values
+colSums(is.na(data))
 
-table(Sars_LG$SarsCov_Strain, Sars_LG$Resistance)
-str(sars)
-#Create contingency table of categorical outcome and predictors we want to make sure no 0 cells.
-table(imdata$CaseControl,imdata$parity)
-
-#regression model
-#----------------when x is continuous ==========================================
-logistic <- glm(CaseControl ~ age, data = imdata, family = "binomial" )
-summary(logistic)
-
-#log-odds=-1.92264+0.05512*age
-exp(0.05512)
-
-# oddratio only
-exp(coef(logistic))
-
-#interpret
------a unit increase in age,the odds of having case is increase by factor 1.06. 
-holding other factors constant(e.g multiple logistic regression).
-
-#--------------when x is categorical ===========================================
-#
-#Note_______in case we want to reorder /change the reference group, Use relevel
-change_ref <-relevel(imdata$parity, ref = "1")
-#
-logist1 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
-logist1
-summary(logist1)
-#log-odds=-0.7673+0.6719*(parity=1)+2.1535*(parity=2)+1.8659*(parity=1)-15.7988*(parity=4)
-parity0 is used as reference
-
-#odd ratio only
-exp(coef(logist1))
-parity-1 is 1.96 more likely to have case compared to parity-0
-parity-2 is 8.62 more likely to have case compared to parity-0
-parity-3 is 6.46 more likely to have case compared to parity-0
-parity-4 is 1.37 more likely to have case compared to parity-0
-#
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ----------------------- Multiple Logistics regression --------------------------
-  #  
-  multi_logist <- glm(CaseControl ~ age + bmi + parity, data = imdata, family = "binomial" )
-summary(multi_logist)
-
-#CI using profiled log-likelihood-------------as part of reporting OR & p value.       
-confint(multi_logist)
-
-#odd ratio only
-exp(coef(multi_logist))
-
-#odd ratio and 95% CI
-exp(cbind(OR = coef(multi_logist), confint(multi_logist)))
-
-#Note_______in case we want to reorder /change the reference group, Use relevel
-change_ref <-relevel(imdata$parity, ref = "1")
-logist2 <- glm(CaseControl ~ parity, data = imdata, family = "binomial" )
-logist2
+# Variable names
+names(data)
 
 
+# ==========================================================
+# 4. DEFINE VARIABLES
+# ==========================================================
+
+# CHANGE THESE TO YOUR ACTUAL VARIABLE NAMES
+
+outcome <- "Y"
+
+main_x <- "X"
+
+control1 <- "age"
+control2 <- "gender"
+control3 <- "education"
+control4 <- "income"
 
 
+# ==========================================================
+# 5. DESCRIPTIVE STATISTICS
+# ==========================================================
+
+describe(data)
+
+# Summary statistics for selected variables
+data %>%
+  select(all_of(c(
+    outcome,
+    main_x,
+    control1,
+    control2,
+    control3,
+    control4
+  ))) %>%
+  psych::describe()
 
 
+# ==========================================================
+# 6. CORRELATION MATRIX
+# ==========================================================
 
+cor_data <- data %>%
+  select(where(is.numeric))
 
-# ==============================
-# MULTICOLLINEARITY
-# ==============================
-
-vif(model_full)
-
-
-vif
-# ==============================
-# ROC / AUC
-# ==============================
-
-predicted <- predict(
-  model_full,
-  type = "response"
+cor_matrix <- cor(
+  cor_data,
+  use = "pairwise.complete.obs"
 )
 
-roc_curve <- roc(
-  data$outcome,
-  predicted
+round(cor_matrix, 3)
+
+
+# ==========================================================
+# 7. SIMPLE OLS REGRESSION
+# ==========================================================
+
+model1 <- lm(
+  Y ~ X,
+  data = data
 )
 
-auc(roc_curve)
+summary(model1)
+
+
+# ==========================================================
+# 8. OLS WITH CONTROL VARIABLES
+# ==========================================================
+
+model2 <- lm(
+  Y ~ X + age + gender + education + income,
+  data = data
+)
+
+summary(model2)
+
+
+# ==========================================================
+# 9. FULL OLS MODEL
+# ==========================================================
+
+model3 <- lm(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income,
+  data = data
+)
+
+summary(model3)
+
+
+# ==========================================================
+# 10. POLYNOMIAL / NON-LINEAR EFFECT
+# ==========================================================
+
+model4 <- lm(
+  Y ~ X + I(X^2) +
+    age +
+    gender +
+    education +
+    income,
+  data = data
+)
+
+summary(model4)
+
+
+# ==========================================================
+# 11. INTERACTION / MODERATION EFFECT
+# ==========================================================
+
+model5 <- lm(
+  Y ~ X * gender +
+    age +
+    education +
+    income,
+  data = data
+)
+
+summary(model5)
+
+
+# ==========================================================
+# 12. ANOTHER INTERACTION
+# ==========================================================
+
+model6 <- lm(
+  Y ~ X * education +
+    age +
+    gender +
+    income,
+  data = data
+)
+
+summary(model6)
+
+
+# ==========================================================
+# 13. ROBUST STANDARD ERRORS
+# ==========================================================
+
+coeftest(
+  model3,
+  vcov = vcovHC(
+    model3,
+    type = "HC1"
+  )
+)
+
+
+# ==========================================================
+# 14. HETEROSKEDASTICITY TEST
+# ==========================================================
+
+bptest(model3)
+
+
+# ==========================================================
+# 15. MULTICOLLINEARITY / VIF
+# ==========================================================
+
+vif(model3)
+
+
+# ==========================================================
+# 16. NORMALITY OF RESIDUALS
+# ==========================================================
+
+par(mfrow = c(2, 2))
+
+plot(model3)
+
+par(mfrow = c(1, 1))
+
+
+# ==========================================================
+# 17. BREUSCH-PAGAN / KOENKER TEST
+# ==========================================================
+
+bptest(model3)
+
+
+# ==========================================================
+# 18. RESET SPECIFICATION TEST
+# ==========================================================
+
+resettest(model3)
+
+
+# ==========================================================
+# 19. INFLUENTIAL OBSERVATIONS
+# ==========================================================
+
+cooks.distance(model3)
 
 plot(
-  roc_curve,
-  col = "blue",
-  main = "ROC Curve"
-  
+  cooks.distance(model3),
+  type = "h",
+  main = "Cook's Distance",
+  ylab = "Cook's Distance"
+)
+
+
+# ==========================================================
+# 20. LOGISTIC REGRESSION
+# ==========================================================
+
+# Use this when Y is binary: 0/1
+
+logit1 <- glm(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income,
+  data = data,
+  family = binomial(link = "logit")
+)
+
+summary(logit1)
+
+
+# Odds ratios
+exp(coef(logit1))
+
+# Odds ratios with confidence intervals
+exp(
+  cbind(
+    OR = coef(logit1),
+    confint(logit1)
+  )
+)
+
+
+# ==========================================================
+# 21. PROBIT REGRESSION
+# ==========================================================
+
+probit1 <- glm(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income,
+  data = data,
+  family = binomial(link = "probit")
+)
+
+summary(probit1)
+
+
+# ==========================================================
+# 22. POISSON REGRESSION
+# ==========================================================
+
+# Use for count dependent variables
+
+poisson1 <- glm(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income,
+  data = data,
+  family = poisson(link = "log")
+)
+
+summary(poisson1)
+
+
+# ==========================================================
+# 23. NEGATIVE BINOMIAL REGRESSION
+# ==========================================================
+
+# Uncomment if needed
+
+# install.packages("MASS")
+# library(MASS)
+
+# nb1 <- glm.nb(
+#   Y ~ X + age + gender + education + income,
+#   data = data
+# )
+
+# summary(nb1)
+
+
+# ==========================================================
+# 24. FIXED-EFFECTS REGRESSION
+# ==========================================================
+
+# Example:
+# individual_id = individual identifier
+# year = time variable
+
+fe_model <- feols(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income |
+    individual_id + year,
+  data = data
+)
+
+summary(fe_model)
+
+
+# ==========================================================
+# 25. FIXED EFFECTS WITH CLUSTERED STANDARD ERRORS
+# ==========================================================
+
+fe_clustered <- feols(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income |
+    individual_id + year,
+  data = data,
+  cluster = ~individual_id
+)
+
+summary(fe_clustered)
+
+
+# ==========================================================
+# 26. TWO-WAY FIXED EFFECTS
+# ==========================================================
+
+twfe_model <- feols(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income |
+    individual_id + year,
+  data = data,
+  cluster = ~individual_id
+)
+
+summary(twfe_model)
+
+
+# ==========================================================
+# 27. CLUSTERED STANDARD ERRORS
+# ==========================================================
+
+# Example: cluster by individual_id
+
+cluster_model <- feols(
+  Y ~ X +
+    age +
+    gender +
+    education +
+    income,
+  data = data,
+  cluster = ~individual_id
+)
+
+summary(cluster_model)
+
+
+# ==========================================================
+# 28. MODEL COMPARISON
+# ==========================================================
+
+modelsummary(
+  list(
+    "Model 1" = model1,
+    "Model 2" = model2,
+    "Model 3" = model3,
+    "Model 4" = model4,
+    "Model 5" = model5,
+    "Model 6" = model6
+  ),
+  stars = TRUE
+)
+
+
+# ==========================================================
+# 29. REGRESSION TABLE WITH ROBUST SE
+# ==========================================================
+
+modelsummary(
+  list(
+    "OLS" = model3,
+    "Interaction" = model5,
+    "Fixed Effects" = fe_model,
+    "TWFE" = twfe_model
+  ),
+  vcov = "HC1",
+  stars = TRUE
+)
+
+
+# ==========================================================
+# 30. EXPORT REGRESSION TABLE
+# ==========================================================
+
+modelsummary(
+  list(
+    "Model 1" = model1,
+    "Model 2" = model2,
+    "Model 3" = model3,
+    "Model 4" = model4,
+    "Model 5" = model5,
+    "Model 6" = model6
+  ),
+  stars = TRUE,
+  output = "regression_results.docx"
+)
+
+
+# ==========================================================
+# 31. SAVE RESULTS
+# ==========================================================
+
+sink("regression_results.txt")
+
+cat("\n================ MODEL 1 ================\n")
+print(summary(model1))
+
+cat("\n================ MODEL 2 ================\n")
+print(summary(model2))
+
+cat("\n================ MODEL 3 ================\n")
+print(summary(model3))
+
+cat("\n================ MODEL 4 ================\n")
+print(summary(model4))
+
+cat("\n================ MODEL 5 ================\n")
+print(summary(model5))
+
+cat("\n================ MODEL 6 ================\n")
+print(summary(model6))
+
+cat("\n================ LOGIT ================\n")
+print(summary(logit1))
+
+cat("\n================ PROBIT ================\n")
+print(summary(probit1))
+
+sink()
+
+
+# ==========================================================
+# 32. SAVE R WORKSPACE
+# ==========================================================
+
+save.image(
+  file = "all_regression_results.RData"
+)
+
+
+############################################################
+# END OF SCRIPT
+############################################################

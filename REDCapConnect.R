@@ -26,7 +26,7 @@ rcon <- redcapAPI::redcapConnection(
 redcap <- redcapAPI::exportRecords(rcon)
 
 #save RDS(redcap, file = "LF_study.rds")
-write_xlsx(redcap, "LF_Sept_4.xlsx")
+write_xlsx(redcap, "LF_Sept_17.xlsx")
 
 #Set Working Directorate--------------------------------------------------------
 setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
@@ -141,7 +141,6 @@ write_xlsx(joined_df, "Mergedoo.xlsx")
     token = "your-token",
     secret = "your-secret"
   )
-
 
 
 rsconnect::deployApp()
