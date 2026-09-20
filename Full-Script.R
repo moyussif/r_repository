@@ -1,38 +1,85 @@
-#---------------------- Biostatistical  analysis -------------------------------
-#__________________________ Dataset contains ___________________________________
-#Variable	          Description                        Type
-id                  Participant ID	                   Identifier
-age	                Age in years	                     Continuous
-sex	                Sex	                               Categorical
-bmi	                Body mass index	                   Continuous
-smoking	            Smoking status	                   Categorical
-diabetes	          Diabetes	                         Binary
-hypertension	      Hypertension	                     Binary
-treatment	          Treatment group                    Binary
-sbp	                Systolic BP	                       Continuous
-dbp	                Diastolic BP	                     Continuous
-cholesterol	        Total cholesterol	                 Continuous
-ldl	                LDL cholesterol	                   Continuous
-hba1c	              HbA1c	                             Continuous
-crp	                C-reactive protein	               Continuous/skewed
-cv_event	          Cardiovascular event               Binary
-hospitalization	    Cardiovascular hospitalization	   Binary
-followup_months	    Follow-up duration	               Time
-death	              Death	                             Binary/time-to-event
-qol_baseline	      Baseline quality of life	         Continuous
-qol_12m	            12-month quality of life	         Continuous
-#_______________________________________________________________________________
-################################################################################
-packages <- c("tidyverse", "gtsummary", "tableone", "janitor", "rstatix","broom", "broom.mixed", "car", "lmtest",
-              "sandwich", "MASS","survival", "survminer", "pROC", "ResourceSelection", "lme4","geepack", "emmeans",
-              "MatchIt", "survey", "epiR", "epitools","boot", "performance", "mice")
-# Find packages that are not installed
-missing_packages <- packages[!packages %in% rownames(installed.packages())]
-# Install only missing packages
-if (length(missing_packages) > 0) {install.packages(missing_packages, dependencies = TRUE)}
-# Load all packages
-invisible(lapply(packages, library, character.only = TRUE))
+##
+#================ Master statistical-test decision guide =======================
 #
+Question	Analysis	Main effect measure	Null value
+Describe continuous variable           #Mean/SD	Mean
+Skewed continuous variable             #Median/IQR	Median	—
+Compare 2 independent means	           #t-test	Mean difference	0
+Compare 2 independent non-normal groups#Mann–Whitney rank difference
+Compare paired means	                 #Paired t-test	Mean change	0
+Compare paired non-normal data	       #Wilcoxon signed-rank	Rank/change	0
+Compare ≥3 means	                     #ANOVA	Mean differences	0
+Compare ≥3 non-normal groups	         #Kruskal–Wallis	Rank distributions
+Two categorical variables	             #Chi-square	Association	—
+Small categorical counts	             #Fisher exact	Association	—
+Two continuous variables            	 #Pearson correlation	r	0
+Non-normal/monotonic relationship	     #Spearman	ρ	0
+Continuous outcome	                   #Linear regression	β	0
+Binary outcome	                       #Logistic regression	OR	1
+Cohort risk	                           #Risk analysis	RR/RD	RR=1/RD=0
+Count outcome	                         #Poisson regression	IRR	1
+Overdispersed count	                   #Negative binomial	IRR	1
+Time-to-event	                         #Kaplan–Meier	Survival probability	—
+Compare survival curves	               #Log-rank	Survival distribution	—
+Adjusted time-to-event	               #Cox regression	HR	1
+Repeated continuous outcome	           #Mixed model	β	0
+Repeated binary outcome	               #GEE	OR/RR depending model	1
+Diagnostic test	                       #ROC	AUC	0.50
+Agreement of methods	                 #Bland–Altman	Bias/LoA	0
+Observational treatment effect	       #Propensity methods	OR/RR/HR/etc.	Depends
+Many comparisons	                     #Multiplicity correction	Adjusted P	—
+#
+#-------------------------------------------------------------------------------
+# Suggested full library structure
+For a serious reusable biostatistics project, I recommend splitting the above into:
+  
+  R_Biostatistics_Library/
+  │
+├── 00_setup.R
+├── 01_simulate_or_import_data.R
+├── 02_data_cleaning.R
+├── 03_descriptive_statistics.R
+├── 04_table1.R
+├── 05_normality_assumptions.R
+│
+├── 06_t_tests.R
+├── 07_nonparametric_tests.R
+├── 08_anova.R
+├── 09_chi_square_fisher.R
+├── 10_correlation.R
+│
+├── 11_linear_regression.R
+├── 12_logistic_regression.R
+├── 13_poisson_negative_binomial.R
+│
+├── 14_survival_kaplan_meier.R
+├── 15_cox_regression.R
+│
+├── 16_ancova.R
+├── 17_repeated_measures.R
+├── 18_mixed_models.R
+├── 19_GEE.R
+│
+├── 20_epidemiological_measures.R
+├── 21_confounding.R
+├── 22_interaction_effect_modification.R
+├── 23_propensity_scores.R
+│
+├── 24_missing_data.R
+├── 25_multiple_imputation.R
+├── 26_bootstrap.R
+├── 27_multiple_testing.R
+│
+├── 28_diagnostic_accuracy.R
+├── 29_bland_altman.R
+├── 30_sensitivity_analysis.R
+│
+├── 31_publication_tables.R
+├── 32_publication_figures.R
+└── 33_results_interpretation.R
+
+This gives you a full medical biostatistics framework
+##
 ################################################################################
 #                  SIMULATED MEDICAL RESEARCH DATA
 ################################################################################
@@ -53,8 +100,8 @@ dat <- tibble(id = 1:n,
 dat12 <- dat %>%
   mutate(
     sbp = round(115 +0.65 * age +5 * (sex == "Male") +8 * 
-                       (hypertension == "Yes") -4 * 
-                       (treatment == "Intervention") +rnorm(n, 0, 12)),
+                  (hypertension == "Yes") -4 * 
+                  (treatment == "Intervention") +rnorm(n, 0, 12)),
     dbp = round(65 +0.25 * age +3 * (sex == "Male") +5 * 
                   (hypertension == "Yes") - 2 * 
                   (treatment == "Intervention") +rnorm(n, 0, 8)),
@@ -89,11 +136,66 @@ dat <- dat %>%
   select(-all_of("event_probability"))
 
 str(dat)
+##########################################################################################################################
+rm(list=ls())
+gc(reset = TRUE)
+#.........................................................................................................................
+packages <- c("readxl","readr","psych","lessR","stats","Hmisc","tidyverse", "gtsummary", "tableone", "janitor", "rstatix",
+              "broom", "broom.mixed", "car", "lmtest","sandwich", "MASS","survival", "survminer", "pROC","survey", "epiR",
+              "epitools","boot", "performance", "mice","ResourceSelection","lme4","geepack","emmeans","MatchIt")
+#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# Find packages that are not installed
+missing_packages <- packages[!packages %in% rownames(installed.packages())]
+# Install only missing packages
+if (length(missing_packages) > 0) {install.packages(missing_packages, dependencies = TRUE)}
+# Load all packages
+invisible(lapply(packages, library, character.only = TRUE))
+##
+#----------------------------- Import data -------------------------------------
+#
+health_data <- read_excel("C:/Users/User/Downloads/health_data.xlsx")
+#
+str(health_data) 
+print(health_data, width = Inf)
+# Variable names
+names(data)
+#
+#---------------------- Create Derivative Variable -----------------------------
+#Hypertension
+health_data$hypertensive <- ifelse(health_data$BP_systolic >= 140,"Yes", "No")
+health_data$glucose <- ifelse(health_data$glucose > 10, 1, 0)
+#Convert probabilities to classes
+predicted_class <- ifelse(probabilities >= 0.5, 1, 0)
+#Age_group
+healthData = health_data %>% 
+  mutate(Age_group = case_when(Age  < 5 ~ "0-4",
+                               Age  < 11 ~ "5-10",
+                               Age  < 18 ~ "11-17",
+                               Age  < 35 ~ "18-34",
+                               Age  < 50 ~ "35-49",
+                               Age  < 65 ~ "50-64",TRUE ~ "65+"))
 
+str(healthData)
+##
+#----------------------- Data Labelling (CODING) -------------------------------
+#
+healthData$Age_group <- as.factor(healthData$Age_group)
+
+healthData$sex <- as.factor(healthData$sex)
+
+healthData$marital_status <- as.factor(healthData$marital_status)
+
+healthData$smoking  <- as.factor(healthData$smoking)
+
+healthData$hypertensive <- as.factor(healthData$hypertensive)
+#
+str(healthData)
+# 
 ################################################################################
 #                             DATA QUALITY CONTROL
 ################################################################################
-
+#data description
+describe(dat12)
 # Missing values
 colSums(is.na(dat12))
 
@@ -129,8 +231,9 @@ Incorrect variable types.
 Outliers.
 Coding errors.
 For example, an adult dataset containing an age of −5 or an SBP of 900 should be investigated before analysis.
-
-#Descriptive statistics
+##
+#------------------------ Descriptive statistics -------------------------------
+#
 Mean and SD
 mean(dat$age)
 sd(dat$age)
@@ -190,10 +293,10 @@ The P-values indicate whether there is statistical evidence of differences betwe
 
 In randomized trials, baseline P-values are generally not the main criterion for judging whether randomization worked. 
 Descriptive balance and standardized differences are often more informative.
-
-6. Normality assessment
+##
+#---------------------- Normality assessment -----------------------------------
+#
 hist(dat$sbp)
-
 qqnorm(dat$sbp)
 qqline(dat$sbp)
 
@@ -204,45 +307,36 @@ H₀: data are consistent with a normal distribution.
 H₁: data are not consistent with a normal distribution.
 Interpretation
 If:
-  
   P > 0.05
-
 there is insufficient evidence of non-normality.
-
 If:
-  
   P < 0.05
-
 there is evidence of departure from normality.
 
 Important: With large samples, do not base the entire analysis on Shapiro-Wilk.
 Examine the histogram and Q-Q plot and consider whether the statistical method is robust to modest non-normality.
-
-# Independent t-test
-Research question
-Does mean SBP differ between the intervention and control groups?
+##
+#--------------------------- Independent t-test --------------------------------
+#
+Research question: Does mean SBP differ between the intervention and control groups?
   
 t_test_result <- t.test(sbp ~ treatment,data = dat)
-
 t_test_result
 
 Hypotheses
 H₀: μ₁ = μ₂
 H₁: μ₁ ≠ μ₂
-Interpretation
-If P < 0.05:
-  
-There is evidence that mean SBP differs between the two treatment groups.
 
+# Interpretation
+If P < 0.05:
+There is evidence that mean SBP differs between the two treatment groups.
 If P ≥ 0.05:
-  
 There is insufficient evidence of a difference in mean SBP.
 
 Do not report only the P-value. Report the mean difference and 95% CI.
 
 Example:
-  
-Mean SBP was 129 mmHg in the intervention group and 134 mmHg in the control group, 
+Mean SBP was 129 mmHg in the intervention group and 134 mmHg in the control group,
 with an adjusted/unadjusted mean difference of −5 mmHg (95% CI −8 to −2; P = 0.002).
 
 #Effect size — Cohens d
@@ -258,55 +352,48 @@ Rough guidelines:
 0.5 = moderate
 0.8 = large
 A statistically significant result does not necessarily mean the effect is clinically important.
-
-# Paired t-test
-Research question
-Did participants SBP change between baseline and 12 months?
+##
+#----------------------------- Paired t-test -----------------------------------
+#
+Research question: Did participants SBP change between baseline and 12 months?
 
 dat <- dat %>%
   mutate(sbp_baseline = sbp + rnorm(n, 5, 8),sbp_12m =sbp_baseline - 4 * (treatment == "Intervention") + rnorm(n, 0, 8))
 
 paired_t <- t.test(dat$sbp_baseline,dat$sbp_12m,paired = TRUE)
-
 paired_t
 
 #Interpretation
 If P < 0.05:
-
 There is evidence of a statistically significant mean change in SBP between baseline and 12 months.
-
 Report:
-
 Mean SBP decreased by X mmHg (95% CI X to X; P = X).
-
-# Mann–Whitney U test
+##
+#------------------------- Mann–Whitney U test ---------------------------------
+#
 wilcox.test(crp ~ treatment,data = dat)
 
 Interpretation
 This tests whether the distributions of CRP differ between two independent groups.
-
 If P < 0.05:
-
 There is evidence that the distribution of CRP differs between the groups.
 
 For a skewed biomarker, report median and IQR.
-
-#Wilcoxon signed-rank test
+##
+#---------------------- Wilcoxon signed-rank test ------------------------------
+#
 wilcox.test(dat$sbp_baseline, dat$sbp_12m,paired = TRUE)
 
 #Interpretation
 This is the non-parametric counterpart to the paired t-test.
-
 If P < 0.05:
-
 There is evidence of systematic change in SBP between baseline and follow-up.
-
-#One-way ANOVA
-Research question
-Does mean SBP differ between never, former, and current smokers?
+##
+#---------------------------- One-way ANOVA ------------------------------------
+#
+Research question: Does mean SBP differ between never, former, and current smokers?
 
 anova_model <- aov(sbp ~ smoking,data = dat)
-
 summary(anova_model)
 
 Hypotheses
@@ -315,118 +402,187 @@ H₁: at least one mean differs.
 Interpretation
 If P < 0.05:
 
-Mean SBP differs across at least one smoking group.
-
-ANOVA does not identify which groups differ.
-
+Mean SBP differs across at least one smoking group. ANOVA does not identify which groups differ.
 Use:
-
-TukeyHSD(anova_model)
-
-to identify pairwise differences.
-
-# Kruskal–Wallis test
+TukeyHSD(anova_model) #to identify pairwise differences.
+##
+#------------------------ Kruskal–Wallis test ----------------------------------
+#
 kruskal.test(crp ~ smoking,data = dat)
 
-Interpretation
+#Interpretation
 This is a non-parametric alternative to one-way ANOVA.
-
 If P < 0.05:
-
 The distribution of CRP differs among at least one of the smoking categories.
 
 #Post-hoc analysis:
-
 dat %>%
   dunn_test(crp ~ smoking,p.adjust.method = "holm")
 
 The adjusted P-values indicate which pairs differ.
-
-#Chi-square test
-Research question
-Is diabetes associated with treatment group?
+##
+#---------------------------- Chi-square test ----------------------------------
+#
+Research question: Is diabetes associated with treatment group?
 
 tab <- table(dat$diabetes,dat$treatment)
-
 chisq.test(tab)
 
 Hypotheses
 H₀: the categorical variables are independent.
 H₁: the variables are associated.
-Interpretation
-If P < 0.05:
 
+#Interpretation
+If P < 0.05:
 There is evidence of an association between diabetes status and treatment group.
 
 Remember: an association does not establish causality.
-
-# Fisher's exact test
+##
+#------------------------- Fisher's exact test ---------------------------------
 fisher.test(tab)
 
-Interpretation
+#Interpretation
 Fishers exact test is appropriate when expected cell counts are small.
 
 If P < 0.05:
-
 There is evidence of an association between the categorical variables.
-
-#Pearson correlation
+##
+#------------------------ Pearson correlation ----------------------------------
+#
 cor.test(dat$age,dat$sbp,method = "pearson")
 
 Interpretation
 The Pearson correlation coefficient r ranges from −1 to +1.
 
 For example:
-
 r = 0.42
 P < 0.001
-
 means:
-
 Age had a moderate positive linear association with SBP.
 
 A correlation of 0 does not necessarily mean there is no relationship; there may be a nonlinear relationship.
-
-#Spearman correlation
+##
+#------------------------ Spearman correlation ---------------------------------
+#
 cor.test(dat$crp,dat$hba1c,method = "spearman")
 
-Interpretation
+#Interpretation
 Spearmans ρ measures the strength of a monotonic relationship.
-
 Example:
-  
 CRP was positively associated with HbA1c (Spearmans ρ = 0.31, P < 0.001).
 
 Correlation should not be interpreted as evidence of causality.
+#
+################################################################################
+#-------------------- Assumptions of Regression --------------------------------
+##
+#......................................
+#   CORRELATION MATRIX (Relationship)
+#'''''''''''''''''''''''''''''''''''''' 
+cor_data <- data %>% select(where(is.numeric))
 
-#Simple linear regression
+cor_matrix <- cor(cor_data,use = "pairwise.complete.obs")
+
+round(cor_matrix, 3)
+##
+#......................................
+#   INTERACTION / MODERATION EFFECT
+#''''''''''''''''''''''''''''''''''''''
+model5 <- lm(Y ~ X * gender +age +education +income,data = data)
+summary(model5)
+##
+#......................................
+# HETEROSCEDASTICITY TEST (Homogeneous)
+#''''''''''''''''''''''''''''''''''''''
+bptest(model3)
+##
+#......................................
+#   ROBUST STANDARD ERRORS  (SE)
+#''''''''''''''''''''''''''''''''''''''
+#There is evidence of heteroscedasticity.Use robust standard errors:
+coeftest(model3,vcov = vcovHC(model3,type = "HC1"))
+##
+#......................................
+#   MULTICOLLINEARITY / VIF (1 - 10)
+#''''''''''''''''''''''''''''''''''''''
+vif(model3)
+##
+#......................................
+#    NORMALITY OF RESIDUALS
+#''''''''''''''''''''''''''''''''''''''
+par(mfrow = c(2, 2))
+plot(model3)
+par(mfrow = c(1, 1))
+##
+#......................................
+# BREUSCH-PAGAN TEST (Residual variance)
+#''''''''''''''''''''''''''''''''''''''
+bptest(model3)
+##
+#......................................
+#  OUTLIERS (Influential observations)
+#''''''''''''''''''''''''''''''''''''''
+cooks.distance(model3)
+
+plot(cooks.distance(model3),type = "h",main = "Cook's Distance",ylab = "Cook's Distance")
+##
+#......................................
+#     RESET SPECIFICATION TEST
+#''''''''''''''''''''''''''''''''''''''
+resettest(model3)
+##
+#=============== Quick guide ============================
+#Regression	               Dependent variable 
+Simple Linear	             Continuous, 1 predictor
+Multiple Linear	           Continuous, multiple predictors
+Polynomial	               Continuous, nonlinear relationship
+Logistic Binary            categorical 2
+Multinomial Logistic     	 3+ unordered categories
+Ordinal Logistic         	 Ordered categories
+Poisson	                   Count
+Negative Binomial	         Overdispersed count
+Ridge	                     Continuous + multicollinearity
+Lasso	                     Continuous + variable selection
+Elastic Net                Combination of Ridge + Lasso
+Robust Regression	         Continuous + outliers
+Quantile Regression	       Conditional quantiles
+Stepwise Regression	       Automated variable selection
+##
+#
+#======================== Simple Linear Regression =============================
+#                                                                 y^ = b0 +  b1x
+#Predict Blood pressure from Age
 lm_simple <- lm(sbp ~ age,data = dat)
-
 summary(lm_simple)
 
+#Predictions
+predict(lm_simple)
 tidy(lm_simple, conf.int = TRUE)
 
-Interpretation
-Suppose:
+# Plot
+plot(data$Age, data$sbp,main = "Simple Linear Regression",xlab = "Age",ylab = "Sbp")
+abline(lm_simple, col = "red", lwd = 2)
 
-β = 0.65
-95% CI = 0.50–0.80
-P < 0.001
+#Interpretation
+Suppose:
+        β = 0.65,      95% CI = 0.50–0.80,    P < 0.001
 
 Then:
 
 Each additional year of age was associated with a 0.65-mmHg higher SBP (95% CI 0.50–0.80; P < 0.001).
 
 The coefficient represents the expected change in the outcome for a one-unit increase in the predictor.
-
-# Multiple linear regression
+#
+#======================= Multiple Linear Regression ============================
+#
+#Multiple linear regression
 lm_multiple <- lm(sbp ~age +sex +bmi +smoking +diabetes +hypertension +treatment,data = dat)
-
 summary(lm_multiple)
-
+#Predictions
+predict(model_multiple)
 tidy(lm_multiple, conf.int = TRUE)
 
-Interpretation
+#Interpretation
 Each coefficient represents an association adjusted for the other variables in the model.
 
 Example:
@@ -438,106 +594,76 @@ intervention treatment was associated with a 4.2-mmHg lower SBP (95% CI −6.1 t
 par(mfrow = c(2, 2))
 plot(lm_multiple)
 par(mfrow = c(1, 1))
+##
+#======================== Polynomial Regression ================================
+#
+model_poly <- lm(Sbp ~ Age + I(Age^2), data = data)
+summary(model_poly)
 
-#Check:
+# Plot
+plot(data$Age, data$Sbp)
 
-Linearity
-Homoscedasticity
-Residual distribution
-Influential observations
-Multicollinearity
-vif(lm_multiple)
+Age_seq <- seq(min(data$Age), max(data$Age), length.out = 100)
 
-Rough guide:
+pred_poly <- predict(model_poly, newdata = data.frame(Age = Age_seq))
 
-VIF ≈ 1: little concern
-VIF > 5: potentially concerning
-VIF > 10: substantial concern
-# Breusch–Pagan test
-bptest(lm_multiple)
-
-Hypotheses
-H₀: constant residual variance.
-H₁: non-constant residual variance.
-If P < 0.05:
-
-There is evidence of heteroscedasticity.
-
-Use robust standard errors:
-
-coeftest(lm_multiple,vcov = vcovHC(lm_multiple,type = "HC3"))
-
-# Logistic regression
-Research question
-Which factors are associated with cardiovascular events?
-
+lines(Age_seq, pred_poly, col = "blue", lwd = 2)
+##
+#========================= Logistic Regression =================================
+#
+#Use this when the dependent variable is binary, such as 0/1, Yes/No, disease/no disease.
+#Research question: Which factors are associated with cardiovascular events?
 logit_model <- glm(cv_event ~age +sex +bmi +smoking +diabetes +hypertension +treatment,data = dat,family = binomial)
-
 summary(logit_model)
 
 Convert coefficients to odds ratios:
 
 logit_results <- tidy(logit_model,exponentiate = TRUE,conf.int = TRUE)
-
 logit_results
 
-Interpretation
+#Interpretation
 Suppose:
-
-Treatment OR = 0.62
-95% CI = 0.43–0.89
-P = 0.009
+        Treatment OR = 0.62,      95% CI = 0.43–0.89,        P = 0.009
 
 Then:
-
-After adjustment for the other covariates, intervention treatment was associated with 
-38% lower odds of cardiovascular events compared with control (adjusted OR 0.62, 95% CI 0.43–0.89; P = 0.009).
-
+After adjustment for the other covariates, intervention treatment was associated with 38% lower odds of cardiovascular events
+compared with control (adjusted OR 0.62, 95% CI 0.43–0.89; P = 0.009).
 Because:
-
-1 − 0.62 = 0.38
-
-Important
+        1 − 0.62 = 0.38
+#NB
 An OR of 0.62 does not necessarily mean cardiovascular risk was 38% lower. It means the odds were 38% lower.
 
-23. Publication-ready logistic regression
-tbl_regression(logit_model,exponentiate = TRUE)
+#Publication-ready logistic regression
+                                tbl_regression(logit_model,exponentiate = TRUE)
 
 #Interpretation:
-
 OR > 1 → higher odds
 OR < 1 → lower odds
 OR = 1 → no association
 If the 95% CI includes 1, the association is statistically compatible with no association at the conventional 5% level.
 
-24. Predicted probabilities
+# Predicted probabilities
 dat <- dat %>%
   mutate(predicted_probability =predict(logit_model,type = "response"))
 
-head(
-  dat %>%
-    select(id,cv_event,predicted_probability))
+head(dat %>% select(id,cv_event,predicted_probability))
 
-Interpretation
+#Interpretation
 The predicted probability is the model-estimated probability of cardiovascular events for each participant.
-
 For example:
-
 Predicted probability = 0.23
-
 means:
-
 The model estimates approximately a 23% probability of the outcome for that participant, 
 conditional on the variables included in the model.
-
-# ROC curve and AUC
+##
+#-------------------------- ROC curve and AUC ----------------------------------
+#
 roc_object <- roc(dat$cv_event,dat$predicted_probability)
 
 plot(roc_object,main = "ROC Curve",col = "blue")
 
 auc(roc_object)
-
-Interpretation
+#Interpretation
 AUC measures discrimination:
 
 #AUC	General interpretation
@@ -548,64 +674,82 @@ AUC measures discrimination:
 >0.90	Excellent
 
 For example:
-
 The model demonstrated good discrimination (AUC = 0.82, 95% CI 0.78–0.86).
-
 AUC does not tell you whether predicted probabilities are well calibrated.
 
-# Sensitivity, specificity, PPV and NPV
-coords(roc_object,"best",
-       ret = c("threshold","sensitivity","specificity","ppv","npv"))
+#Sensitivity, specificity, PPV and NPV
+coords(roc_object,"best",ret = c("threshold","sensitivity","specificity","ppv","npv"))
 
 #Interpretation
-Sensitivity:
 
+#-Sensitivity:
 Among participants who truly have the outcome, the proportion correctly identified.
 
-Specificity:
-
+#-Specificity:
 Among participants without the outcome, the proportion correctly classified as negative.
 
-PPV:
-
+#-PPV:
 Among those testing positive, the proportion who actually have the outcome.
 
-NPV:
-
+#-NPV:
 Among those testing negative, the proportion who do not have the outcome.
-
 PPV and NPV depend strongly on outcome prevalence.
 
-# Hosmer–Lemeshow test
+#-Hosmer–Lemeshow test
 hoslem.test(dat$cv_event,fitted(logit_model),g = 10)
 
-Interpretation
+#Interpretation
 This evaluates agreement between predicted and observed event frequencies.
 
 P > 0.05 → no strong evidence of poor calibration.
 P < 0.05 → evidence of possible calibration problems.
 Do not interpret P > 0.05 as proof of perfect calibration. Calibration plots are also recommended.
+##
+#=================== Multinomial Logistic Regression ===========================
+#
+#For a dependent variable with more than two unordered categories.
+library(nnet)
+mtcars$category <- factor(sample(c("Low", "Medium", "High"),nrow(mtcars),replace = TRUE))
 
-# Poisson regression
-For count outcomes:
+model_multinom <- multinom(category ~ hp + wt + cyl,data = mtcars)
+summary(model_multinom)
 
+# Predicted categories
+predict(model_multinom)
+##
+#===================== Ordinal Logistic Regression =============================
+#
+#For ordered categories such as:
+Poor < Average < Good < Excellent
+library(MASS)
+
+mtcars$rating <- ordered(sample(c("Poor", "Average", "Good"),nrow(mtcars),replace = TRUE),
+                         levels = c("Poor", "Average", "Good"))
+
+model_ordinal <- polr(rating ~ hp + wt + cyl,data = mtcars,Hess = TRUE)
+summary(model_ordinal)
+
+# Predictions
+predict(model_ordinal)
+
+##
+#========================= Poisson Regression ==================================
+#
+#Useful when the dependent variable is a count, such as number of visits, accidents, calls, etc.
 dat <- dat %>%
-  mutate(
-    hospital_visits = rpois(n,exp(-0.8 +0.02 * age +0.25 * (diabetes == "Yes") +0.20 * (hypertension == "Yes"))))
+  mutate(hospital_visits = rpois(n,exp(-0.8 +0.02 * age +0.25 * (diabetes == "Yes") +0.20 * (hypertension == "Yes"))))
 
+#Fit model
 poisson_model <- glm(hospital_visits ~age +sex +diabetes +hypertension +treatment,data = dat,family = poisson)
+summary(poisson_model)
 
 tidy(poisson_model,exponentiate = TRUE,conf.int = TRUE)
 
-Interpretation
+#Interpretation
 Exponentiated coefficients are interpreted as incidence rate ratios (IRRs).
 
-For example:
-
-IRR = 1.30
-
-means:
-
+For example:  IRR = 1.30
+# means:
 The expected rate of hospital visits was 30% higher in the exposed group, holding other variables constant.
 
 # Poisson overdispersion
@@ -613,27 +757,115 @@ dispersion <- sum(residuals(poisson_model,type = "pearson")^2)/df.residual(poiss
 
 dispersion
 #
-Interpretation
-A dispersion statistic substantially greater than 1 suggests overdispersion.
-
-If there is substantial overdispersion, ordinary Poisson regression may underestimate standard errors.
-
-Consider negative binomial regression.
-
-# Negative binomial regression
+#Interpretation
+A dispersion statistic substantially greater than 1 suggests overdispersion. If there is substantial overdispersion, 
+ordinary Poisson regression may underestimate standard errors. Consider negative binomial regression.
+##
+#======================== Negative binomial regression =========================
+#
 nb_model <- glm.nb(hospital_visits ~age +sex +diabetes +hypertension +treatment,data = dat)
 
 tidy(nb_model,exponentiate = TRUE,conf.int = TRUE)
 
 Interpretation
 The exponentiated coefficient is an IRR.
-
 For example:
+An IRR of 1.45 indicates that the expected hospitalization rate was approximately 45% higher 
+in the exposed group,after adjustment.
+##
+#========================== Ridge Regression ===================================
+#
+#Ridge regression applies L2 regularization.
+library(glmnet)
 
-An IRR of 1.45 indicates that the expected hospitalization rate was approximately 45% higher in the exposed group, 
-after adjustment.
+x <- model.matrix(mpg ~ hp + wt + cyl + disp + drat,mtcars)[, -1]
+y <- mtcars$mpg
 
-# Kaplan–Meier survival analysis
+ridge_model <- glmnet(x,y,alpha = 0)
+plot(ridge_model)
+
+# Cross-validation
+cv_ridge <- cv.glmnet(x,y,alpha = 0)
+plot(cv_ridge)
+
+# Best lambda
+cv_ridge$lambda.min
+
+# Predictions
+predict(cv_ridge,newx = x,s = "lambda.min")
+
+##
+#========================= Lasso Regression ====================================
+#
+# Lasso uses L1 regularization and can shrink some coefficients to exactly zero.
+lasso_model <- glmnet(x,y,alpha = 1)
+plot(lasso_model)
+
+cv_lasso <- cv.glmnet(x,y,alpha = 1)
+plot(cv_lasso)
+
+cv_lasso$lambda.min
+coef(cv_lasso,s = "lambda.min")
+##
+#======================== Elastic Net Regression ===============================
+#
+Combines Ridge and Lasso.
+
+elastic_model <- glmnet(x,y,alpha = 0.5)
+cv_elastic <- cv.glmnet(x,y,alpha = 0.5)
+plot(cv_elastic)
+
+coef(cv_elastic,s = "lambda.min")
+##
+#========================== Robust Regression ==================================
+#
+#Useful when your data contains outliers that can strongly influence ordinary least squares.
+library(MASS)
+
+model_robust <- rlm(mpg ~ hp + wt + cyl,data = mtcars)
+summary(model_robust)
+
+predict(model_robust)
+##
+#======================== Quantile Regression ==================================
+#
+#Instead of predicting the conditional mean, quantile regression can model the median or another quantile.
+library(quantreg)
+
+# Median regression
+model_quantile <- rq(mpg ~ hp + wt + cyl,data = mtcars,tau = 0.5)
+summary(model_quantile)
+
+# 25th percentile
+model_q25 <- rq(mpg ~ hp + wt + cyl,data = mtcars,tau = 0.25)
+summary(model_q25)
+
+# 75th percentile
+model_q75 <- rq(mpg ~ hp + wt + cyl,data = mtcars,tau = 0.75)
+summary(model_q75)
+##
+#========================== Stepwise Regression ================================
+#
+# Can be used for automated variable selection.
+#
+full_model <- lm(mpg ~ hp + wt + cyl + disp + drat + qsec + gear + carb,data = mtcars)
+step_model <- step(full_model)
+
+summary(step_model)
+##
+#===================== Generalized Linear Regression ===========================
+#
+#You can use glm() for several types of outcomes.
+# Gaussian
+model_gaussian <- glm(mpg ~ hp + wt,data = mtcars,family = gaussian)
+# Binomial
+model_binomial <- glm(high_mpg ~ hp + wt,data = mtcars,family = binomial)
+# Poisson
+model_poisson <- glm(carb ~ hp + wt,data = mtcars,family = poisson)
+
+##
+#===================== Kaplan–Meier survival analysis ==========================
+#
 survival_object <- Surv(dat$followup_months,dat$death)
 
 km_model <- survfit(survival_object ~ treatment,data = dat)
@@ -646,43 +878,32 @@ ggsurvplot(km_model,data = dat,risk.table = TRUE,pval = TRUE,conf.int = TRUE,
 The Kaplan–Meier curve estimates the probability of remaining alive/event-free over time.
 
 The risk table shows how many participants remain under observation at different time points.
-
-# Log-rank test
+##
+#============================== Log-rank test ==================================
+#
 survdiff(Surv(followup_months,death) ~ treatment,data = dat)
 
-Interpretation
+#Interpretation
 H₀: survival curves are equal.
 H₁: survival curves differ.
 If P < 0.05:
-
-There is evidence that survival differs between treatment groups.
-
-The log-rank test is primarily an unadjusted comparison.
-
-#Cox proportional-hazards regression
+There is evidence that survival differs between treatment groups.The log-rank test is primarily an unadjusted comparison.
+##
+#================== Cox proportional-hazards regression ========================
+#
 cox_model <- coxph(Surv(followup_months,death) ~treatment +age +sex +bmi +smoking +diabetes +hypertension,data = dat)
-
 summary(cox_model)
 
 #Hazard ratios:
-
 tidy(cox_model,exponentiate = TRUE,conf.int = TRUE)
 
-Interpretation
-Suppose:
-
-HR = 0.70
-95% CI = 0.52–0.94
-
+#Interpretation
+Suppose:  HR = 0.70, 95% CI = 0.52–0.94
 Then:
-
 After adjustment for the covariates, the intervention group had an estimated 30% 
 lower hazard of death than the control group.
-
 Because:
-
 1 − 0.70 = 0.30
-
 Do not describe an HR as simply "30% lower risk." It represents a relative hazard under the proportional-hazards model.
 
 #Test proportional hazards
@@ -696,24 +917,22 @@ H₀: proportional-hazards assumption holds.
 P < 0.05: evidence of violation.
 P ≥ 0.05: no strong evidence of violation.
 If the assumption is violated, consider stratification or time-varying effects.
-
-# ANCOVA
+##
+#================================ ANCOVA =======================================
+#
 ancova_model <- lm(sbp_12m ~treatment +sbp_baseline +age +sex,data = dat)
 summary(ancova_model)
 
-Interpretation
+#Interpretation
 ANCOVA compares follow-up SBP between treatment groups while adjusting for baseline SBP and other prespecified covariates.
-
-Example:
-
-After adjustment for baseline SBP, age, and sex, 12-month SBP was 5.1 mmHg lower 
-in the intervention group than in the control group (95% CI −7.4 to −2.8; P < 0.001).
-
+#Example:
+After adjustment for baseline SBP, age, and sex, 12-month SBP was 5.1 mmHg lower in the intervention group than
+in the control group (95% CI −7.4 to −2.8; P < 0.001).
 This is often preferable to simply comparing change scores in randomized trials.
-
-# Repeated-measures analysis
-Convert to long format:
-
+##
+#===================== Repeated-measures analysis ANOVA ========================
+#
+#Convert to long format:
 long_bp <- dat %>%
   select(id,treatment,age,sex,sbp_baseline,sbp_12m) %>%
   pivot_longer(cols = c(sbp_baseline,sbp_12m),
@@ -722,20 +941,17 @@ long_bp <- dat %>%
   mutate(time = factor(time,
                        levels = c("sbp_baseline","sbp_12m"),
                        labels = c("Baseline","12 months")))
-
-# Linear mixed-effects model
+##
+#======================= Linear mixed-effects model ============================
+#
 mixed_model <- lmer(sbp ~time * treatment +age +sex + (1 | id),data = long_bp)
 summary(mixed_model)
 
 #Interpretation
-The most important coefficient is usually:
-
-time:treatment
-
+The most important coefficient is usually: time: treatment
 This evaluates whether the change over time differs between treatment groups.
 
 If significant:
-
 There is evidence that the trajectory of SBP over time differed between the intervention and control groups.
 
 # Estimated marginal means
@@ -749,49 +965,39 @@ pairs(emmeans(mixed_model,~ time * treatment))
 Estimated marginal means provide model-adjusted group means.
 
 They are particularly useful for explaining interactions and repeated-measures analyses.
-
-# Generalized estimating equations
-gee_model <- geeglm(cv_event ~treatment +age +sex +diabetes,
-                    id = id,
-                    data = dat,
-                    family = binomial,
-                    corstr = "exchangeable")
+##
+#================ Generalized estimating equations (GEE) =======================
+#
+gee_model <- geeglm(cv_event ~treatment +age +sex +diabetes,id = id, data = dat, family = binomial, corstr = "exchangeable")
 
 tidy(gee_model,exponentiate = TRUE,conf.int = TRUE)
 
 # Interpretation
 GEE accounts for correlation among repeated measurements and provides population-average effects.
-
 For example:
-
 An OR of 0.70 indicates that, at the population level, treatment was associated with 30% lower odds of the outcome after adjustment.
 
-# Interaction/effect modification
+#Interaction/effect modification
 interaction_model <- glm(cv_event ~treatment *sex +age +bmi +smoking +diabetes +hypertension,data = dat,family = binomial)
 
 tbl_regression(interaction_model,exponentiate = TRUE)
 
 # Interpretation
-The interaction asks:
-
-Does the treatment effect differ between males and females?
+The interaction asks: Does the treatment effect differ between males and females?
 
 A significant interaction term provides evidence that the treatment-outcome association varies by sex.
 
-Do not conclude effect modification simply because one subgroup has P < 0.05 and 
-another does not. The interaction term itself should be evaluated.
-
-# Stratified analysis
+Do not conclude effect modification simply because one subgroup has P < 0.05 and another does not. 
+The interaction term itself should be evaluated.
+##
+#========================== Stratified analysis ================================
+#
 dat %>%
   group_by(sex) %>%
-  summarise(n = n(),
-            events = sum(cv_event),
-            risk = mean(cv_event))
+  summarise(n = n(),events = sum(cv_event),risk = mean(cv_event))
 
 # Interpretation
-This describes outcome risk separately within strata.
-
-Stratification can help identify:
+This describes outcome risk separately within strata. Stratification can help identify:
 
 Confounding.
 Effect modification.
@@ -805,9 +1011,8 @@ tidy(crude_model,exponentiate = TRUE,conf.int = TRUE)
 
 tidy(adjusted_model,exponentiate = TRUE,conf.int = TRUE)
 
-Interpretation
+# Interpretation
 Compare the crude and adjusted treatment estimates.
-
 For example:
 
 Crude OR = 0.75
@@ -821,10 +1026,7 @@ causal reasoning rather than an automated P-value rule.
 
 #Propensity-score matching
 ps_model <- matchit(treatment ~age +sex +bmi +smoking +diabetes +hypertension +cholesterol,
-                    data = dat,
-                    method = "nearest",
-                    ratio = 1)
-
+                    data = dat,method = "nearest",ratio = 1)
 summary(ps_model)
 
 matched_dat <- match.data(ps_model)
@@ -835,9 +1037,7 @@ Propensity-score matching attempts to create treatment groups with similar distr
 After matching, examine covariate balance. The goal is balance, not simply a non-significant P-value.
 
 # Treatment analysis:
-
 matched_model <- glm(cv_event ~ treatment,data = matched_dat,family = binomial,weights = weights)
-
 tbl_regression(matched_model,exponentiate = TRUE)
 
 Interpret the OR as the treatment association in the matched population, subject to the assumptions of the matching procedure.
@@ -852,7 +1052,7 @@ dat_missing$ldl[sample(seq_len(nrow(dat_missing)),50)] <- NA
 
 colSums(is.na(dat_missing))
 
-Interpretation
+#Interpretation
 First determine:
 
 How much data are missing?
@@ -860,8 +1060,7 @@ Which variables have missing data?
 Are missing values related to observed characteristics?
 Is missingness plausibly MCAR, MAR, or MNAR?
 Avoid automatically performing complete-case analysis without considering its assumptions.
-
-# Multiple imputation
+##
 ################################################################################
 #                            MULTIPLE IMPUTATION
 ################################################################################
@@ -1034,7 +1233,7 @@ logit_results %>%
   labs(x = "Odds Ratio",y = NULL) +
   theme_minimal()
 
-Interpretation
+#Interpretation
 For an OR forest plot:
 
 Point estimate left of 1 → lower odds.
@@ -1042,36 +1241,6 @@ Point estimate right of 1 → higher odds.
 CI crossing 1 → statistically compatible with no association.
 Narrow CI → greater precision.
 Wide CI → greater uncertainty.
-
-# Master statistical-test decision guide
-Question	Analysis	Main effect measure	Null value
-Describe continuous variable	Mean/SD	Mean	—
-Skewed continuous variable	Median/IQR	Median	—
-Compare 2 independent means	t-test	Mean difference	0
-Compare 2 independent non-normal groups	Mann–Whitney	Distribution/rank difference	—
-Compare paired means	Paired t-test	Mean change	0
-Compare paired non-normal data	Wilcoxon signed-rank	Rank/change	0
-Compare ≥3 means	ANOVA	Mean differences	0
-Compare ≥3 non-normal groups	Kruskal–Wallis	Rank distributions	—
-Two categorical variables	Chi-square	Association	—
-Small categorical counts	Fisher exact	Association	—
-Two continuous variables	Pearson correlation	r	0
-Non-normal/monotonic relationship	Spearman	ρ	0
-Continuous outcome	Linear regression	β	0
-Binary outcome	Logistic regression	OR	1
-Cohort risk	Risk analysis	RR/RD	RR=1/RD=0
-Count outcome	Poisson regression	IRR	1
-Overdispersed count	Negative binomial	IRR	1
-Time-to-event	Kaplan–Meier	Survival probability	—
-Compare survival curves	Log-rank	Survival distribution	—
-Adjusted time-to-event	Cox regression	HR	1
-Repeated continuous outcome	Mixed model	β	0
-Repeated binary outcome	GEE	OR/RR depending model	1
-Diagnostic test	ROC	AUC	0.50
-Agreement of methods	Bland–Altman	Bias/LoA	0
-Observational treatment effect	Propensity methods	OR/RR/HR/etc.	Depends
-Many comparisons	Multiplicity correction	Adjusted P	—
-
 
 # How to interpret statistical results correctly
 For medical and public-health research, use this hierarchy:
@@ -1155,54 +1324,3 @@ How precise the estimate is.
 How compatible the result is with the null hypothesis.
 That is the standard you should aim for throughout a clinical or epidemiological analysis.
 
-# Suggested full library structure
-For a serious reusable biostatistics project, I recommend splitting the above into:
-
-R_Biostatistics_Library/
-│
-├── 00_setup.R
-├── 01_simulate_or_import_data.R
-├── 02_data_cleaning.R
-├── 03_descriptive_statistics.R
-├── 04_table1.R
-├── 05_normality_assumptions.R
-│
-├── 06_t_tests.R
-├── 07_nonparametric_tests.R
-├── 08_anova.R
-├── 09_chi_square_fisher.R
-├── 10_correlation.R
-│
-├── 11_linear_regression.R
-├── 12_logistic_regression.R
-├── 13_poisson_negative_binomial.R
-│
-├── 14_survival_kaplan_meier.R
-├── 15_cox_regression.R
-│
-├── 16_ancova.R
-├── 17_repeated_measures.R
-├── 18_mixed_models.R
-├── 19_GEE.R
-│
-├── 20_epidemiological_measures.R
-├── 21_confounding.R
-├── 22_interaction_effect_modification.R
-├── 23_propensity_scores.R
-│
-├── 24_missing_data.R
-├── 25_multiple_imputation.R
-├── 26_bootstrap.R
-├── 27_multiple_testing.R
-│
-├── 28_diagnostic_accuracy.R
-├── 29_bland_altman.R
-├── 30_sensitivity_analysis.R
-│
-├── 31_publication_tables.R
-├── 32_publication_figures.R
-└── 33_results_interpretation.R
-
-This gives you a full medical biostatistics framework, rather than merely a list of R commands. 
-The important distinction is that every test should answer a defined research question and
-be accompanied by its assumptions → effect estimate → 95% CI → P-value → statistical interpretation → clinical interpretation.
