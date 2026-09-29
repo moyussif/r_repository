@@ -392,7 +392,6 @@ colnames(smoke_status33)<- c("Yes","No")
 rownames(smoke_status33)<- c("Male", "Female")
 #
 
-
 #Re-order the columns by list the column-2 first.
 smoke_status <- matrix(c( 13,35, 62, 106), ncol = 2)
 colnames(smoke_status)<- c("Yes","No")

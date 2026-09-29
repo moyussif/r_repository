@@ -1,7 +1,8 @@
 ##
 #================ Master statistical-test decision guide =======================
 #
-Question	Analysis	Main effect measure	Null value
+#   Question	Analysis	Main effect measure	Null value
+
 Describe continuous variable           #Mean/SD	Mean
 Skewed continuous variable             #Median/IQR	Median	—
 Compare 2 independent means	           #t-test	Mean difference	0
@@ -136,23 +137,56 @@ dat <- dat %>%
   select(-all_of("event_probability"))
 
 str(dat)
-##########################################################################################################################
+
+#===================== Data for practice =======================================
+library(MASS)
+data(package = "MASS")
+
+data(Pima.tr)
+#Structure 
+head(Aids2)
+str(Pima.tr)
+summary(Aids2)
+#Export data
+library(writexl)
+write_xlsx(Pima.tr, "Pima.xlsx")
+################################################################################
 rm(list=ls())
 gc(reset = TRUE)
-#.........................................................................................................................
-packages <- c("readxl","readr","psych","lessR","stats","Hmisc","tidyverse", "gtsummary", "tableone", "janitor", "rstatix",
-              "broom", "broom.mixed", "car", "lmtest","sandwich", "MASS","survival", "survminer", "pROC","survey", "epiR",
-              "epitools","boot", "performance", "mice","ResourceSelection","lme4","geepack","emmeans","MatchIt")
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#...........................................................................................................................
+packages <- c("readxl","readr","writexl","XLConnect","janitor","lubridate","tidyverse","dbplyr","gganimate","RColorBrewer",
+              "ggfortify","ggpubr","plotrix","skimr","psych","lessR","Hmisc","tableone","gtsummary", "flextable", "officer",
+              "stats","rstatix","broom", "broom.mixed", "car", "lmtest","sandwich", "MASS","survival", "survminer", "pROC",
+              "survey", "epiR","PMCMRplus","epitools","boot", "performance", "mice","ResourceSelection","lme4","FSA",
+              "emmeans","MatchIt","VennDiagram","geepack",)
+#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 # Find packages that are not installed
 missing_packages <- packages[!packages %in% rownames(installed.packages())]
 # Install only missing packages
 if (length(missing_packages) > 0) {install.packages(missing_packages, dependencies = TRUE)}
 # Load all packages
 invisible(lapply(packages, library, character.only = TRUE))
+###
+#--------------------------- Set Working Directorate ---------------------------
+setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
+setwd("C:/Users/User/Downloads")
+
+##
+dir()
+data.read<-loadWorkbook(file.choose(), create=T) # from XLConnect package
+data.read
+DATA<-readWorksheet(data.read, sheet = "Sheet1")
+str(DATA)
+##
+summary(DATA[,"Age"])
+
+subset(DataTraining,GADX_Oncho=="Negative"&DDTD_Ocho=="Negative", select=c("BARCODES","Age","Sex","District","DDTD_Ocho","GADX_Oncho")) %>%  
+  
+  summarise(count = n())
 ##
 #----------------------------- Import data -------------------------------------
 #
+
 health_data <- read_excel("C:/Users/User/Downloads/health_data.xlsx")
 #
 str(health_data) 
@@ -194,131 +228,92 @@ str(healthData)
 ################################################################################
 #                             DATA QUALITY CONTROL
 ################################################################################
+#
 #data description
 describe(dat12)
-# Missing values
+#------------------------ Missing values
 colSums(is.na(dat12))
-
 # Percentage missing
 round(colMeans(is.na(dat12)) * 100,2)
-
-# Duplicate participants
-dat12 %>% count(id) %>%filter(n > 1)
-
 # Check age
 range(dat12$age,na.rm = TRUE)
-
 # Check BMI
 range(dat12$bmi,na.rm = TRUE)
-
 # Check SBP
 range(dat12$sbp,na.rm = TRUE)
 
-# Frequency distributions
-table(dat12$sex)
-table(dat12$smoking)
-table(dat12$diabetes)
-table(dat12$hypertension)
-table(dat12$treatment)
 
-#Interpretation
-Data cleaning is not a hypothesis test. The objective is to identify:
-  
-Missing observations.
-Duplicate records.
-Impossible values.
-Incorrect variable types.
-Outliers.
-Coding errors.
-For example, an adult dataset containing an age of −5 or an SBP of 900 should be investigated before analysis.
+#------------------------- Duplicate records
+dat12 %>% count(id) %>%filter(n > 1)
+
+
+
+
+#----------------------- Descriptive statistics -------------------- Categorical
+# Reported as n (%).
+table(dat12$diabetes)                                         # as Frequency (n)
+table(dat12$smoking)
+table(dat12$treatment)
+table(dat12$sex)
+
+prop.table(table(dat12$diabetes)) * 100                      # as Percentage (%)
+
 ##
-#------------------------ Descriptive statistics -------------------------------
+#------------------------ Descriptive statistics -------------------- Continuous
 #
-Mean and SD
+#Mean and SD
 mean(dat$age)
 sd(dat$age)
 
-mean(dat$sbp)
-sd(dat$sbp)
+#Median and IQR
+median(dat$sbp)
+IQR(dat$sbp)
 
-#Interpretation
-The mean describes the central tendency, while the SD describes variability.
-
-Example:
-  
-  Mean age = 58.2 ± 11.7 years.
-
-This means participants had an average age of 58.2 years with an SD of 11.7 years.
-
-Median and IQR
-median(dat$crp)
-IQR(dat$crp)
-
-#Interpretation
-The median represents the middle observation, while the IQR contains the middle 50% of observations.
-
-Example:
-  
-  Median CRP was 2.7 mg/L (IQR 1.4–5.4).
-
-This is usually preferable for strongly right-skewed biomarkers such as CRP.
-
-Categorical variables
-table(dat$diabetes)
-
-prop.table(table(dat$diabetes)) * 100
-
-Interpretation
-If 250 of 1,000 participants have diabetes:
-  
-  Diabetes was present in 250/1,000 participants (25.0%).
-
-Categorical variables are generally reported as n (%).
-
-# Publication-quality Table 1
+# Publication-quality Table 1 ------------------------------ Normal distribution
 table1 <- dat12 %>%
   select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
   tbl_summary(by = treatment,
               statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),missing = "no") %>%
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = all_continuous() ~ 1,missing = "no") %>%
   add_overall() %>%
-  add_p()
+  bold_labels()
 
 table1
 
-#Interpretation
-Table 1 describes the study population and compares baseline characteristics between groups.
+# Publication-quality Table 2 ------------------------------ Skewed distribution
+  table2 <- dat12 %>%
+  select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
+  tbl_summary(by = treatment,
+              statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = all_continuous() ~ 1,missing = "no") %>%
+  add_overall() %>%
+  bold_labels()
 
-The P-values indicate whether there is statistical evidence of differences between groups.
+table2
 
-In randomized trials, baseline P-values are generally not the main criterion for judging whether randomization worked. 
-Descriptive balance and standardized differences are often more informative.
 ##
-#---------------------- Normality assessment -----------------------------------
+#--------------------------- Normality assessment ------------------------------
 #
 hist(dat$sbp)
 qqnorm(dat$sbp)
 qqline(dat$sbp)
-
 shapiro.test(dat$sbp)
 
-Statistical hypotheses
+#Statistical hypotheses
 H₀: data are consistent with a normal distribution.
 H₁: data are not consistent with a normal distribution.
-Interpretation
-If:
-  P > 0.05
-there is insufficient evidence of non-normality.
-If:
-  P < 0.05
-there is evidence of departure from normality.
-
-Important: With large samples, do not base the entire analysis on Shapiro-Wilk.
+#Interpretation
+P > 0.05#there is insufficient evidence of non-normality.
+P < 0.05#there is evidence of departure from normality.
+#NB
+With large samples, do not base the entire analysis on Shapiro-Wilk.
 Examine the histogram and Q-Q plot and consider whether the statistical method is robust to modest non-normality.
 ##
 #--------------------------- Independent t-test --------------------------------
 #
-Research question: Does mean SBP differ between the intervention and control groups?
+Research question:#Does mean SBP differ between the intervention and control groups?
   
 t_test_result <- t.test(sbp ~ treatment,data = dat)
 t_test_result
@@ -328,11 +323,9 @@ H₀: μ₁ = μ₂
 H₁: μ₁ ≠ μ₂
 
 # Interpretation
-If P < 0.05:
-There is evidence that mean SBP differs between the two treatment groups.
-If P ≥ 0.05:
-There is insufficient evidence of a difference in mean SBP.
-
+If P < 0.05:#There is evidence that mean SBP differs between the two treatment groups.
+If P ≥ 0.05:#There is insufficient evidence of a difference in mean SBP.
+#NB
 Do not report only the P-value. Report the mean difference and 95% CI.
 
 Example:
@@ -346,7 +339,7 @@ dat %>%
 Interpretation
 Cohens d describes the difference in means in SD units.
 
-Rough guidelines:
+#Rough guidelines:
   
 0.2 = small
 0.5 = moderate
@@ -355,7 +348,7 @@ A statistically significant result does not necessarily mean the effect is clini
 ##
 #----------------------------- Paired t-test -----------------------------------
 #
-Research question: Did participants SBP change between baseline and 12 months?
+Research question:#Did participants SBP change between baseline and 12 months?
 
 dat <- dat %>%
   mutate(sbp_baseline = sbp + rnorm(n, 5, 8),sbp_12m =sbp_baseline - 4 * (treatment == "Intervention") + rnorm(n, 0, 8))
@@ -364,52 +357,45 @@ paired_t <- t.test(dat$sbp_baseline,dat$sbp_12m,paired = TRUE)
 paired_t
 
 #Interpretation
-If P < 0.05:
-There is evidence of a statistically significant mean change in SBP between baseline and 12 months.
-Report:
-Mean SBP decreased by X mmHg (95% CI X to X; P = X).
+P < 0.05: There is evidence of a statistically significant mean change in SBP between baseline and 12 months.
+#
+Report: Mean SBP decreased by X mmHg (95% CI X to X; P = X).
 ##
 #------------------------- Mann–Whitney U test ---------------------------------
 #
 wilcox.test(crp ~ treatment,data = dat)
-
-Interpretation
+#Interpretation
 This tests whether the distributions of CRP differ between two independent groups.
-If P < 0.05:
-There is evidence that the distribution of CRP differs between the groups.
 
+P < 0.05: There is evidence that the distribution of CRP differs between the groups.
+#NB
 For a skewed biomarker, report median and IQR.
 ##
 #---------------------- Wilcoxon signed-rank test ------------------------------
 #
 wilcox.test(dat$sbp_baseline, dat$sbp_12m,paired = TRUE)
-
 #Interpretation
 This is the non-parametric counterpart to the paired t-test.
-If P < 0.05:
-There is evidence of systematic change in SBP between baseline and follow-up.
+#NB
+P < 0.05: There is evidence of systematic change in SBP between baseline and follow-up.
 ##
 #---------------------------- One-way ANOVA ------------------------------------
 #
-Research question: Does mean SBP differ between never, former, and current smokers?
+Research question: #Does mean SBP differ between never, former, and current smokers?
 
 anova_model <- aov(sbp ~ smoking,data = dat)
 summary(anova_model)
-
-Hypotheses
+#Hypotheses
 H₀: all group means are equal.
 H₁: at least one mean differs.
-Interpretation
-If P < 0.05:
-
-Mean SBP differs across at least one smoking group. ANOVA does not identify which groups differ.
+#Interpretation
+P < 0.05: Mean SBP differs across at least one smoking group. ANOVA does not identify which groups differ.
 Use:
 TukeyHSD(anova_model) #to identify pairwise differences.
 ##
 #------------------------ Kruskal–Wallis test ----------------------------------
 #
 kruskal.test(crp ~ smoking,data = dat)
-
 #Interpretation
 This is a non-parametric alternative to one-way ANOVA.
 If P < 0.05:
@@ -423,42 +409,36 @@ The adjusted P-values indicate which pairs differ.
 ##
 #---------------------------- Chi-square test ----------------------------------
 #
-Research question: Is diabetes associated with treatment group?
+Research question:# Is diabetes associated with treatment group?
 
 tab <- table(dat$diabetes,dat$treatment)
 chisq.test(tab)
-
-Hypotheses
+#Hypotheses
 H₀: the categorical variables are independent.
 H₁: the variables are associated.
-
 #Interpretation
 If P < 0.05:
 There is evidence of an association between diabetes status and treatment group.
-
+#NB
 Remember: an association does not establish causality.
 ##
 #------------------------- Fisher's exact test ---------------------------------
 fisher.test(tab)
-
 #Interpretation
 Fishers exact test is appropriate when expected cell counts are small.
-
+ 
 If P < 0.05:
 There is evidence of an association between the categorical variables.
 ##
 #------------------------ Pearson correlation ----------------------------------
 #
 cor.test(dat$age,dat$sbp,method = "pearson")
-
-Interpretation
+#Interpretation
 The Pearson correlation coefficient r ranges from −1 to +1.
-
-For example:
+#For example:
 r = 0.42
 P < 0.001
-means:
-Age had a moderate positive linear association with SBP.
+means: Age had a moderate positive linear association with SBP.
 
 A correlation of 0 does not necessarily mean there is no relationship; there may be a nonlinear relationship.
 ##
@@ -566,9 +546,7 @@ abline(lm_simple, col = "red", lwd = 2)
 #Interpretation
 Suppose:
         β = 0.65,      95% CI = 0.50–0.80,    P < 0.001
-
-Then:
-
+#Then:
 Each additional year of age was associated with a 0.65-mmHg higher SBP (95% CI 0.50–0.80; P < 0.001).
 
 The coefficient represents the expected change in the outcome for a one-unit increase in the predictor.
@@ -590,7 +568,7 @@ Example:
 After adjustment for age, sex, BMI, smoking, diabetes, and hypertension, 
 intervention treatment was associated with a 4.2-mmHg lower SBP (95% CI −6.1 to −2.3; P < 0.001).
 
-20. Linear-regression diagnostics
+#Linear-regression diagnostics
 par(mfrow = c(2, 2))
 plot(lm_multiple)
 par(mfrow = c(1, 1))
