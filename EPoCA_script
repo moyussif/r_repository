@@ -1,0 +1,1234 @@
+---
+  title: "Epidemiological Surveillance Dashboard"
+subtitle: "Disease testing, bleeding symptoms, fever and regional trends"
+author: "Disease Surveillance"
+output:
+  flexdashboard::flex_dashboard:
+  orientation: rows
+vertical_layout: fill
+theme: cosmo
+runtime: shiny
+---
+  
+  ```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(readxl)
+library(scales)
+
+# Import the surveillance dataset
+EPo2_clean <- read_excel("EPo2.xlsx")
+
+# Variables for disease test results
+disease_cols <- c(
+  "Marburg", "Lassa_fever", "Dengue", "Yellow_Fever"
+)
+
+# Validate required columns
+required_cols <- c(
+  "Years", "Region", "AgeGroup", "Sex", "Fever",
+  "Bleeding", "Bleeding_type", disease_cols
+)
+
+missing_cols <- setdiff(required_cols, names(EPo2_clean))
+
+if (length(missing_cols) > 0) {
+  stop(
+    "Missing required columns: ",
+    paste(missing_cols, collapse = ", ")
+  )
+}
+
+# Standardise disease test-result labels
+EPo2_clean <- EPo2_clean %>%
+  mutate(
+    across(
+      all_of(disease_cols),
+      ~ toupper(trimws(as.character(.x)))
+    ),
+    Years = as.numeric(as.character(Years)),
+    Region = as.character(Region),
+    AgeGroup = as.character(AgeGroup),
+    Fever = toupper(trimws(as.character(Fever))),
+    Bleeding = toupper(trimws(as.character(Bleeding))),
+    Bleeding_type = as.character(Bleeding_type)
+  )
+
+# Convert the four test variables into long format
+disease_long <- EPo2_clean %>%
+  pivot_longer(
+    cols = all_of(disease_cols),
+    names_to = "Disease",
+    values_to = "Result"
+  ) %>%
+  mutate(
+    Disease = recode(
+      Disease,
+      Marburg = "Marburg",
+      Lassa_fever = "Lassa fever",
+      Dengue = "Dengue",
+      Yellow_Fever = "Yellow fever"
+    ),
+    Result = toupper(trimws(Result))
+  )
+
+# Overall summary for each disease
+test_summary <- disease_long %>%
+  group_by(Disease) %>%
+  summarise(
+    Total_records = n(),
+    Tested = sum(
+      Result %in% c("POSITIVE", "NEGATIVE"),
+      na.rm = TRUE
+    ),
+    Positive = sum(Result == "POSITIVE", na.rm = TRUE),
+    Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
+    Not_done = sum(Result == "NOT DONE", na.rm = TRUE),
+    Missing = sum(is.na(Result) | Result == "", na.rm = TRUE),
+    Positivity_percent = ifelse(
+      Tested > 0, 100 * Positive / Tested, NA_real_
+    ),
+    .groups = "drop"
+  )
+
+# Summary cards: patient records and test results
+total_records <- nrow(EPo2_clean)
+
+total_positive_tests <- sum(
+  disease_long$Result == "POSITIVE", na.rm = TRUE
+)
+
+total_completed_tests <- sum(
+  disease_long$Result %in% c("POSITIVE", "NEGATIVE"),
+  na.rm = TRUE
+)
+
+total_bleeding <- sum(
+  EPo2_clean$Bleeding == "YES", na.rm = TRUE
+)
+
+total_fever <- sum(
+  EPo2_clean$Fever == "YES", na.rm = TRUE
+)
+
+# Colour palette
+surveillance_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+Sidebar
+=====================================
+  
+  ```{r}
+selectInput(
+  "region_filter",
+  "Select region",
+  choices = c("All regions", sort(unique(
+    na.omit(EPo2_clean$Region)
+  ))),
+  selected = "All regions"
+)
+
+selectInput(
+  "year_filter",
+  "Select year",
+  choices = c("All years", sort(unique(
+    na.omit(EPo2_clean$Years)
+  ))),
+  selected = "All years"
+)
+
+selectInput(
+  "age_filter",
+  "Select age group",
+  choices = c("All age groups", sort(unique(
+    na.omit(EPo2_clean$AgeGroup)
+  ))),
+  selected = "All age groups"
+)
+
+selectInput(
+  "disease_filter",
+  "Select disease",
+  choices = c(
+    "All diseases", "Marburg", "Lassa fever",
+    "Dengue", "Yellow fever"
+  ),
+  selected = "All diseases"
+)
+```
+
+```{r}
+filtered_data <- reactive({
+  dat <- EPo2_clean
+  
+  if (input$region_filter != "All regions") {
+    dat <- dat %>% filter(Region == input$region_filter)
+  }
+  
+  if (input$year_filter != "All years") {
+    dat <- dat %>% filter(Years == as.numeric(input$year_filter))
+  }
+  
+  if (input$age_filter != "All age groups") {
+    dat <- dat %>% filter(AgeGroup == input$age_filter)
+  }
+  
+  dat
+})
+
+filtered_long <- reactive({
+  dat <- filtered_data() %>%
+    pivot_longer(
+      cols = all_of(disease_cols),
+      names_to = "Disease",
+      values_to = "Result"
+    ) %>%
+    mutate(
+      Disease = recode(
+        Disease,
+        Marburg = "Marburg",
+        Lassa_fever = "Lassa fever",
+        Dengue = "Dengue",
+        Yellow_Fever = "Yellow fever"
+      ),
+      Result = toupper(trimws(as.character(Result)))
+    )
+  
+  if (input$disease_filter != "All diseases") {
+    dat <- dat %>% filter(Disease == input$disease_filter)
+  }
+  
+  dat
+})
+```
+
+Testing Summary
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Total patient records
+  
+  ```{r}
+renderValueBox({
+  valueBox(
+    value = comma(nrow(filtered_data())),
+    caption = "Patient records",
+    icon = "fa-users",
+    color = "primary"
+  )
+})
+```
+
+### Completed tests
+
+```{r}
+renderValueBox({
+  dat <- filtered_long()
+  n <- sum(
+    dat$Result %in% c("POSITIVE", "NEGATIVE"),
+    na.rm = TRUE
+  )
+  
+  valueBox(
+    comma(n),
+    "Completed disease tests",
+    icon = "fa-vial",
+    color = "info"
+  )
+})
+```
+
+### Positive test results
+
+```{r}
+renderValueBox({
+  n <- sum(filtered_long()$Result == "POSITIVE", na.rm = TRUE)
+  
+  valueBox(
+    comma(n),
+    "Positive test results",
+    icon = "fa-check-circle",
+    color = "danger"
+  )
+})
+```
+
+### Patients reporting bleeding
+
+```{r}
+renderValueBox({
+  n <- sum(filtered_data()$Bleeding == "YES", na.rm = TRUE)
+  
+  valueBox(
+    comma(n),
+    "Records with bleeding",
+    icon = "fa-heartbeat",
+    color = "warning"
+  )
+})
+```
+
+Row
+-------------------------------------
+  
+  ### Testing results by disease
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result %in% c("POSITIVE", "NEGATIVE", "NOT DONE")) %>%
+    count(Disease, Result, name = "Count")
+  
+  validate(need(nrow(dat) > 0, "No test results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(x = Disease, y = Count, fill = Result,
+        text = paste0(
+          "Disease: ", Disease,
+          "<br>Result: ", Result,
+          "<br>Count: ", comma(Count)
+        ))
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Disease testing outcomes",
+      x = "Disease",
+      y = "Number of tests",
+      fill = "Test result"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Testing and positivity summary
+
+```{r}
+renderDT({
+  dat <- filtered_long() %>%
+    group_by(Disease) %>%
+    summarise(
+      Tested = sum(
+        Result %in% c("POSITIVE", "NEGATIVE"),
+        na.rm = TRUE
+      ),
+      Positive = sum(Result == "POSITIVE", na.rm = TRUE),
+      Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
+      Not_done = sum(Result == "NOT DONE", na.rm = TRUE),
+      Missing = sum(is.na(Result) | Result == "", na.rm = TRUE),
+      Positivity_percent = ifelse(
+        Tested > 0, 100 * Positive / Tested, NA_real_
+      ),
+      .groups = "drop"
+    )
+  
+  dat %>%
+    mutate(
+      Positivity_percent = round(Positivity_percent, 1)
+    ) %>%
+    datatable(
+      rownames = FALSE,
+      filter = "top",
+      options = list(pageLength = 10, scrollX = TRUE)
+    ) %>%
+    formatRound("Positivity_percent", 1)
+})
+```
+
+Bleeding Analysis
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Bleeding status
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    mutate(Bleeding = ifelse(
+      is.na(Bleeding) | Bleeding == "",
+      "Missing", Bleeding
+    )) %>%
+    count(Bleeding, name = "Count")
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = Bleeding, y = Count, fill = Bleeding,
+      text = paste0(Bleeding, ": ", comma(Count))
+    )
+  ) +
+    geom_col(show.legend = FALSE) +
+    geom_text(aes(label = comma(Count)), vjust = -0.4) +
+    labs(
+      title = "Records by bleeding status",
+      x = "Bleeding status", y = "Number of records"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Bleeding type distribution
+
+```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    filter(Bleeding == "YES") %>%
+    mutate(
+      Bleeding_type = ifelse(
+        is.na(Bleeding_type) | Bleeding_type == "",
+        "Not recorded", Bleeding_type
+      )
+    ) %>%
+    count(Bleeding_type, sort = TRUE, name = "Count")
+  
+  validate(need(nrow(dat) > 0, "No bleeding cases for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = reorder(Bleeding_type, Count),
+      y = Count,
+      text = paste0(
+        "Bleeding type: ", Bleeding_type,
+        "<br>Count: ", comma(Count)
+      )
+    )
+  ) +
+    geom_col(fill = "#D95F59") +
+    coord_flip() +
+    labs(
+      title = "Types of bleeding reported",
+      x = "Bleeding type", y = "Number of records"
+    ) +
+    theme_minimal(base_size = 12)
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+Row
+-------------------------------------
+  
+  ### Bleeding type frequency table
+  
+  ```{r}
+renderDT({
+  dat <- filtered_data() %>%
+    filter(Bleeding == "YES") %>%
+    mutate(
+      Bleeding_type = ifelse(
+        is.na(Bleeding_type) | Bleeding_type == "",
+        "Not recorded", Bleeding_type
+      )
+    ) %>%
+    count(Bleeding_type, name = "Cases", sort = TRUE) %>%
+    mutate(
+      Percent = round(100 * Cases / sum(Cases), 1)
+    )
+  
+  datatable(
+    dat,
+    rownames = FALSE,
+    filter = "top",
+    options = list(pageLength = 10, scrollX = TRUE)
+  )
+})
+```
+
+Bleeding and Fever
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Bleeding by fever status
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    mutate(
+      Fever = ifelse(
+        is.na(Fever) | Fever == "", "Missing", Fever
+      ),
+      Bleeding = ifelse(
+        is.na(Bleeding) | Bleeding == "", "Missing", Bleeding
+      )
+    ) %>%
+    count(Fever, Bleeding, name = "Count")
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = Fever, y = Count, fill = Bleeding,
+      text = paste0(
+        "Fever: ", Fever,
+        "<br>Bleeding: ", Bleeding,
+        "<br>Records: ", comma(Count)
+      )
+    )
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Bleeding status by fever status",
+      x = "Fever", y = "Number of records",
+      fill = "Bleeding"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Bleeding types among patients with fever
+
+```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    filter(Fever == "YES", Bleeding == "YES") %>%
+    mutate(
+      Bleeding_type = ifelse(
+        is.na(Bleeding_type) | Bleeding_type == "",
+        "Not recorded", Bleeding_type
+      )
+    ) %>%
+    count(Bleeding_type, sort = TRUE, name = "Count")
+  
+  validate(need(
+    nrow(dat) > 0,
+    "No records with both fever and bleeding for this selection."
+  ))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = reorder(Bleeding_type, Count), y = Count,
+      text = paste0(
+        Bleeding_type, ": ", comma(Count)
+      )
+    )
+  ) +
+    geom_col(fill = "#E69F00") +
+    coord_flip() +
+    labs(
+      title = "Bleeding types among fever patients",
+      x = "Bleeding type", y = "Number of records"
+    ) +
+    theme_minimal(base_size = 12)
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+Row
+-------------------------------------
+  
+  ### Fever and bleeding cross-tabulation
+  
+  ```{r}
+renderDT({
+  dat <- filtered_data() %>%
+    mutate(
+      Fever = ifelse(is.na(Fever) | Fever == "", "Missing", Fever),
+      Bleeding = ifelse(
+        is.na(Bleeding) | Bleeding == "", "Missing", Bleeding
+      )
+    ) %>%
+    count(Fever, Bleeding, name = "Records") %>%
+    pivot_wider(
+      names_from = Bleeding,
+      values_from = Records,
+      values_fill = 0
+    )
+  
+  datatable(
+    dat,
+    rownames = FALSE,
+    options = list(pageLength = 10, scrollX = TRUE)
+  )
+})
+```
+
+Positive Cases by Year, Age Group and Region
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Annual positive test results
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result == "POSITIVE", !is.na(Years)) %>%
+    count(Years, Disease, name = "Positive")
+  
+  validate(need(nrow(dat) > 0, "No positive results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = Years, y = Positive, color = Disease, group = Disease,
+      text = paste0(
+        "Year: ", Years,
+        "<br>Disease: ", Disease,
+        "<br>Positive tests: ", comma(Positive)
+      )
+    )
+  ) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 2) +
+    scale_x_continuous(breaks = pretty_breaks()) +
+    labs(
+      title = "Positive test results across years",
+      x = "Year", y = "Number of positive tests",
+      color = "Disease"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Positive cases by age group
+
+```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result == "POSITIVE", !is.na(AgeGroup)) %>%
+    count(AgeGroup, Disease, name = "Positive")
+  
+  validate(need(nrow(dat) > 0, "No positive results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = AgeGroup, y = Positive, fill = Disease,
+      text = paste0(
+        "Age group: ", AgeGroup,
+        "<br>Disease: ", Disease,
+        "<br>Positive tests: ", comma(Positive)
+      )
+    )
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Positive test results by age group",
+      x = "Age group", y = "Number of positive tests",
+      fill = "Disease"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Positive cases by region
+
+```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result == "POSITIVE", !is.na(Region)) %>%
+    count(Region, Disease, name = "Positive")
+  
+  validate(need(nrow(dat) > 0, "No positive results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = reorder(Region, Positive, FUN = sum),
+      y = Positive, fill = Disease,
+      text = paste0(
+        "Region: ", Region,
+        "<br>Disease: ", Disease,
+        "<br>Positive tests: ", comma(Positive)
+      )
+    )
+  ) +
+    geom_col() +
+    coord_flip() +
+    labs(
+      title = "Positive test results by region",
+      x = "Region", y = "Number of positive tests",
+      fill = "Disease"
+    ) +
+    surveillance_theme
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Regional and age-group summary table
+
+```{r}
+renderDT({
+  dat <- filtered_long() %>%
+    filter(Result == "POSITIVE") %>%
+    group_by(Years, Region, AgeGroup, Disease) %>%
+    summarise(
+      Positive_tests = n(),
+      .groups = "drop"
+    ) %>%
+    arrange(Years, Region, AgeGroup, Disease)
+  
+  datatable(
+    dat,
+    rownames = FALSE,
+    filter = "top",
+    extensions = "Buttons",
+    options = list(
+      pageLength = 15,
+      scrollX = TRUE,
+      dom = "Bfrtip",
+      buttons = c("copy", "csv", "excel")
+    )
+  )
+})
+```
+#############################################################################################################
+#############################################################################################################
+#############################################################################################################
+---
+  title: "Epidemiological Surveillance Dashboard"
+subtitle: "Disease testing, bleeding symptoms, fever and regional trends"
+author: "Disease Surveillance"
+output:
+  flexdashboard::flex_dashboard:
+  orientation: rows
+vertical_layout: fill
+theme: cosmo
+runtime: shiny
+---
+  
+  ```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(readxl)
+library(scales)
+
+# Import the surveillance dataset
+EPo2_clean <- read_excel("EPo2.xlsx")
+
+# Variables for disease test results
+disease_cols <- c(
+  "Marburg", "Lassa_fever", "Dengue", "Yellow_Fever"
+)
+
+# Validate required columns
+required_cols <- c(
+  "Years", "Region", "AgeGroup", "Sex", "Fever",
+  "Bleeding", "Bleeding_type", disease_cols
+)
+
+missing_cols <- setdiff(required_cols, names(EPo2_clean))
+
+if (length(missing_cols) > 0) {
+  stop(
+    "Missing required columns: ",
+    paste(missing_cols, collapse = ", ")
+  )
+}
+
+# Standardise disease test-result labels
+EPo2_clean <- EPo2_clean %>%
+  mutate(
+    across(
+      all_of(disease_cols),
+      ~ toupper(trimws(as.character(.x)))
+    ),
+    Years = as.numeric(as.character(Years)),
+    Region = as.character(Region),
+    AgeGroup = as.character(AgeGroup),
+    Fever = toupper(trimws(as.character(Fever))),
+    Bleeding = toupper(trimws(as.character(Bleeding))),
+    Bleeding_type = as.character(Bleeding_type)
+  )
+
+# Convert the four test variables into long format
+disease_long <- EPo2_clean %>%
+  pivot_longer(
+    cols = all_of(disease_cols),
+    names_to = "Disease",
+    values_to = "Result"
+  ) %>%
+  mutate(
+    Disease = recode(
+      Disease,
+      Marburg = "Marburg",
+      Lassa_fever = "Lassa fever",
+      Dengue = "Dengue",
+      Yellow_Fever = "Yellow fever"
+    ),
+    Result = toupper(trimws(Result))
+  )
+
+# Overall summary for each disease
+test_summary <- disease_long %>%
+  group_by(Disease) %>%
+  summarise(
+    Total_records = n(),
+    Tested = sum(
+      Result %in% c("POSITIVE", "NEGATIVE"),
+      na.rm = TRUE
+    ),
+    Positive = sum(Result == "POSITIVE", na.rm = TRUE),
+    Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
+    Not_done = sum(Result == "NOT DONE", na.rm = TRUE),
+    Missing = sum(is.na(Result) | Result == "", na.rm = TRUE),
+    Positivity_percent = ifelse(
+      Tested > 0, 100 * Positive / Tested, NA_real_
+    ),
+    .groups = "drop"
+  )
+
+# Summary cards: patient records and test results
+total_records <- nrow(EPo2_clean)
+
+total_positive_tests <- sum(
+  disease_long$Result == "POSITIVE", na.rm = TRUE
+)
+
+total_completed_tests <- sum(
+  disease_long$Result %in% c("POSITIVE", "NEGATIVE"),
+  na.rm = TRUE
+)
+
+total_bleeding <- sum(
+  EPo2_clean$Bleeding == "YES", na.rm = TRUE
+)
+
+total_fever <- sum(
+  EPo2_clean$Fever == "YES", na.rm = TRUE
+)
+
+# Colour palette
+surveillance_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+Sidebar
+=====================================
+  
+  ```{r}
+selectInput(
+  "region_filter",
+  "Select region",
+  choices = c("All regions", sort(unique(
+    na.omit(EPo2_clean$Region)
+  ))),
+  selected = "All regions"
+)
+
+selectInput(
+  "year_filter",
+  "Select year",
+  choices = c("All years", sort(unique(
+    na.omit(EPo2_clean$Years)
+  ))),
+  selected = "All years"
+)
+
+selectInput(
+  "age_filter",
+  "Select age group",
+  choices = c("All age groups", sort(unique(
+    na.omit(EPo2_clean$AgeGroup)
+  ))),
+  selected = "All age groups"
+)
+
+selectInput(
+  "disease_filter",
+  "Select disease",
+  choices = c(
+    "All diseases", "Marburg", "Lassa fever",
+    "Dengue", "Yellow fever"
+  ),
+  selected = "All diseases"
+)
+```
+
+```{r}
+filtered_data <- reactive({
+  dat <- EPo2_clean
+  
+  if (input$region_filter != "All regions") {
+    dat <- dat %>% filter(Region == input$region_filter)
+  }
+  
+  if (input$year_filter != "All years") {
+    dat <- dat %>% filter(Years == as.numeric(input$year_filter))
+  }
+  
+  if (input$age_filter != "All age groups") {
+    dat <- dat %>% filter(AgeGroup == input$age_filter)
+  }
+  
+  dat
+})
+
+filtered_long <- reactive({
+  dat <- filtered_data() %>%
+    pivot_longer(
+      cols = all_of(disease_cols),
+      names_to = "Disease",
+      values_to = "Result"
+    ) %>%
+    mutate(
+      Disease = recode(
+        Disease,
+        Marburg = "Marburg",
+        Lassa_fever = "Lassa fever",
+        Dengue = "Dengue",
+        Yellow_Fever = "Yellow fever"
+      ),
+      Result = toupper(trimws(as.character(Result)))
+    )
+  
+  if (input$disease_filter != "All diseases") {
+    dat <- dat %>% filter(Disease == input$disease_filter)
+  }
+  
+  dat
+})
+```
+
+Testing Summary
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Total patient records
+  
+  ```{r}
+renderValueBox({
+  valueBox(
+    value = comma(nrow(filtered_data())),
+    caption = "Patient records",
+    icon = "fa-users",
+    color = "primary"
+  )
+})
+```
+
+### Completed tests
+
+```{r}
+renderValueBox({
+  dat <- filtered_long()
+  n <- sum(
+    dat$Result %in% c("POSITIVE", "NEGATIVE"),
+    na.rm = TRUE
+  )
+  
+  valueBox(
+    comma(n),
+    "Completed disease tests",
+    icon = "fa-vial",
+    color = "info"
+  )
+})
+```
+
+### Positive test results
+
+```{r}
+renderValueBox({
+  n <- sum(filtered_long()$Result == "POSITIVE", na.rm = TRUE)
+  
+  valueBox(
+    comma(n),
+    "Positive test results",
+    icon = "fa-check-circle",
+    color = "danger"
+  )
+})
+```
+
+### Patients reporting bleeding
+
+```{r}
+renderValueBox({
+  n <- sum(filtered_data()$Bleeding == "YES", na.rm = TRUE)
+  
+  valueBox(
+    comma(n),
+    "Records with bleeding",
+    icon = "fa-heartbeat",
+    color = "warning"
+  )
+})
+```
+
+Row
+-------------------------------------
+  
+  ### Testing results by disease
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result %in% c("POSITIVE", "NEGATIVE", "NOT DONE")) %>%
+    count(Disease, Result, name = "Count")
+  
+  validate(need(nrow(dat) > 0, "No test results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(x = Disease, y = Count, fill = Result,
+        text = paste0(
+          "Disease: ", Disease,
+          "<br>Result: ", Result,
+          "<br>Count: ", comma(Count)
+        ))
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Disease testing outcomes",
+      x = "Disease",
+      y = "Number of tests",
+      fill = "Test result"
+    ) +
+    theme_classic()
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Testing and positivity summary
+
+```{r}
+renderDT({
+  dat <- filtered_long() %>%
+    group_by(Disease) %>%
+    summarise(
+      Tested = sum(
+        Result %in% c("POSITIVE", "NEGATIVE"),
+        na.rm = TRUE
+      ),
+      Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
+      Positive = sum(Result == "POSITIVE", na.rm = TRUE),
+      Positivity_percent = ifelse(
+        Tested > 0, 100 * Positive / Tested, NA_real_
+      ),
+      .groups = "drop"
+    )
+  
+  dat %>%
+    mutate(
+      Positivity_percent = round(Positivity_percent, 1)
+    ) %>%
+    datatable(
+      rownames = FALSE,
+      filter = "top",
+      options = list(pageLength = 10, scrollX = TRUE)
+    ) %>%
+    formatRound("Positivity_percent", 1)
+})
+```
+
+Bleeding and Fever
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Bleeding by fever status
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    mutate(
+      Fever = ifelse(
+        is.na(Fever) | Fever == "", "Missing", Fever
+      ),
+      Bleeding = ifelse(
+        is.na(Bleeding) | Bleeding == "", "Missing", Bleeding
+      )
+    ) %>%
+    count(Fever, Bleeding, name = "Count")
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = Fever, y = Count, fill = Bleeding,
+      text = paste0(
+        "Fever: ", Fever,
+        "<br>Bleeding: ", Bleeding,
+        "<br>Records: ", comma(Count)
+      )
+    )
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Bleeding status by fever status",
+      x = "Fever", y = "Number of records",
+      fill = "Bleeding"
+    ) +
+    theme_classic()
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Bleeding types among patients with fever
+
+```{r}
+renderPlotly({
+  dat <- filtered_data() %>%
+    filter(Fever == "YES", Bleeding == "YES") %>%
+    mutate(
+      Bleeding_type = ifelse(
+        is.na(Bleeding_type) | Bleeding_type == "",
+        "Not recorded", Bleeding_type
+      )
+    ) %>%
+    count(Bleeding_type, sort = TRUE, name = "Count")
+  
+  validate(need(
+    nrow(dat) > 0,
+    "No records with both fever and bleeding for this selection."
+  ))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = reorder(Bleeding_type, Count), y = Count,
+      text = paste0(
+        Bleeding_type, ": ", comma(Count)
+      )
+    )
+  ) +
+    geom_col(fill = "#E69F00") +
+    coord_flip() +
+    labs(
+      title = "Bleeding types among fever patients",
+      x = "Bleeding type", y = "Number of records"
+    ) +
+    theme_classic(base_size = 12)
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+Positive Cases by Year, Age Group and Region
+=====================================
+  
+  Row
+-------------------------------------
+  
+  ### Positive cases by age group
+  
+  ```{r}
+renderPlotly({
+  dat <- filtered_long() %>%
+    filter(Result == "POSITIVE", !is.na(AgeGroup)) %>%
+    count(AgeGroup, Disease, name = "Positive")
+  
+  validate(need(nrow(dat) > 0, "No positive results for this selection."))
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = AgeGroup, y = Positive, fill = Disease,
+      text = paste0(
+        "Age group: ", AgeGroup,
+        "<br>Disease: ", Disease,
+        "<br>Positive tests: ", comma(Positive)
+      )
+    )
+  ) +
+    geom_col(position = "dodge") +
+    labs(
+      title = "Positive test results by age group",
+      x = "Age group", y = "Number of positive tests",
+      fill = "Disease"
+    ) +
+    theme_classic()
+  
+  ggplotly(p, tooltip = "text")
+})
+```
+
+### Positive Cases by Region and Year
+
+```{r}
+renderPlotly({
+  
+  dat <- filtered_long() %>%
+    filter(
+      Result == "POSITIVE",
+      !is.na(Region),
+      !is.na(Years)
+    ) %>%
+    count(Years, Region, Disease, name = "Positive")
+  
+  validate(
+    need(
+      nrow(dat) > 0,
+      "No positive results for this selection."
+    )
+  )
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = Region,
+      y = Positive,
+      fill = Disease,
+      text = paste0(
+        "Year: ", Years,
+        "<br>Region: ", Region,
+        "<br>Disease: ", Disease,
+        "<br>Positive cases: ", comma(Positive)
+      )
+    )
+  ) +
+    geom_col(position = "dodge") +
+    facet_grid(~ Years) +
+    coord_flip() +
+    labs(
+      title = "Positive Cases by Region and Year",
+      subtitle = "Distribution of positive test results by disease",
+      x = "Region",
+      y = "Number of positive tests",
+      fill = "Disease"
+    ) +
+    theme_bw()
+  
+  ggplotly(p, tooltip = "text") %>%
+    layout(
+      legend = list(orientation = "h", y = -0.15),
+      margin = list(b = 100)
+    )
+})
+```

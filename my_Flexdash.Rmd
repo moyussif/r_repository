@@ -42,7 +42,7 @@ library(gt)
 ```{r}
 #Import Data
 
-LFdata <- read_excel("LF_Sept_29.xlsx")
+LFdata <- read_excel("LF_Oct-10.xlsx")
 #
 
 df <- LFdata %>% mutate(Age_group = case_when(
