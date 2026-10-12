@@ -30,12 +30,9 @@ Agreement of methods	                 #Bland–Altman	Bias/LoA	0
 Observational treatment effect	       #Propensity methods	OR/RR/HR/etc.	Depends
 Many comparisons	                     #Multiplicity correction	Adjusted P	—
 #
-#-------------------------------------------------------------------------------
-# Suggested full library structure
-For a serious reusable biostatistics project, I recommend splitting the above into:
-  
-  R_Biostatistics_Library/
-  │
+#
+#------------------------ Suggested workflow -----------------------------------
+#
 ├── 00_setup.R
 ├── 01_simulate_or_import_data.R
 ├── 02_data_cleaning.R
@@ -78,117 +75,62 @@ For a serious reusable biostatistics project, I recommend splitting the above in
 ├── 31_publication_tables.R
 ├── 32_publication_figures.R
 └── 33_results_interpretation.R
-
-This gives you a full medical biostatistics framework
 ##
 ################################################################################
-#                  SIMULATED MEDICAL RESEARCH DATA
-################################################################################
-set.seed(2026)
-
-
-n <- 1000
-
-dat <- tibble(id = 1:n,
-              age = round(rnorm(n, 58, 12)),
-              sex = factor(sample(c("Female", "Male"),n,replace = TRUE)),
-              bmi = round(rnorm(n, 28, 5),1),
-              smoking = factor(sample(c("Never", "Former", "Current"),n,replace = TRUE,prob = c(0.50, 0.30, 0.20))),
-              diabetes = factor(rbinom(n, 1, 0.25),levels = c(0, 1),labels = c("No", "Yes")),
-              hypertension = factor(rbinom(n, 1, 0.45),levels = c(0, 1),labels = c("No", "Yes")),
-              treatment = factor(rbinom(n, 1, 0.50),levels = c(0, 1),labels = c("Control", "Intervention")))
-
-dat12 <- dat %>%
-  mutate(
-    sbp = round(115 +0.65 * age +5 * (sex == "Male") +8 * 
-                  (hypertension == "Yes") -4 * 
-                  (treatment == "Intervention") +rnorm(n, 0, 12)),
-    dbp = round(65 +0.25 * age +3 * (sex == "Male") +5 * 
-                  (hypertension == "Yes") - 2 * 
-                  (treatment == "Intervention") +rnorm(n, 0, 8)),
-    cholesterol = round(190 +10 * (diabetes == "Yes") +4 * (sex == "Male") +rnorm(n, 0, 30)),
-    ldl = round(cholesterol * 0.60 +rnorm(n, 0, 15)),
-    hba1c = round(5.4 + 0.9 * (diabetes == "Yes") + 0.02 * (bmi - 25) +rnorm(n, 0, 0.5),2),
-    death = round(1 + 0.9 * (diabetes == "Yes") +0.50 * (smoking == "Current")+rnorm(n, 0, 0.5)),
-    crp = round(exp(rnorm(n,log(2.5),0.8)),2))
-
-str(dat12)
-
-print(dat12)
-
-library(writexl)
-write_xlsx(dat12, "data12.xlsx")
-
-
-
-# Cardiovascular-event probability
-event_probability <- plogis(-5 +0.045 * dat$age +0.035 * (dat$bmi - 25) +0.60 * 
-                              (dat$smoking == "Current") +0.50 * (dat$diabetes == "Yes") +0.55 * 
-                              (dat$hypertension == "Yes") -0.50 * (dat$treatment == "Intervention"))
-
-dat <- dat %>%
-  mutate(
-    cv_event = rbinom(n, 1, event_probability),
-    hospitalization = rbinom(n, 1,plogis(-3 + 0.035 * age +0.50 * (diabetes == "Yes") +0.40 * (hypertension == "Yes") -0.40 * (treatment == "Intervention"))),
-    followup_months = round(runif(n, 6, 24), 1),
-    death = rbinom(n, 1,plogis(-7 + 0.055 * age +0.75 * cv_event +0.60 * (diabetes == "Yes") +0.50 * (smoking == "Current"))),
-    qol_baseline = pmax(0,pmin(100,75 - 0.25 * (age - 50) -3 * (diabetes == "Yes") +rnorm(n, 0, 10))),
-    qol_12m = pmax(0,pmin(100,qol_baseline +5 * (treatment == "Intervention") +rnorm(n, 2, 8)))) %>%
-  select(-all_of("event_probability"))
-
-str(dat)
-
-#===================== Data for practice =======================================
-library(MASS)
-data(package = "MASS")
-
-data(Pima.tr)
-#Structure 
-head(Aids2)
-str(Pima.tr)
-summary(Aids2)
-#Export data
-library(writexl)
-write_xlsx(Pima.tr, "Pima.xlsx")
-################################################################################
+#
 rm(list=ls())
 gc(reset = TRUE)
-#...........................................................................................................................
-packages <- c("readxl","readr","writexl","XLConnect","janitor","lubridate","tidyverse","dbplyr","gganimate","RColorBrewer",
-              "ggfortify","ggpubr","plotrix","skimr","psych","lessR","Hmisc","tableone","gtsummary", "flextable", "officer",
-              "stats","rstatix","broom", "broom.mixed", "car", "lmtest","sandwich", "MASS","survival", "survminer", "pROC",
-              "survey", "epiR","PMCMRplus","epitools","boot", "performance", "mice","ResourceSelection","lme4","FSA",
-              "emmeans","MatchIt","VennDiagram","geepack",)
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Find packages that are not installed
-missing_packages <- packages[!packages %in% rownames(installed.packages())]
-# Install only missing packages
-if (length(missing_packages) > 0) {install.packages(missing_packages, dependencies = TRUE)}
-# Load all packages
-invisible(lapply(packages, library, character.only = TRUE))
+#--------------------------- required package ----------------------------------
+#Install packages (run once)
+#install.packages(c("readxl", "tidyverse", "lubridate","psych", "car", "lessR", 
+#                   "epitools", "stats", "Hmisc", "FSA"))
+
+#Install packages (one by one)
+install.packages("readxl")
+install.packages("readr")
+install.packages("tidyverse")
+install.packages("RColorBrewer")
+install.packages("ggpubr")
+install.packages("psych")
+install.packages("car")
+install.packages("lessR")
+install.packages("plotrix")
+install.packages("ggfortify")
+install.packages("epitools")
+install.packages("PMCMRplus")
+install.packages("stats")
+install.packages("Hmisc")
+install.packages("FSA")
+#---------------------- Load required packages
+library(readxl)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(ggpubr)
+library(psych)
+library(car)
+library(lessR)
+library(plotrix)
+library(ggfortify)
+library(FSA)
+library(Hmisc)
+library(stats)
+library(epitools)
+library(PMCMRplus)
+library(AICcmodavg)
 ###
 #--------------------------- Set Working Directorate ---------------------------
-setwd("C:/Users/User/OneDrive - University of Ghana/moyussif@NMIMR/NMIMR/4Official/mod_r")
-setwd("C:/Users/User/Downloads")
-
-##
-dir()
-data.read<-loadWorkbook(file.choose(), create=T) # from XLConnect package
-data.read
-DATA<-readWorksheet(data.read, sheet = "Sheet1")
-str(DATA)
-##
-summary(DATA[,"Age"])
-
-subset(DataTraining,GADX_Oncho=="Negative"&DDTD_Ocho=="Negative", select=c("BARCODES","Age","Sex","District","DDTD_Ocho","GADX_Oncho")) %>%  
-  
-  summarise(count = n())
-##
-#----------------------------- Import data -------------------------------------
 #
-
+setwd("C:/Users/User/Downloads")
+##
+health_data <- read_excel("health_data.xlsx")
+##
+#---------------------------- Import data --------------------------------------
+#
 health_data <- read_excel("C:/Users/User/Downloads/health_data.xlsx")
 #
+#--------------------------- Data Structure ------------------------------------
 str(health_data) 
 print(health_data, width = Inf)
 # Variable names
@@ -211,8 +153,39 @@ healthData = health_data %>%
 
 str(healthData)
 ##
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#             Transform and Manipulate Data using Dplyr 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+library(dplyr)                                                 
+#-----------Selecting column 
+columns_needed <- covdata %>% select(c(Age, age_group, SEX, CovidStatus, SarsCovStrain,Hospitalstatus,categoryofcases))
+str(columns_needed)
+#-----------Remove few columns
+remove_few <- columns_needed %>% select(-c(Coinfection,NoofResistance))
+str(remove_few)
+#-----------Remove a column
+covdata1<- columns_needed %>% select(-Asymptomatic)
+str(covdata1)
+
+#---------filter rows ?filter()
+filterData <- covdata1 %>% filter(Age > 16) 
+#                  or   filter(hhdata2, age <= 30)
+
+filter_male <- covdata1 %>% filter(SEX == "Male")
+
+
+##
 #----------------------- Data Labelling (CODING) -------------------------------
-#
+#Date Datatype
+healthData$DATE_ONSET <- as.Date(df$DATE_ONSET, format = "%Y/%m/%d")
+healthData$WEEK <- isoweek(df$DATE_ONSET)#weeks start on Monday
+healthData$WEEKdiff <- as.numeric(difftime(df$DATE_ONSET,min(df$DATE_ONSET, na.rm = TRUE),units = "weeks"))#Number of weeks
+
+#Numeric Datatype
+healthData$AGE <-as.integer(df$AGE)# For whole Numbers 
+healthData$AGE <-as.numeric(df$AGE)# For Decimal Numbers
+
+#Categorical Datatype
 healthData$Age_group <- as.factor(healthData$Age_group)
 
 healthData$sex <- as.factor(healthData$sex)
@@ -228,38 +201,53 @@ str(healthData)
 ################################################################################
 #                             DATA QUALITY CONTROL
 ################################################################################
-#
-#data description
-describe(dat12)
-#------------------------ Missing values
+#------------------------ Structure
+print(health_data, width = Inf)
+print(health_data, width = Inf, n= Inf)
+
+#------------------------ Missing 
+#number of missing values
 colSums(is.na(dat12))
-# Percentage missing
+#Percentage missing
 round(colMeans(is.na(dat12)) * 100,2)
-# Check age
+# Remove missing values 
+cleaned_data <- na.omit(dat12)
+
+# Check Range
 range(dat12$age,na.rm = TRUE)
-# Check BMI
 range(dat12$bmi,na.rm = TRUE)
-# Check SBP
 range(dat12$sbp,na.rm = TRUE)
-
-
+#
 #------------------------- Duplicate records
 dat12 %>% count(id) %>%filter(n > 1)
+#
+################################################################################
+#------------------------- Descriptive Statistics ------------------------------
+################################################################################
+#
+#---------rename a column
+names(filterData)[2]<- "Agecategory"
+names(filterData)[3]<- "Gender"
+names(filterData)[16]<- "Resistance"
 
-
-
-
+str(filterData)
+#
 #----------------------- Descriptive statistics -------------------- Categorical
+#categorical
+describe(healthData)
+#
 # Reported as n (%).
 table(dat12$diabetes)                                         # as Frequency (n)
 table(dat12$smoking)
 table(dat12$treatment)
 table(dat12$sex)
-
+#
 prop.table(table(dat12$diabetes)) * 100                      # as Percentage (%)
-
 ##
 #------------------------ Descriptive statistics -------------------- Continuous
+#
+#Continuous
+describeBy(healthData)
 #
 #Mean and SD
 mean(dat$age)
@@ -268,37 +256,53 @@ sd(dat$age)
 #Median and IQR
 median(dat$sbp)
 IQR(dat$sbp)
-
-# Publication-quality Table 1 ------------------------------ Normal distribution
-table1 <- dat12 %>%
-  select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
-  tbl_summary(by = treatment,
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = all_continuous() ~ 1,missing = "no") %>%
-  add_overall() %>%
-  bold_labels()
-
-table1
-
-# Publication-quality Table 2 ------------------------------ Skewed distribution
-table2 <- dat12 %>%
-  select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
-  tbl_summary(by = treatment,
-              statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = all_continuous() ~ 1,missing = "no") %>%
-  add_overall() %>%
-  bold_labels()
-
-table2
-
 ##
+
+#---------summarise()
+filterData %>% count(categoryofcases)
+
+michelle <- filterData %>% summarise(mean_Age=mean(Age))
+print(michelle)
+
+michelle2 <- filterData %>% summarise(median_Age=median(Age), mean_Age=mean(Age), IQR_Age=IQR(Age))
+print(michelle2)
+
+#---------group_by()
+AverageAgebyGender <-filterData %>% group_by(Gender) %>% summarise(mean = mean(Age))
+print(AverageWeightbyGender)
+
+#--------Arrange()
+filterData %>% 
+  arrange(Duration_days)
+
+#--------Sorting descending order
+filterData %>% 
+  arrange(desc( Duration_days)) 
+
+
+################################################################################
 #--------------------------- Normality assessment ------------------------------
+################################################################################
 #
+Square root Transformation#<-sqrt(SarsCoV$Age)------------------------------------------moderately skewed (-1 to -0.5//0.5 to 1)
+Cube root Transformation#  <-sign(Hanisah$Baby_Weight)*abs(Hanisah$Baby_Weight)^(1/3)-- moderately Right skewed(Negative/Zero)
+Log Transformation#        <-log(SarsCoV$Age)------------------------------------------ Highly skewed(above1),But not (Negative//Zero)
+#===============================================================================
+#-----practical assessment
+cleanData$Agee <-log(cleanData$Age) 
+str(cleanData)
+hist(cleanData$Agee)
+shapiro.test(cleanData$Agee)
+##-----------------------------
+#Basic plots
 hist(dat$sbp)
+#Normality by Descriptive statistic
+describeBy(dat$sbp)
+#Normal distribution
 qqnorm(dat$sbp)
+#linearity
 qqline(dat$sbp)
+# use statistical test for normality
 shapiro.test(dat$sbp)
 
 #Statistical hypotheses
@@ -310,12 +314,274 @@ P < 0.05#there is evidence of departure from normality.
 #NB
 With large samples, do not base the entire analysis on Shapiro-Wilk.
 Examine the histogram and Q-Q plot and consider whether the statistical method is robust to modest non-normality.
+
+##
+# Publication-quality Table 1 ------------------------------ Normal distribution
+table1 <- dat12 %>%
+  select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
+  tbl_summary(by = treatment,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = all_continuous() ~ 1,missing = "no") %>%
+  add_overall() %>%
+  bold_labels()
+
+table1
+#
+gtsummary::as_flex_table(table1) %>%
+  flextable::save_as_docx(path = "table1.docx")
+
+# Basic plots
+hist(cleanData$Age)
+
+##
+# Publication-quality Table 2 ------------------------------ Skewed distribution
+table2 <- dat12 %>%
+  select(treatment,age,sex,bmi,smoking,diabetes,hypertension,sbp,dbp,cholesterol,ldl,hba1c) %>%
+  tbl_summary(by = treatment,
+              statistic = list(all_continuous() ~ "{median} ({p25}, {p75})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = all_continuous() ~ 1,missing = "no") %>%
+  add_overall() %>%
+  bold_labels()
+
+table2
+#
+gtsummary::as_flex_table(table2) %>%
+  flextable::save_as_docx(path = "table2.docx")
+
+
+#
+#--------------------------Basic Plots------------------------------------------Option.1
+#Barplot
+plot(cleanData$Gender)
+#pie
+pie(table(cleanData$Resistance))
+pie(table(cleanData$Resistance), col = c("white","gray90","gray60"))
+#pie / donut -----depending the input at the hole
+PieChart(categoryofcases, data = cleanData, hole = 0.5, main = NULL)
+#boxplot
+plot(x= cleanData$Gender,y = cleanData$Age)
+#scatterplot
+plot(x= cleanData$Duration_days, y= cleanData$Noofsymptoms)
+hist(cleanData$Agee)
+
+# # #
+#-------------------------- charts with LessR ----------------------------------Option.2
+library(lessR)
+#
+# Piechart
+PieChart(categoryofcases, data = cleanData, hole = 0.5, main = NULL)
+
+# Donut chart
+PieChart(Resistance, data = cleanData, fill = "blues", hole_fill = "#B7E3E0", main = NULL)
+
+# Barchart
+BarChart(Agecategory, data = cleanData, fill = "blues", main = NULL)
+
+#colorviridis
+BarChart(Agecategory, data = cleanData, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+         values_color = c(rep("white", 4), 1), values_size = 0.85)
+
+# slant x labels (45 angle)
+BarChart(Agecategory, data = cleanData, fill = "viridis", main = NULL, color = "black",lwd = 1.5,
+         rotate_x=45, values_color = c(rep("white", 4), 1), values_size = 0.85)
+
+#Histogram
+hist(cleanData$Agee, col="gray", main="covid data", xlab="age")
+hist(cleanData$Duration_days, col= "turquoise", main="Covid data", xlab="Days")
+
+
+# Boxplot
+boxplot(Age ~ Gender, data = cleanData, col= "turquoise")
+
+
+#---------------------------- Using GGPLOT2 ------------------------------------Option.3
+library(ggplot2)
+
+#============================ Barchart  
+#ggbarplot
+ggbarplot(data=VDdata, x="marital Status", y="Age", fill ="sex", add = c("mean_sd"), 
+          position = position_dodge(0.7), width = 0.5)+
+  scale_fill_brewer(palette = "Blues")
+#
+ht <-ggplot(data = VDdata,
+            mapping = aes(x = marital_status))+
+  geom_bar()+
+  geom_text(stat = "count", aes(label = after_stat(count)),
+            vjust = -0.5)
+theme_classic()
+ht
+
+#Stacked Barchart
+ht2 <-ggplot(data = VDdata,
+             mapping = aes(x = smoking, colour = Gender, fill = Gender))+
+  geom_bar()+
+  geom_text(stat = "count", aes(label = after_stat(count)),
+            vjust = -0.5)+
+  theme_classic()
+ht2
+
+#Clustered Barchart
+ht3 <-ggplot(VDdata,
+             mapping = aes(x = marital_status, y = Age,  fill = Gender)) +
+  geom_col(position = "dodge") +
+  theme_minimal()
+ht3
+
+#flip axis
+ht4 <-ggplot(hhdata2,
+             mapping = aes(x = marital_status, y = Age,  fill = Gender)) +
+  geom_col(position = "dodge") +
+  coord_flip()+
+  theme_minimal()
+ht4
+
+#=========================== Histogram 
+
+ht5 <-ggplot(data = hhdata2,
+             mapping = aes(x = Age))+
+  geom_histogram()
+
+ht5
+
+#Histogram with stacked
+ht6 <-ggplot(data = VDdata,
+             mapping = aes(x = Age, fill = Gender))+
+  geom_histogram(bins = 10, position = "stack")
+
+ht6
+
+#Histogram with dodge
+ht7 <-ggplot(data = VDdata,
+             mapping = aes(x = Age, fill = Gender))+
+  geom_histogram(bins = 10, position = "dodge")
+
+ht7
+#flip axis
+ht8 <-ggplot(data = covid01,
+             mapping = aes(x = Age, fill = SEX))+
+  geom_histogram(bins = 10, position = "dodge")+
+  coord_flip()
+
+ht8
+
+#============================= Boxplot 
+imm <- ggplot(data = covid01,
+              mapping = aes(x = SEX, y = Age))+
+  geom_boxplot()
+imm
+# Boxplot by category ##
+immu <- ggplot(data = covid01,
+               mapping = aes(x = SEX, y = Age, fill = SEX))+
+  geom_boxplot()
+immu
+
+#Boxplot with coord_flip
+immp <- ggplot(data = covid01,
+               mapping = aes(x = SEX, y = Age, fill = SEX))+
+  geom_boxplot()+coord_flip()
+immp 
+
+#plotting by factor
+imu <- ggplot(data = covid01,
+              mapping = aes(x = SEX, y = Age))+
+  geom_boxplot(aes(fill = factor(SarsCovStrain)))
+
+imu
+
+#Adding labels
+imml <- ggplot(data = VDdata,
+               mapping = aes(x = Gender, y = Age))+
+  geom_boxplot(aes(fill = factor(smoking)))+
+  labs(title ="Patient Data", subtitle = "smoking behavior",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 5,y = 70, label ="covid-19 patients", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)
+imml
+
+
+# Facet wrap 
+imwrp <- ggplot(data = covid01,
+                mapping = aes(x = SEX, y = Age, fill = categoryofcases))+
+  geom_violin()+
+  facet_wrap(~categoryofcases)
+imwrp
+
+# Facet grid
+imwgg <- ggplot(data = covid01,
+                mapping = aes(x = SEX, y = Age, fill = categoryofcases))+
+  geom_violin()+
+  facet_grid(~categoryofcases)+
+  labs(title ="Covid Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 2,y = 70, label ="Covid patients", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)
+imwgg
+
+#---------------------------- Combo plots --------------------------------------Option.4
+library(RColorBrewer)
+library(ggpubr)
+par()
+
+p <-imu <- ggplot(data = covid01,
+                  mapping = aes(x = SEX, y = Age))+
+  geom_boxplot(aes(fill = factor(SarsCovStrain)))+
+  coord_flip()+
+  labs(title ="Immunoassay Data", subtitle = "ImmunoAnalysis",caption = "Data collection by Mohammed")+
+  annotate( "text",x = 2,y = 70, label ="covid-19 patients", color ="purple",
+            fontface ="bold", size =4.0,angle = 30)
+p
+
+
+p1 <-ggplot(data = covid01,
+            mapping = aes(x = AgeCategory, colour = SEX, fill = SEX))+
+  geom_bar()+
+  theme_classic()
+p1
+
+
+p2 <-ggplot(data = covid01,
+            mapping = aes(x = Age, fill = SEX))+
+  geom_histogram(bins = 10, position = "dodge")+
+  coord_flip()
+p2
+
+#to arrange plot for publication
+ggarrange(p, p1, p2 + rremove("x.text"), labels = c("A", "B", "c"), ncol = 1, nrow = 3,
+          common.legend = TRUE, legend = "bottom")
+
+# Save plot 
+ggsave("p.png")
+
+
+# # #
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                          Inferential Statistics                              +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+#---------------------------One sample test of Mean
+#One sample t.test
+
+theorical = 35
+observed = cleanData$Age
+
+t.test(observed,mu=theorical, conf.int=95.0 )# Option1 
+#
+t.test(cleanData$Age,mu=36, conf.int=95.0 )  #Option 2
+hist(cleanData$Age)  
+
+# # #
+#++++++++++++++++++++++++++ Two sample test of Mean ++++++++++++++++++++++++++++
 ##
 #--------------------------- Independent t-test --------------------------------
+t.test(Age ~ SEX, data = SarsCoV, Var.equal =FALSE, conf.level = 0.95)         #Option1 
 #
+hist(Age ~ SEX, data = SarsCoV, names=c("Female","Male"), ylab="Age")
+boxplot(Age ~ SEX, data = SarsCoV, names=c("Female","Male"), ylab="Age")
+#
+###
 Research question:#Does mean SBP differ between the intervention and control groups?
-  
-  t_test_result <- t.test(sbp ~ treatment,data = dat)
+  #  
+  t_test_result <- t.test(sbp ~ treatment,data = dat)                            #Option2
 t_test_result
 
 Hypotheses
@@ -347,13 +613,15 @@ Cohens d describes the difference in means in SD units.
 A statistically significant result does not necessarily mean the effect is clinically important.
 ##
 #----------------------------- Paired t-test -----------------------------------
+#Paried t.test
+t.test(Sars_2$systolic1,Sars_2$systolic2,paired = TRUE,conf.level = 0.95)      #Option1 
 #
 Research question:#Did participants SBP change between baseline and 12 months?
   
   dat <- dat %>%
   mutate(sbp_baseline = sbp + rnorm(n, 5, 8),sbp_12m =sbp_baseline - 4 * (treatment == "Intervention") + rnorm(n, 0, 8))
 
-paired_t <- t.test(dat$sbp_baseline,dat$sbp_12m,paired = TRUE)
+paired_t <- t.test(dat$sbp_baseline,dat$sbp_12m,paired = TRUE)                 #Option2
 paired_t
 
 #Interpretation
@@ -363,7 +631,8 @@ Report: Mean SBP decreased by X mmHg (95% CI X to X; P = X).
 ##
 #------------------------- Mann–Whitney U test ---------------------------------
 #
-wilcox.test(crp ~ treatment,data = dat)
+wilcox.test(Age ~ Gender, data = cleanData, exact = FALSE)                     #Option1
+wilcox.test(crp ~ treatment,data = dat)                                        #Option2
 #Interpretation
 This tests whether the distributions of CRP differ between two independent groups.
 
@@ -379,11 +648,20 @@ This is the non-parametric counterpart to the paired t-test.
 #NB
 P < 0.05: There is evidence of systematic change in SBP between baseline and follow-up.
 ##
+################################################################################
+#++++++++++++++++++++++ More than Two sample (ANOVA) +++++++++++++++++++++++++++    
+library(AICcmodavg) 
+library(DescTools) 
 #---------------------------- One-way ANOVA ------------------------------------
 #
 Research question: #Does mean SBP differ between never, former, and current smokers?
-  
-  anova_model <- aov(sbp ~ smoking,data = dat)
+  # 
+  #normality 
+  tapply(cleanData$Age, cleanData$Resistance,shapiro.test)
+#equality of variance
+leveneTest(Age ~ Resistance, data=cleanData) 
+#  
+anova_model <- aov(sbp ~ smoking,data = dat)
 summary(anova_model)
 #Hypotheses
 H₀: all group means are equal.
@@ -407,10 +685,27 @@ dat %>%
 
 The adjusted P-values indicate which pairs differ.
 ##
+# # #  
+################################################################################
+#---------------------------- Test of Proportions ------------------------------
+################################################################################
+#
+#---------------------------- ONE SAMPLE TEST OF PROPORTION
+
+#Is the proportion of smoker in male =5.2% ?
+p1_table <- table(sars_4$smoking)
+p1_table                                    
+
+p1_table <- matrix(c(35, 106), ncol = 2) 
+
+#Therefore
+prop.test(p1_table, p = 0.052)
+
+#--------------------------- TWO SAMPLE TEST OF PROPORTION
 #---------------------------- Chi-square test ----------------------------------
 #
 Research question:# Is diabetes associated with treatment group?
-  
+  #  
   tab <- table(dat$diabetes,dat$treatment)
 chisq.test(tab)
 #Hypotheses
@@ -422,6 +717,9 @@ If P < 0.05:
 #NB
 Remember: an association does not establish causality.
 ##
+#..................... check counts in each cell. 
+chisq.test(tab)$expected
+#
 #------------------------- Fisher's exact test ---------------------------------
 fisher.test(tab)
 #Interpretation
@@ -430,7 +728,12 @@ Fishers exact test is appropriate when expected cell counts are small.
 If P < 0.05:
   There is evidence of an association between the categorical variables.
 ##
-#------------------------ Pearson correlation ----------------------------------
+
+################################################################################
+#------------------------------ Correlation ------------------------------------
+################################################################################
+#
+#-------------------------- Pearson correlation --------------------------------
 #
 cor.test(dat$age,dat$sbp,method = "pearson")
 #Interpretation
@@ -442,7 +745,7 @@ means: Age had a moderate positive linear association with SBP.
 
 A correlation of 0 does not necessarily mean there is no relationship; there may be a nonlinear relationship.
 ##
-#------------------------ Spearman correlation ---------------------------------
+#------------------------- Spearman correlation --------------------------------
 #
 cor.test(dat$crp,dat$hba1c,method = "spearman")
 
@@ -1301,3 +1604,4 @@ By how much.
 How precise the estimate is.
 How compatible the result is with the null hypothesis.
 That is the standard you should aim for throughout a clinical or epidemiological analysis.
+
