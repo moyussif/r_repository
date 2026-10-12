@@ -289,30 +289,38 @@ Row
 ```{r}
 renderPlotly({
   dat <- filtered_long() %>%
-    filter(Result %in% c("POSITIVE", "NEGATIVE", "NOT DONE")) %>%
-    count(Disease, Result, name = "Count")
+  filter(Result %in% c("POSITIVE", "NEGATIVE")) %>%
+  count(Disease, Result, name = "Count") %>%
+  group_by(Disease) %>%
+  mutate(Positive_Total = sum(Count[Result == "POSITIVE"])) %>%
+  ungroup()
 
-  validate(need(nrow(dat) > 0, "No test results for this selection."))
+validate(need(nrow(dat) > 0, "No test results for this selection."))
 
-  p <- ggplot(
-    dat,
-    aes(x = Disease, y = Count, fill = Result,
-        text = paste0(
-          "Disease: ", Disease,
-          "<br>Result: ", Result,
-          "<br>Count: ", comma(Count)
-        ))
+p <- ggplot(
+  dat,
+  aes(
+    x = reorder(Disease, Positive_Total),
+    y = Count,
+    fill = Result,
+    text = paste0(
+      "Disease: ", Disease,
+      "<br>Result: ", Result,
+      "<br>Count: ", comma(Count)
+    )
+  )
+) +
+  geom_col(position = "dodge") +
+  scale_x_discrete(limits = rev) +
+  labs(
+    title = "Disease testing outcomes",
+    x = "Disease",
+    y = "Number of tests",
+    fill = "Test result"
   ) +
-    geom_col(position = "dodge") +
-    labs(
-      title = "Disease testing outcomes",
-      x = "Disease",
-      y = "Number of tests",
-      fill = "Test result"
-    ) +
-    theme_classic()
+  theme_classic()
 
-  ggplotly(p, tooltip = "text")
+ggplotly(p, tooltip = "text")
 })
 ```
 
@@ -321,30 +329,35 @@ renderPlotly({
 ```{r}
 renderDT({
   dat <- filtered_long() %>%
-    group_by(Disease) %>%
-    summarise(
-      Tested = sum(
-        Result %in% c("POSITIVE", "NEGATIVE"),
-        na.rm = TRUE
-      ),
-      Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
-      Positive = sum(Result == "POSITIVE", na.rm = TRUE),
-      Positivity_percent = ifelse(
-        Tested > 0, 100 * Positive / Tested, NA_real_
-      ),
-      .groups = "drop"
-    )
+  group_by(Disease) %>%
+  summarise(
+    Tested = sum(
+      Result %in% c("POSITIVE", "NEGATIVE"),
+      na.rm = TRUE
+    ),
+    Negative = sum(Result == "NEGATIVE", na.rm = TRUE),
+    Positive = sum(Result == "POSITIVE", na.rm = TRUE),
+    Positivity_percent = ifelse(
+      Tested > 0, 100 * Positive / Tested, NA_real_
+    ),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Positive))
 
-  dat %>%
-    mutate(
-      Positivity_percent = round(Positivity_percent, 1)
-    ) %>%
-    datatable(
-      rownames = FALSE,
-      filter = "top",
-      options = list(pageLength = 10, scrollX = TRUE)
-    ) %>%
-    formatRound("Positivity_percent", 1)
+dat %>%
+  mutate(
+    Positivity_percent = round(Positivity_percent, 1)
+  ) %>%
+  datatable(
+    rownames = FALSE,
+    filter = "top",
+    options = list(
+      pageLength = 10,
+      scrollX = TRUE,
+      order = list(list(3, "desc"))
+    )
+  ) %>%
+  formatRound("Positivity_percent", 1)
 })
 ```
 
@@ -443,31 +456,39 @@ Row
 ```{r}
 renderPlotly({
   dat <- filtered_long() %>%
-    filter(Result == "POSITIVE", !is.na(AgeGroup)) %>%
-    count(AgeGroup, Disease, name = "Positive")
+  filter(Result == "POSITIVE", !is.na(AgeGroup)) %>%
+  count(AgeGroup, Disease, name = "Positive") %>%
+  group_by(AgeGroup) %>%
+  mutate(Total_Positive = sum(Positive)) %>%
+  ungroup()
 
-  validate(need(nrow(dat) > 0, "No positive results for this selection."))
+validate(need(nrow(dat) > 0, "No positive results for this selection."))
 
-  p <- ggplot(
-    dat,
-    aes(
-      x = AgeGroup, y = Positive, fill = Disease,
-      text = paste0(
-        "Age group: ", AgeGroup,
-        "<br>Disease: ", Disease,
-        "<br>Positive tests: ", comma(Positive)
-      )
+p <- ggplot(
+  dat,
+  aes(
+    x = reorder(AgeGroup, Total_Positive),
+    y = Positive,
+    fill = Disease,
+    text = paste0(
+      "Age group: ", AgeGroup,
+      "<br>Disease: ", Disease,
+      "<br>Positive tests: ", comma(Positive),
+      "<br>Total positives in age group: ", comma(Total_Positive)
     )
+  )
+) +
+  geom_col(position = "dodge") +
+  scale_x_discrete(limits = rev) +
+  labs(
+    title = "Positive test results by age group",
+    x = "Age group",
+    y = "Number of positive tests",
+    fill = "Disease"
   ) +
-    geom_col(position = "dodge") +
-    labs(
-      title = "Positive test results by age group",
-      x = "Age group", y = "Number of positive tests",
-      fill = "Disease"
-    ) +
-    theme_classic()
+  theme_classic()
 
-  ggplotly(p, tooltip = "text")
+ggplotly(p, tooltip = "text")
 })
 ```
 
