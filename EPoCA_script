@@ -9,7 +9,7 @@ vertical_layout: fill
 theme: cosmo
 runtime: shiny
 ---
-  
+
   ```{r setup, include=FALSE}
 library(flexdashboard)
 library(shiny)

@@ -1,7 +1,7 @@
 ---
-title: "Epidemiological Surveillance Dashboard"
+title: "_______ Surveillance Dashboard"
 subtitle: "Disease testing, bleeding symptoms, fever and regional trends"
-author: "Disease Surveillance"
+author: "_______ "
 output:
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -311,6 +311,12 @@ p <- ggplot(
   )
 ) +
   geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "POSITIVE" = "#FF8247",
+      "NEGATIVE" = "#2980B9"
+    )
+  ) +
   scale_x_discrete(limits = rev) +
   labs(
     title = "Disease testing outcomes",
@@ -371,37 +377,52 @@ Row
 
 ```{r}
 renderPlotly({
-  dat <- filtered_data() %>%
-    mutate(
-      Fever = ifelse(
-        is.na(Fever) | Fever == "", "Missing", Fever
-      ),
-      Bleeding = ifelse(
-        is.na(Bleeding) | Bleeding == "", "Missing", Bleeding
-      )
-    ) %>%
-    count(Fever, Bleeding, name = "Count")
+ dat <- filtered_data() %>%
+  mutate(
+    Fever = trimws(as.character(Fever)),
+    Bleeding = toupper(trimws(as.character(Bleeding)))
+  ) %>%
+  filter(
+    !is.na(Fever), Fever != "", Fever != "Missing",
+    !is.na(Bleeding),
+    Bleeding %in% c("YES", "NO")
+  ) %>%
+  count(Fever, Bleeding, name = "Count")
 
-  p <- ggplot(
-    dat,
-    aes(
-      x = Fever, y = Count, fill = Bleeding,
-      text = paste0(
-        "Fever: ", Fever,
-        "<br>Bleeding: ", Bleeding,
-        "<br>Records: ", comma(Count)
-      )
+validate(
+  need(nrow(dat) > 0, "No records available after excluding missing values.")
+)
+
+p <- ggplot(
+  dat,
+  aes(
+    x = Fever,
+    y = Count,
+    fill = Bleeding,
+    text = paste0(
+      "Fever: ", Fever,
+      "<br>Bleeding: ", Bleeding,
+      "<br>Records: ", comma(Count)
     )
+  )
+) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "YES" = "#0072B2",
+      "NO" = "#D55E00"
+    ),
+    drop = TRUE
   ) +
-    geom_col(position = "dodge") +
-    labs(
-      title = "Bleeding status by fever status",
-      x = "Fever", y = "Number of records",
-      fill = "Bleeding"
-    ) +
-    theme_classic()
+  labs(
+    title = "Bleeding status by fever status",
+    x = "Fever",
+    y = "Number of records",
+    fill = "Bleeding"
+  ) +
+  theme_classic()
 
-  ggplotly(p, tooltip = "text")
+ggplotly(p, tooltip = "text")
 })
 ```
 
@@ -433,7 +454,7 @@ renderPlotly({
       )
     )
   ) +
-    geom_col(fill = "#E69F00") +
+    geom_col(fill = "#2980B9") +
     coord_flip() +
     labs(
       title = "Bleeding types among fever patients",
@@ -455,7 +476,7 @@ Row
 
 ```{r}
 renderPlotly({
-  dat <- filtered_long() %>%
+ dat <- filtered_long() %>%
   filter(Result == "POSITIVE", !is.na(AgeGroup)) %>%
   count(AgeGroup, Disease, name = "Positive") %>%
   group_by(AgeGroup) %>%
@@ -479,6 +500,14 @@ p <- ggplot(
   )
 ) +
   geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "Marburg" = "#FF1493",
+      "Dengue" = "#2980B9",
+      "Lassa fever" = "#00CDCD",
+      "Yellow fever" = "#FFC125"
+    )
+  ) +
   scale_x_discrete(limits = rev) +
   labs(
     title = "Positive test results by age group",
@@ -497,51 +526,60 @@ ggplotly(p, tooltip = "text")
 ```{r}
 renderPlotly({
 
-  dat <- filtered_long() %>%
-    filter(
-      Result == "POSITIVE",
-      !is.na(Region),
-      !is.na(Years)
-    ) %>%
-    count(Years, Region, Disease, name = "Positive")
+ dat <- filtered_long() %>%
+  filter(
+    Result == "POSITIVE",
+    !is.na(Region),
+    !is.na(Years)
+  ) %>%
+  count(Years, Region, Disease, name = "Positive")
 
-  validate(
-    need(
-      nrow(dat) > 0,
-      "No positive results for this selection."
+validate(
+  need(
+    nrow(dat) > 0,
+    "No positive results for this selection."
+  )
+)
+
+p <- ggplot(
+  dat,
+  aes(
+    x = Region,
+    y = Positive,
+    fill = Disease,
+    text = paste0(
+      "Year: ", Years,
+      "<br>Region: ", Region,
+      "<br>Disease: ", Disease,
+      "<br>Positive cases: ", comma(Positive)
     )
   )
-
-  p <- ggplot(
-    dat,
-    aes(
-      x = Region,
-      y = Positive,
-      fill = Disease,
-      text = paste0(
-        "Year: ", Years,
-        "<br>Region: ", Region,
-        "<br>Disease: ", Disease,
-        "<br>Positive cases: ", comma(Positive)
-      )
+) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "Marburg" = "#FF1493",
+      "Dengue" = "#2980B9",
+      "Lassa fever" = "#00CDCD",
+      "Yellow fever" = "#FFC125"
     )
   ) +
-    geom_col(position = "dodge") +
-    facet_grid(~ Years) +
-    coord_flip() +
-    labs(
-      title = "Positive Cases by Region and Year",
-      subtitle = "Distribution of positive test results by disease",
-      x = "Region",
-      y = "Number of positive tests",
-      fill = "Disease"
-    ) +
-    theme_bw()
+  facet_grid(~ Years) +
+  coord_flip() +
+  labs(
+    title = "Positive Cases by Region and Year",
+    subtitle = "Distribution of positive test results by disease",
+    x = "Region",
+    y = "Number of positive tests",
+    fill = "Disease"
+  ) +
+  theme_bw()
 
-  ggplotly(p, tooltip = "text") %>%
-    layout(
-      legend = list(orientation = "h", y = -0.15),
-      margin = list(b = 100)
-    )
+ggplotly(p, tooltip = "text") %>%
+  layout(
+    legend = list(orientation = "h", y = -0.15),
+    margin = list(b = 100)
+  )
 })
+
 ```

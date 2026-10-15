@@ -15,6 +15,9 @@ library(broom)
 library(scales)
 library(naniar)
 library(tableone)
+ 
+install.packages(c("sf","httr", "jsonlite"))
+
 
 # ==============
 
