@@ -81,7 +81,7 @@ library(gt)
 ```{r}
 #Import Data
 
-LFdata <- read_excel("LF_Sept_29.xlsx")
+LFdata <- read_excel("LF_Oct_28.xlsx")
 #
 
 df <- LFdata %>% mutate(Age_group = case_when(
@@ -391,6 +391,7 @@ community_table <- LFdata %>%
 kable(community_table, align = "c")
 
 ```
+
 
 
 
