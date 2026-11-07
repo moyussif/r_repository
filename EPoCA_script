@@ -1,7 +1,7 @@
 ---
-  title: "Epidemiological Surveillance Dashboard"
+  title: "_______ Surveillance Dashboard"
 subtitle: "Disease testing, bleeding symptoms, fever and regional trends"
-author: "Disease Surveillance"
+author: "_______ "
 output:
   flexdashboard::flex_dashboard:
   orientation: rows
@@ -9,7 +9,7 @@ vertical_layout: fill
 theme: cosmo
 runtime: shiny
 ---
-
+  
   ```{r setup, include=FALSE}
 library(flexdashboard)
 library(shiny)
@@ -18,8 +18,12 @@ library(tidyr)
 library(ggplot2)
 library(plotly)
 library(DT)
+library(sf)
 library(readxl)
 library(scales)
+library(leaflet)
+library(geodata)
+
 
 # Import the surveillance dataset
 EPo2_clean <- read_excel("EPo2.xlsx")
@@ -213,26 +217,26 @@ filtered_long <- reactive({
 })
 ```
 
-Testing Summary
+OVERVIEW
 =====================================
   
   Row
 -------------------------------------
   
-  ### Total patient records
+  ###
   
   ```{r}
 renderValueBox({
   valueBox(
     value = comma(nrow(filtered_data())),
-    caption = "Patient records",
+    caption = "Total Patient Records",
     icon = "fa-users",
     color = "primary"
   )
 })
 ```
 
-### Completed tests
+###  
 
 ```{r}
 renderValueBox({
@@ -244,14 +248,14 @@ renderValueBox({
   
   valueBox(
     comma(n),
-    "Completed disease tests",
+    "No of Tests Completed",
     icon = "fa-vial",
     color = "info"
   )
 })
 ```
 
-### Positive test results
+### 
 
 ```{r}
 renderValueBox({
@@ -259,14 +263,14 @@ renderValueBox({
   
   valueBox(
     comma(n),
-    "Positive test results",
+    "No of Positive Results",
     icon = "fa-check-circle",
     color = "danger"
   )
 })
 ```
 
-### Patients reporting bleeding
+### 
 
 ```{r}
 renderValueBox({
@@ -274,7 +278,7 @@ renderValueBox({
   
   valueBox(
     comma(n),
-    "Records with bleeding",
+    "No of Bleeding Case Reported",
     icon = "fa-heartbeat",
     color = "warning"
   )
@@ -284,7 +288,7 @@ renderValueBox({
 Row
 -------------------------------------
   
-  ### Testing results by disease
+  ### 
   
   ```{r}
 renderPlotly({
@@ -311,9 +315,15 @@ renderPlotly({
     )
   ) +
     geom_col(position = "dodge") +
+    scale_fill_manual(
+      values = c(
+        "POSITIVE" = "#FF8247",
+        "NEGATIVE" = "#2980B9"
+      )
+    ) +
     scale_x_discrete(limits = rev) +
     labs(
-      title = "Disease testing outcomes",
+      title = "Test outcomes",
       x = "Disease",
       y = "Number of tests",
       fill = "Test result"
@@ -324,7 +334,7 @@ renderPlotly({
 })
 ```
 
-### Testing and positivity summary
+### 
 
 ```{r}
 renderDT({
@@ -361,31 +371,38 @@ renderDT({
 })
 ```
 
-Bleeding and Fever
+BLEEDING
 =====================================
   
   Row
 -------------------------------------
   
-  ### Bleeding by fever status
+  ### 
   
   ```{r}
 renderPlotly({
   dat <- filtered_data() %>%
     mutate(
-      Fever = ifelse(
-        is.na(Fever) | Fever == "", "Missing", Fever
-      ),
-      Bleeding = ifelse(
-        is.na(Bleeding) | Bleeding == "", "Missing", Bleeding
-      )
+      Fever = trimws(as.character(Fever)),
+      Bleeding = toupper(trimws(as.character(Bleeding)))
+    ) %>%
+    filter(
+      !is.na(Fever), Fever != "", Fever != "Missing",
+      !is.na(Bleeding),
+      Bleeding %in% c("YES", "NO")
     ) %>%
     count(Fever, Bleeding, name = "Count")
+  
+  validate(
+    need(nrow(dat) > 0, "No records available after excluding missing values.")
+  )
   
   p <- ggplot(
     dat,
     aes(
-      x = Fever, y = Count, fill = Bleeding,
+      x = Fever,
+      y = Count,
+      fill = Bleeding,
       text = paste0(
         "Fever: ", Fever,
         "<br>Bleeding: ", Bleeding,
@@ -394,9 +411,17 @@ renderPlotly({
     )
   ) +
     geom_col(position = "dodge") +
+    scale_fill_manual(
+      values = c(
+        "YES" = "#0072B2",
+        "NO" = "#D55E00"
+      ),
+      drop = TRUE
+    ) +
     labs(
-      title = "Bleeding status by fever status",
-      x = "Fever", y = "Number of records",
+      title = "Bleeding Based on Fever status",
+      x = "Fever",
+      y = "Number of records",
       fill = "Bleeding"
     ) +
     theme_classic()
@@ -405,7 +430,7 @@ renderPlotly({
 })
 ```
 
-### Bleeding types among patients with fever
+###  
 
 ```{r}
 renderPlotly({
@@ -433,10 +458,10 @@ renderPlotly({
       )
     )
   ) +
-    geom_col(fill = "#E69F00") +
+    geom_col(fill = "#2980B9") +
     coord_flip() +
     labs(
-      title = "Bleeding types among fever patients",
+      title = "Bleeding Types among Patients with Fever",
       x = "Bleeding type", y = "Number of records"
     ) +
     theme_classic(base_size = 12)
@@ -445,13 +470,13 @@ renderPlotly({
 })
 ```
 
-Positive Cases by Year, Age Group and Region
+CASES
 =====================================
   
   Row
 -------------------------------------
   
-  ### Positive cases by age group
+  ### 
   
   ```{r}
 renderPlotly({
@@ -479,9 +504,17 @@ renderPlotly({
     )
   ) +
     geom_col(position = "dodge") +
+    scale_fill_manual(
+      values = c(
+        "Marburg" = "#FF1493",
+        "Dengue" = "#2980B9",
+        "Lassa fever" = "#00CDCD",
+        "Yellow fever" = "#FFC125"
+      )
+    ) +
     scale_x_discrete(limits = rev) +
     labs(
-      title = "Positive test results by age group",
+      title = "Case by Agegroup",
       x = "Age group",
       y = "Number of positive tests",
       fill = "Disease"
@@ -492,7 +525,7 @@ renderPlotly({
 })
 ```
 
-### Positive Cases by Region and Year
+### 
 
 ```{r}
 renderPlotly({
@@ -520,19 +553,24 @@ renderPlotly({
       fill = Disease,
       text = paste0(
         "Year: ", Years,
-        "<br>Region: ", Region,
         "<br>Disease: ", Disease,
         "<br>Positive cases: ", comma(Positive)
       )
     )
   ) +
     geom_col(position = "dodge") +
+    scale_fill_manual(
+      values = c(
+        "Marburg" = "#FF1493",
+        "Dengue" = "#2980B9",
+        "Lassa fever" = "#00CDCD",
+        "Yellow fever" = "#FFC125"
+      )
+    ) +
     facet_grid(~ Years) +
     coord_flip() +
     labs(
-      title = "Positive Cases by Region and Year",
-      subtitle = "Distribution of positive test results by disease",
-      x = "Region",
+      title = "Case by Year & Region",
       y = "Number of positive tests",
       fill = "Disease"
     ) +
@@ -540,8 +578,170 @@ renderPlotly({
   
   ggplotly(p, tooltip = "text") %>%
     layout(
-      legend = list(orientation = "h", y = -0.15),
+      legend = list(orientation = "h", y = -0.10),
       margin = list(b = 100)
     )
 })
+
 ```
+
+```{r}
+# Download Ghana's 16 regional boundaries
+ghana_map_base <- geodata::gadm(
+  country = "GHA",
+  level = 1,
+  path = "data"
+) %>%
+  sf::st_as_sf() %>%
+  sf::st_make_valid() %>%
+  mutate(
+    Region = trimws(as.character(NAME_1))
+  )
+
+# Create regional label positions
+ghana_map_labels <- sf::st_point_on_surface(
+  ghana_map_base
+)
+```
+
+
+###
+
+```{r,r, fig.width=7, fig.height=9, out.width="100%"}
+ghana_gps <- data.frame(
+  Region = c(
+    "Ahafo", "Ashanti", "Bono", "Bono East",
+    "Central", "Eastern", "Greater Accra",
+    "North East", "Northern", "Oti", "Savannah",
+    "Upper East", "Upper West", "Volta",
+    "Western", "Western North"
+  ),
+  
+  Capital = c(
+    "Goaso", "Kumasi", "Sunyani", "Techiman",
+    "Cape Coast", "Koforidua", "Accra",
+    "Nalerigu", "Tamale", "Dambai", "Damongo",
+    "Bolgatanga", "Wa", "Ho", "Sekondi",
+    "Sefwi Wiawso"
+  ),
+  
+  Latitude = c(
+    6.80, 6.69, 7.34, 7.59, 5.11, 6.09,
+    5.56, 10.53, 9.40, 8.07, 9.08, 10.79,
+    10.06, 6.61, 4.93, 6.21
+  ),
+  
+  Longitude = c(
+    -2.52, -1.62, -2.33, -1.94, -1.25, -0.26,
+    -0.20, -0.37, -0.84, 0.18, -1.82, -0.85,
+    -2.50, 0.47, -1.71, -2.49
+  )
+)
+
+# Convert to spatial points
+library(sf)
+ghana_points <- st_as_sf(
+  ghana_gps,
+  coords = c("Longitude", "Latitude"),
+  crs = 4326
+)
+###
+
+
+prevalence_data <- data.frame(
+  Region = ghana_gps$Region,
+  Tested = TRUE,
+  Positive = TRUE
+)
+
+prevalence_data <- prevalence_data %>%
+  mutate(
+    Prevalence = (Positive / Tested) * 100
+  )
+
+###
+###
+# Download Ghana's 16 regional boundaries
+ghana_map <- geodata::gadm(
+  country = "GHA",
+  level = 1,
+  path = "data"
+) %>%
+  st_as_sf()
+
+# Join prevalence data to regional boundaries
+ghana_map <- ghana_map %>%
+  left_join(
+    prevalence_data,
+    by = c("NAME_1" = "Region")
+  )
+
+# Plot prevalence map
+# Create label positions within each regional boundary
+ghana_map_labels <- sf::st_point_on_surface(ghana_map)
+
+# Plot Ghana map with regional labels
+ggplot() +
+  
+  # Regional boundaries
+  geom_sf(
+    data = ghana_map,
+    aes(fill = Prevalence),
+    color = "white",
+    linewidth = 0.5
+  ) +
+  
+  # Regional names displayed on the map
+  geom_sf_text(
+    data = ghana_map_labels,
+    aes(label = NAME_1),
+    color = "#17365D",
+    size = 5,
+    fontface = "bold"
+  ) +
+  
+  # Regional capital locations
+  geom_sf(
+    data = ghana_points,
+    color = "black",
+    size = 1.5
+  ) +
+  
+  scale_fill_gradient(
+    low = "#FFF2CC",
+    high = "#C00000",
+    na.value = "grey90",
+    name = "Prevalence (%)"
+  ) +
+  
+  labs(
+    title = "Geographical Regions of Ghana",
+    subtitle = "Regional Boundaries and Capital Locations",
+    caption = "Source: EPoCA"
+  ) +
+  
+  theme_minimal() +
+  
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      size = 15,
+      color = "#17365D"
+    ),
+    plot.subtitle = element_text(size = 13),
+    legend.position = "right",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = margin(5, 5, 5, 5)
+  ) +
+  
+  coord_sf(
+    xlim = c(-3.5, 1.5),
+    ylim = c(4.5, 11.5),
+    expand = FALSE
+  )
+
+
+```
+
