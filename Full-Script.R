@@ -1580,6 +1580,7 @@ exp(coef(logistic_model))
 #p-value
 P_value = summary(logistic_model)$coefficients[, 4]
         
+
 #dd ratio and 95% CI
 exp(cbind(OR = coef(logistic_model), confint(logistic_model)))
         
