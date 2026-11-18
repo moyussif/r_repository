@@ -152,110 +152,55 @@ set.seed(123)
 n <- 600
 
 # Generate disease severity groups
-Disease_Severity <- factor(
-  rep(c("Control", "Mild", "Severe"), each = 200),
-  levels = c("Control", "Mild", "Severe")
-)
+Disease_Severity <- factor(rep(c("Control", "Mild", "Severe"), each = 200),
+                           levels = c("Control", "Mild", "Severe"))
 
 # Patient demographics
 Sex <- sample(c("Male", "Female"), n, replace = TRUE)
 
-Age <- round(
-  rnorm(n, mean = 35 + ifelse(Sex == "Male", 6, 0), sd = 9)
-)
+Age <- round(rnorm(n, mean = 35 + ifelse(Sex == "Male", 6, 0), sd = 9))
 
 Age <- pmax(18, pmin(Age, 75))
 
 # Regions of Ghana
-Region <- sample(
-  c("Greater Accra", "Ashanti", "Northern",
-    "Eastern", "Central", "Volta",
-    "Western", "Upper East"),
-  n, replace = TRUE
-)
+Region <- sample(c("Greater Accra", "Ashanti", "Northern","Eastern", "Central",
+                   "Volta","Western", "Upper East"),n, replace = TRUE)
 
 # Biomarker levels with different group means and variances
-group_mean <- ifelse(
-  Disease_Severity == "Control", 20,
-  ifelse(Disease_Severity == "Mild", 32, 48)
-)
+group_mean <- ifelse(Disease_Severity == "Control", 20,ifelse(Disease_Severity == "Mild", 32, 48))
 
-group_sd <- ifelse(
-  Disease_Severity == "Control", 6,
-  ifelse(Disease_Severity == "Mild", 8, 15)
-)
+group_sd <- ifelse(Disease_Severity == "Control", 6,ifelse(Disease_Severity == "Mild", 8, 15))
 
-Biomarker_Level <- round(
-  group_mean +
-    0.6 * (Age - 35) +
-    ifelse(Sex == "Male", 2, 0) +
-    rnorm(n, mean = 0, sd = group_sd),
-  2
-)
+Biomarker_Level <- round(group_mean +0.6 * (Age - 35) +
+                           ifelse(Sex == "Male", 2, 0) +rnorm(n, mean = 0, sd = group_sd),2)
 
 # Fever and bleeding
-fever_prob <- ifelse(
-  Disease_Severity == "Control", 0.10,
-  ifelse(Disease_Severity == "Mild", 0.55, 0.90)
-)
+fever_prob <- ifelse(Disease_Severity == "Control", 0.10,ifelse(Disease_Severity == "Mild", 0.55, 0.90))
 
-bleeding_prob <- ifelse(
-  Disease_Severity == "Control", 0.03,
-  ifelse(Disease_Severity == "Mild", 0.20, 0.65)
-)
+bleeding_prob <- ifelse(Disease_Severity == "Control", 0.03,ifelse(Disease_Severity == "Mild", 0.20, 0.65))
 
-Fever <- ifelse(
-  rbinom(n, 1, fever_prob) == 1, "Yes", "No"
-)
+Fever <- ifelse(rbinom(n, 1, fever_prob) == 1, "Yes", "No")
 
-Bleeding <- ifelse(
-  rbinom(n, 1, bleeding_prob) == 1, "Yes", "No"
-)
+Bleeding <- ifelse(rbinom(n, 1, bleeding_prob) == 1, "Yes", "No")
 
 # Laboratory test results
-positive_prob <- ifelse(
-  Disease_Severity == "Control", 0.10,
-  ifelse(Disease_Severity == "Mild", 0.45, 0.85)
-)
+positive_prob <- ifelse(Disease_Severity == "Control", 0.10,ifelse(Disease_Severity == "Mild", 0.45, 0.85))
 
-Test_Result <- ifelse(
-  rbinom(n, 1, positive_prob) == 1,
-  "Positive", "Negative"
-)
+Test_Result <- ifelse(rbinom(n, 1, positive_prob) == 1,"Positive", "Negative")
 
 # Patient outcomes
-death_prob <- ifelse(
-  Disease_Severity == "Control", 0.01,
-  ifelse(Disease_Severity == "Mild", 0.05, 0.30)
-)
+death_prob <- ifelse(Disease_Severity == "Control", 0.01,ifelse(Disease_Severity == "Mild", 0.05, 0.30))
 
-Outcome <- ifelse(
-  rbinom(n, 1, death_prob) == 1,
-  "Dead", "Alive"
-)
+Outcome <- ifelse(rbinom(n, 1, death_prob) == 1,"Dead", "Alive")
 
 # Combine into one dataset
-biomedical_data <- data.frame(
-  Patient_ID = sprintf("PT%03d", 1:n),
-  Age,
-  Sex,
-  Region,
-  Disease_Severity,
-  Biomarker_Level,
-  Fever,
-  Bleeding,
-  Test_Result,
-  Outcome
-)
+biomedical_data <- data.frame(Patient_ID = sprintf("PT%03d", 1:n),
+                              Age,Sex,Region,Disease_Severity,Biomarker_Level,Fever,Bleeding,Test_Result,Outcome)
 
 # Convert categorical variables to factors
-categorical_vars <- c(
-  "Sex", "Region", "Disease_Severity",
-  "Fever", "Bleeding", "Test_Result", "Outcome"
-)
+categorical_vars <- c("Sex", "Region", "Disease_Severity","Fever", "Bleeding", "Test_Result", "Outcome")
 
-biomedical_data[categorical_vars] <-
-  lapply(biomedical_data[categorical_vars], factor)
+biomedical_data[categorical_vars] <-lapply(biomedical_data[categorical_vars], factor)
 
 # Inspect dataset
 head(biomedical_data)
@@ -263,11 +208,8 @@ str(biomedical_data)
 summary(biomedical_data)
 
 # Export dataset
-write.csv(
-  biomedical_data,
-  "Synthetic_Biomedical_Dataset.csv",
-  row.names = FALSE
-)
+write.csv(biomedical_data,"Synthetic_Biomedical_Dataset.csv",row.names = FALSE)
+
 ################################################################################
 ################################################################################
 
@@ -1452,34 +1394,92 @@ str(Biomedical_Data)
 ##
 
 ###------------------------Independent samples t-test
-t_test <- t.test(Biomarker_Level ~ Test_Result,data = Biomedical_Data)
-t_test
+t.test(Biomarker_Level ~ Test_Result,data = Biomedical_Data, conf.level =0.95)
+boxplot(Biomarker_Level ~ Test_Result,data = Biomedical_Data)
+hist(Biomarker_Level ~ Test_Result,data = Biomedical_Data)
+#
+###-----------------------Mann Whitney U test
+wilcox.test(Biomarker_Level ~ Test_Result,data = Biomedical_Data,Var.equal =FALSE)
+#
 
-###-----------------------F-test (comparison of variances)
-f_test <- var.test(Biomarker_Level ~ Disease_Severity,
-                   data = subset(Biomedical_Data,Disease_Severity %in% c("Control", "Severe")))
-f_test
-
-###-----------------------ANOVA and multiple comparisons
-anova_model <- aov(Biomarker_Level ~ Disease_Severity,data = Biomedical_Data)
-summary(anova_model)
-
-# Tukey post-hoc multiple comparisons
-multiple_comparison <- TukeyHSD(anova_model)
-multiple_comparison
-
-# Visualize group differences
-plot(multiple_comparison)
+###-----------------------One_Way ANOVA
+#normality assumption
+tapply(Biomedical_Data$Biomarker_Level, Biomedical_Data$Disease_Severity, shapiro.test)
+#Equality of variance
+leveneTest(Biomedical_Data$Biomarker_Level ~ Biomedical_Data$Disease_Severity) 
+#One-way ANOVA
+oneway<-ANOVA(Biomarker_Level ~ Disease_Severity, data = Biomedical_Data)
 
 
+#Bar chart 
+##Mean   Bio marker_level
+Biomedical_Data %>%filter(Test_Result != "Negative") %>%
+  group_by(Disease_Severity) %>% 
+  summarise(Mean_Biomarker = mean(Biomarker_Level, na.rm = TRUE),
+            .groups = "drop") %>%
+  ggplot(aes(x = Disease_Severity,y = Mean_Biomarker,fill = Disease_Severity)) +
+  geom_col(width = 0.65) +
+  geom_text(aes(label = round(Mean_Biomarker, 2)),vjust = -0.5,size = 4.5,fontface = "bold") +
+  labs(title = "Mean Biomarker Level by Disease Severity",
+       subtitle = "Negative test results excluded",
+       x = "Disease Severity",y = "Mean Biomarker Level") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none",plot.title = element_text(face = "bold")) +
+  expand_limits(y = max(Biomedical_Data$Biomarker_Level,na.rm = TRUE) * 1.1)
+##
 
-###------------------------Pearson correlation test
+
+###--------------------------Factorial ANOVA
+#Two_Way
+Two.way<-aov(Biomarker_Level ~ Disease_Severity+Sex, data = Biomedical_Data)
+summary(Two.way)
+#Three_Way
+Three.way <- aov(Biomarker_Level ~ Disease_Severity + Sex + Fever,data = Biomedical_Data)
+summary(Three.way)
+
+##Interaction effects
+Interactions<-aov(Biomarker_Level ~ Disease_Severity + Sex + Fever+Fever*Disease_Severity,data = Biomedical_Data)
+summary(Interactions)
+
+##ThreeWay with interaction 
+Threeway.Interaction <- aov(Biomarker_Level ~ Disease_Severity * Sex * Fever,data = Biomedical_Data)
+summary(Threeway.Interaction)
+
+###AIC and BIC Comparison
+model_comparison <- data.frame(
+  Model = c("Two-way","Three-way","Interaction","Three-way interaction"),
+  AIC = c(AIC(Two.way),AIC(Three.way),AIC(Interactions),AIC(Threeway.Interaction)),
+  BIC = c(BIC(Two.way),BIC(Three.way),BIC(Interactions),BIC(Threeway.Interaction)))
+
+#Lower AIC and BIC generally indicate a better balance between model fit and complexity.
+model_comparison[order(model_comparison$AIC), ]
+
+###---------------------Check model assumptions
+#Normality of residuals
+shapiro.test(residuals(Three.way))
+
+#Homogeneity of variance
+
+# Disease severity
+leveneTest(Biomarker_Level ~ Disease_Severity,data = Biomedical_Data)
+# Sex
+leveneTest(Biomarker_Level ~ Sex, data = Biomedical_Data)
+# Fever
+leveneTest(Biomarker_Level ~ Fever,data = Biomedical_Data)
+
+# Diagnostic plots
+par(mfrow = c(2, 2))
+plot(Three.way)
+
+###
+###------------------------Corrleation Test ------------------------------------
+#
 correlation_test <- cor.test(Biomedical_Data$Age,
                              Biomedical_Data$Biomarker_Level,
                              method = "pearson")
 correlation_test
 
-# Correlation plot
+# Correlation plot------------------------------------------------------------- Option-1
 plot(Biomedical_Data$Age,Biomedical_Data$Biomarker_Level,
      main = "Age versus Biomarker Level",
      xlab = "Age (years)",
@@ -1488,9 +1488,47 @@ plot(Biomedical_Data$Age,Biomedical_Data$Biomarker_Level,
      col = "blue")+
   abline(lm(Biomarker_Level ~ Age, data = Biomedical_Data),col = "red",lwd = 2)
 
+###---------------------------------------------------------------------------- Option-2
+ggscatter(Biomedical_Data, x = "Age", y = "Biomarker_Level",
+          add = "reg.line", conf.int = TRUE,                                  
+          add.params = list(color = "blue", fill = "lightgray"))+
+  stat_cor(method = "pearson", label.x = 3, label.y = 30) 
 
-###-----------------------Chi-square test
-chi_table <- table(Biomedical_Data$Disease_Severity,Biomedical_Data$Test_Result)
+
+################################################################################
+----------------------------- Test of Proportions ------------------------------
+  ###
+  #---------------------------- ONE SAMPLE TEST OF PROPORTION
+  
+  #Is the proportion of smoker in male =5.2% ?
+  p1_table <- table(sars_4$smoking)
+p1_table                                    
+
+p1_table <- matrix(c(35, 106), ncol = 2) 
+
+#Therefore
+prop.test(p1_table, p = 0.052)
+
+#--------------------------- TWO SAMPLE TEST OF PROPORTION
+
+#Get table of sex by HIV status
+
+table_status <- table(Gender = data$sex, HIVstatus = data$HIV) 
+table_status                        # E.g,where the output is column1-> 15, 143.column2-> 7, 23.
+# Input results
+table_status <- matrix(c(15, 143, 7, 23), ncol = 2)
+colnames(table_status)<- c("Reactive","Non reactive")
+rownames(table_status)<- C("Female","Male")
+#
+prop.test(table_status)
+
+###
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--------------------------- Test of Association --------------------------------
+  # Is gender associated with HIV status ?
+  
+  ###-----------------------Chi-square test
+  chi_table <- table(Biomedical_Data$Sex,Biomedical_Data$Test_Result)
 chi_table
 #
 chi_test <- chisq.test(chi_table)
@@ -1499,8 +1537,21 @@ chi_test
 # Check expected frequencies
 chi_test$expected
 
+# # #
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+---------------------------- Oddratio & riskratio ------------------------------                                 
+  #------------ Oddratio
+  oddsratio(Biomedical_Data$Sex,Biomedical_Data$Test_Result)
 
-###-----------------------Multiple Linear regression
+#----------- riskratio
+riskratio(Biomedical_Data$Sex,Biomedical_Data$Test_Result)
+
+###----------------------- Linear Regression ------------------------------
+linear_model1 <- lm(Biomarker_Level ~ Disease_Severity,data = Biomedical_Data)
+summary(linear_model1)
+par(mfrow = c(2, 2))
+plot(linear_model1)
+###----------------------- Multiple Linear regression
 linear_model <- lm(Biomarker_Level ~ Age + Sex + Disease_Severity,data = Biomedical_Data)
 summary(linear_model)
 
@@ -1508,8 +1559,12 @@ summary(linear_model)
 par(mfrow = c(2, 2))
 plot(linear_model)
 
-
-###----------------------Multiple logistic regression
+###
+##----------------------- Logistic Regression 
+logistic_model1 <- glm(Outcome ~ Disease_Severity, data = Biomedical_Data,family = binomial)
+summary(logistic_model1
+        
+###---------------------- Multiple logistic regression
 Biomedical_Data$Outcome <- ifelse(Biomedical_Data$Outcome == "Dead", 1,
                                   ifelse(Biomedical_Data$Outcome == "Alive", 0, NA))
 #
@@ -1517,17 +1572,19 @@ logistic_model <- glm(Outcome ~ Age + Sex + Disease_Severity + Fever + Bleeding,
                       data = Biomedical_Data,family = binomial)
 
 summary(logistic_model)
-
-# Odds ratios
-odds_ratios <- exp(coef(logistic_model))
-odds_ratios
-# 95% confidence intervals
-confidence_intervals <- exp(confint.default(logistic_model))
-confidence_intervals
-
-regression_results <- data.frame(Variable = names(odds_ratios),
-                                 Odds_Ratio = odds_ratios,
-                                 Lower_95CI = confidence_intervals[, 1],
-                                 Upper_95CI = confidence_intervals[, 2],
-                                 P_value = coef(summary(logistic_model))[, 4])
-print(regression_results)
+#        
+#95%CI
+confint(logistic_model)
+#odd ratio
+exp(coef(logistic_model))
+#p-value
+P_value = summary(logistic_model)$coefficients[, 4]
+        
+#dd ratio and 95% CI
+exp(cbind(OR = coef(logistic_model), confint(logistic_model)))
+        
+#odd ratio, 95% CI and p-value
+cbind(exp(cbind(OR = coef(logistic_model), confint(logistic_model))),
+      P_value = summary(logistic_model)$coefficients[, 4])
+        
+        
